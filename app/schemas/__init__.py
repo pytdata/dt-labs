@@ -1,4 +1,14 @@
 from .company import CompanyProfileOut, CompanyProfileUpdate
 from .catalog import AnalyzerOut, TestOut
 from .lab import PatientCreate, PatientOut, LabOrderCreate, LabOrderOut
+from .lab import (
+    PatientCreate,
+    PatientOut,
+    LabOrderCreate,
+    LabOrderOut,
+    SampleCollectIn,
+    SampleOut,
+    LabResultIn,
+    LabResultOut,
+)
 from .integration import ASTMResultIn, AnalyzerIngestIn
