@@ -1,9 +1,9 @@
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import jwt
 from app.core.config import settings
 from app.core.security import verify_password
 from app.db.session import get_db
@@ -40,7 +40,7 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str | None = payload.get("sub")
-    except JWTError:
+    except jwt.JWTError:
         raise credentials_exception
     if email is None:
         raise credentials_exception
