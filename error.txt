@@ -1,3 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2434, in _determine_joins
+    self.primaryjoin = join_condition(
+                       ~~~~~~~~~~~~~~^
         self.parent_persist_selectable,
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     ...<2 lines>...
@@ -22,7 +26,7 @@
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\selectable.py", line 1586, in _joincond_trim_constraints
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\selectable.py", line 1586, in _joincond_trim_constraints     
     raise exc.AmbiguousForeignKeysError(
     ...<5 lines>...
     )
@@ -222,7 +226,7 @@ Traceback (most recent call last):
   File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1657, in do_init
     self._setup_join_conditions()
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1895, in _setup_join_conditions
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1895, in _setup_join_conditions      
     self._join_condition = jc = JoinCondition(
                                 ~~~~~~~~~~~~~^
         parent_persist_selectable=self.parent.persist_selectable,
