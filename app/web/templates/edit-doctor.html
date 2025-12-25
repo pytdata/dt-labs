@@ -1,0 +1,2578 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+	<!-- Meta Tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Edit Doctor | DreamsEMR - Responsive Bootstrap 5 Medical Admin Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DreamsEMR is a flexible, powerful, modern, and responsive Bootstrap 5 admin template with endless potential.">
+    <meta name="keywords" content="DreamsEMR admin template, admin template, dashboard template, responsive admin template, medical admin template, web app">
+    <meta name="author" content="dreamstechnologies">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/static/img/favicon.png">
+
+    <!-- Apple Icon -->
+    <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
+
+    <!-- Theme Config Js -->
+    <script src="/static/js/theme-script.js" type="12fcdddf76fbb176a579d225-text/javascript"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="/static/plugins/flatpickr/flatpickr.min.css">
+
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href="/static/plugins/select2/css/select2.min.css">
+
+    <!-- Tabler Icon CSS -->
+    <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
+
+    <!-- Simplebar CSS -->
+    <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+
+</head>
+
+<body>
+
+    <!-- Begin Wrapper -->
+    <div class="main-wrapper">
+
+        <!-- Topbar Start -->
+        <header class="navbar-header">
+            <div class="page-container topbar-menu">
+                <div class="d-flex align-items-center gap-2">
+
+                    <!-- Logo -->
+                    <a href="index.html" class="logo">
+
+                        <!-- Logo Normal -->
+                        <span class="logo-light">
+                            <span class="logo-lg"><img src="/static/img/logo.svg" alt="logo"></span>
+                            <span class="logo-sm"><img src="/static/img/logo-small.svg" alt="small logo"></span>
+                        </span>
+
+                        <!-- Logo Dark -->
+                        <span class="logo-dark">
+                            <span class="logo-lg"><img src="/static/img/logo-white.svg" alt="dark logo"></span>
+                        </span>
+                    </a>
+
+                    <!-- Sidebar Mobile Button -->
+                    <a id="mobile_btn" class="mobile-btn" href="#sidebar">
+                        <i class="ti ti-menu-deep fs-24"></i>
+                    </a>
+
+                    <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn2">
+                        <i class="ti ti-arrow-bar-to-right"></i>
+                    </button>
+
+                    <!-- Search -->
+                    <div class="me-auto d-flex align-items-center header-search d-lg-flex d-none">
+                        <!-- Search -->
+                        <div class="input-icon position-relative me-2">
+                           <input type="text" class="form-control" placeholder="Search Keyword">
+                           <span class="input-icon-addon d-inline-flex p-0 header-search-icon"><i class="ti ti-command"></i></span>
+                        </div>
+                        <!-- /Search -->
+                    </div>
+
+                </div>
+
+                <div class="d-flex align-items-center">
+
+                    <!-- Search for Mobile -->
+                    <div class="header-item d-flex d-lg-none me-2">
+                        <button class="topbar-link btn" data-bs-toggle="modal" data-bs-target="#searchModal" type="button">
+                            <i class="ti ti-search fs-16"></i>
+                        </button>
+                    </div>
+
+                    <!-- pages -->
+                    <div class="header-item">
+                        <div class="dropdown me-2">
+                            <a href="javascript:void(0);" class="btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false"><i class="ti ti-list-details"></i></a>
+
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
+
+                                <!-- Item-->
+                                <a href="all-appointments.html" class="dropdown-item">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
+                                            <span class="fs-13">View All the Appointments</span>
+                                        </div>
+                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
+                                    </div>
+                                </a>
+
+                                <!-- Item-->
+                                <a href="all-doctors.html" class="dropdown-item">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="d-flex mb-1 fw-semibold text-dark">Doctors</span>
+                                            <span class="fs-13">View All the Doctors</span>
+                                        </div>
+                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
+                                    </div>
+                                </a>
+
+                                <!-- Item-->
+                                <a href="add-patient.html" class="dropdown-item">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
+                                            <span class="fs-13">Add New Patient</span>
+                                        </div>
+                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
+                                    </div>
+                                </a>
+
+                                <!-- Item-->
+                                <a href="pharmacy.html" class="dropdown-item">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
+                                            <span class="fs-13">View All the Medicines</span>
+                                        </div>
+                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
+                                    </div>
+                                </a>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Minimize -->
+                    <div class="header-item">
+                        <div class="dropdown me-2">
+                            <a href="javascript:void(0);" class="btn topbar-link btnFullscreen"><i class="ti ti-minimize"></i></a>
+                        </div>
+                    </div>
+                    <!-- Minimize -->
+
+                    <!-- Language Dropdown -->
+					<div class="header-item">
+						<div class="dropdown me-2">
+                            <button class="topbar-link btn" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
+                                <img src="/static/img/flags/us.svg" alt="Language" height="16">
+                            </button>
+
+							<div class="dropdown-menu dropdown-menu-end p-2">
+                                <!-- item-->
+								<a href="javascript:void(0);" class="dropdown-item">
+									<img src="/static/img/flags/us.svg" alt="" class="me-1" height="16"> <span class="align-middle">English</span>
+								</a>
+
+                                <!-- item-->
+								<a href="javascript:void(0);" class="dropdown-item">
+									<img src="/static/img/flags/de.svg" alt="" class="me-1" height="16"> <span class="align-middle">German</span>
+								</a>
+
+                                <!-- item-->
+								<a href="javascript:void(0);" class="dropdown-item">
+									<img src="/static/img/flags/fr.svg" alt="" class="me-1" height="16"> <span class="align-middle">French</span>
+								</a>
+
+                                <!-- item-->
+								<a href="javascript:void(0);" class="dropdown-item">
+									<img src="/static/img/flags/ae.svg" alt="" class="me-1" height="16"> <span class="align-middle">Arabic</span>
+								</a>
+
+							</div>
+						</div>
+                    </div>
+
+					<!-- Notification Dropdown -->
+                    <div class="header-item">
+						<div class="dropdown me-2">
+
+							<button class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
+								<i class="ti ti-bell-check fs-16 animate-ring"></i>
+								<span class="notification-badge"></span>
+							</button>
+
+							<div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg" style="min-height: 300px;">
+
+								<div class="p-2 border-bottom">
+									<div class="row align-items-center">
+										<div class="col">
+											<h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
+										</div>
+									</div>
+								</div>
+
+								<!-- Notification Body -->
+								<div class="notification-body position-relative z-2 rounded-0" data-simplebar="">
+
+									<!-- Item-->
+									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-1">
+										<div class="d-flex">
+											<div class="me-2 position-relative flex-shrink-0">
+												<img src="/static/img/users/user-01.jpg" class="avatar-md rounded-circle" alt="">
+											</div>
+											<div class="flex-grow-1">
+												<p class="mb-0 fw-medium text-dark">John Doe</p>
+												<p class="mb-1 text-wrap">
+													added new  patient <span class="fw-medium text-dark">appointment booking.</span>
+												</p>
+												<div class="d-flex justify-content-between align-items-center">
+													<span class="fs-12"><i class="ti ti-clock me-1"></i>4 min ago</span>
+													<div class="notification-action d-flex align-items-center float-end gap-2">
+														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
+														<button class="btn rounded-circle p-0" data-dismissible="#notification-1">
+															<i class="ti ti-x"></i>
+														</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<!-- Item-->
+									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-2">
+										<div class="d-flex">
+											<div class="me-2 position-relative flex-shrink-0">
+												<img src="/static/img/users/user-12.jpg" class="avatar-md rounded-circle" alt="">
+											</div>
+											<div class="flex-grow-1">
+												<p class="mb-0 fw-medium text-dark">Thomas William</p>
+												<p class="mb-1 text-wrap">
+                                                    booked a new appointment
+												</p>
+												<div class="d-flex justify-content-between align-items-center">
+													<span class="fs-12"><i class="ti ti-clock me-1"></i>8 min ago</span>
+													<div class="notification-action d-flex align-items-center float-end gap-2">
+														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
+														<button class="btn rounded-circle p-0" data-dismissible="#notification-2">
+															<i class="ti ti-x"></i>
+														</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<!-- Item-->
+									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-3">
+										<div class="d-flex">
+											<div class="me-2 position-relative flex-shrink-0">
+												<img src="/static/img/profiles/avatar-12.jpg" class="avatar-md rounded-circle" alt="">
+											</div>
+											<div class="flex-grow-1">
+												<p class="mb-0 fw-medium text-dark">Sarah Anderson</p>
+												<p class="mb-1 text-wrap">
+                                                    has been successfully booked for <span class="fw-medium text-dark">April 5 at 10:00 AM.</span>
+												</p>
+												<div class="d-flex justify-content-between align-items-center">
+													<span class="fs-12"><i class="ti ti-clock me-1"></i>15 min ago</span>
+													<div class="notification-action d-flex align-items-center float-end gap-2">
+														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
+														<button class="btn rounded-circle p-0" data-dismissible="#notification-3">
+															<i class="ti ti-x"></i>
+														</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<!-- Item-->
+									<div class="dropdown-item notification-item py-3 text-wrap" id="notification-4">
+										<div class="d-flex">
+											<div class="me-2 position-relative flex-shrink-0">
+												<img src="/static/img/profiles/avatar-08.jpg" class="avatar-md rounded-circle" alt="">
+											</div>
+											<div class="flex-grow-1">
+												<p class="mb-0 fw-medium text-dark">Ann McClure</p>
+												<p class="mb-1 text-wrap">
+                                                    cancelled her appointment scheduled for <span class="fw-medium text-dark">February 5, 2024</span>
+												</p>
+												<div class="d-flex justify-content-between align-items-center">
+													<span class="fs-12"><i class="ti ti-clock me-1"></i>20 min ago</span>
+													<div class="notification-action d-flex align-items-center float-end gap-2">
+														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
+														<button class="btn rounded-circle p-0" data-dismissible="#notification-4">
+															<i class="ti ti-x"></i>
+														</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+								</div>
+
+								<!-- View All-->
+								<div class="p-2 rounded-bottom border-top text-center">
+									<a href="notifications.html" class="text-center text-decoration-underline fs-14 mb-0">
+										View All Notifications
+									</a>
+								</div>
+
+							</div>
+						</div>
+					</div>
+
+                    <!-- Light/Dark Mode Button -->
+                    <div class="header-item d-none d-sm-flex me-2">
+                        <button class="topbar-link btn topbar-link" id="light-dark-mode" type="button">
+                            <i class="ti ti-moon fs-16"></i>
+                        </button>
+                    </div>
+
+					<!-- User Dropdown -->
+					<div class="dropdown profile-dropdown d-flex align-items-center justify-content-center">
+                        <a href="javascript:void(0);" class="topbar-link dropdown-toggle drop-arrow-none position-relative" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false">
+                            <img src="/static/img/users/avatar-5.jpg" width="32" class="rounded-2 d-flex" alt="user-image">
+                            <span class="online text-success"><i class="ti ti-circle-filled d-flex bg-white rounded-circle border border-1 border-white"></i></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
+
+                            <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
+                                <img src="/static/img/users/avatar-5.jpg" class="rounded-circle" width="42" height="42" alt="">
+                                <div class="ms-2">
+                                    <p class="fw-medium text-dark mb-0">Jimmy Anderson</p>
+                                    <span class="d-block fs-13">Administrator</span>
+                                </div>
+                            </div>
+
+                            <!-- Item-->
+                            <a href="general-settings.html" class="dropdown-item">
+                                <i class="ti ti-user-circle me-1 align-middle"></i>
+                                <span class="align-middle">Profile Settings</span>
+                            </a>
+
+                            <!-- item -->
+                            <div class="form-check form-switch form-check-reverse d-flex align-items-center justify-content-between dropdown-item mb-0">
+                                <label class="form-check-label" for="notify"><i class="ti ti-bell"></i>Notifications</label>
+                                <input class="form-check-input me-0" type="checkbox" role="switch" id="notify">
+                            </div>
+
+                            <!-- Item-->
+                            <a href="javascript:void(0);" class="dropdown-item">
+                                <i class="ti ti-help-circle me-1 align-middle"></i>
+                                <span class="align-middle">Help & Support</span>
+                            </a>
+
+                            <!-- Item-->
+                            <a href="general-settings.html" class="dropdown-item">
+                                <i class="ti ti-settings me-1 align-middle"></i>
+                                <span class="align-middle">Settings</span>
+                            </a>
+
+                            <!-- Item-->
+                            <div class="pt-2 mt-2 border-top">
+                                <a href="login.html" class="dropdown-item text-danger">
+                                    <i class="ti ti-logout me-1 fs-17 align-middle"></i>
+                                    <span class="align-middle">Sign Out</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </header>
+        <!-- Topbar End -->
+
+        <!-- Search Modal -->
+        <div class="modal fade" id="searchModal">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-transparent">
+                    <div class="card shadow-none mb-0">
+                        <div class="px-3 py-2 d-flex flex-row align-items-center" id="search-top">
+                            <i class="ti ti-search fs-22"></i>
+                            <input type="search" class="form-control border-0" placeholder="Search">
+                            <button type="button" class="btn p-0" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-x fs-22"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidenav Menu Start -->
+        <div class="sidebar" id="sidebar">
+
+            <!-- Start Logo -->
+            <div class="sidebar-logo">
+                <div>
+                    <!-- Logo Normal -->
+                    <a href="index.html" class="logo logo-normal">
+                        <img src="/static/img/logo.svg" alt="Logo">
+                    </a>
+
+                    <!-- Logo Small -->
+                    <a href="index.html" class="logo-small">
+                        <img src="/static/img/logo-small.svg" alt="Logo">
+                    </a>
+
+                    <!-- Logo Dark -->
+                    <a href="index.html" class="dark-logo">
+                        <img src="/static/img/logo-white.svg" alt="Logo">
+                    </a>
+                </div>
+                <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn">
+                    <i class="ti ti-arrow-bar-to-left"></i>
+                </button>
+
+                <!-- Sidebar Menu Close -->
+                <button class="sidebar-close">
+                    <i class="ti ti-x align-middle"></i>
+                </button>
+            </div>
+            <!-- End Logo -->
+
+            <!-- Sidenav Menu -->
+            <div class="sidebar-inner" data-simplebar="">
+                <div id="sidebar-menu" class="sidebar-menu">
+                    <ul>
+                        <li class="menu-title"><span>MAIN</span></li>
+                        <li>
+                            <ul>
+                                <li>
+                                    <a href="index.html">
+                                        <i class="ti ti-layout-board"></i><span>Dashboard</span>
+                                    </a>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-apps"></i><span>Applications</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="chat.html">Chat</a></li>
+                                        <li class="submenu submenu-two">
+                                            <a href="#">Calls<span class="menu-arrow inside-submenu"></span></a>
+                                            <ul>
+                                                <li><a href="voice-call.html">Voice Call</a></li>
+                                                <li><a href="video-call.html">Video Call</a></li>
+                                                <li><a href="outgoing-call.html">Outgoing Call</a></li>
+                                                <li><a href="incoming-call.html">Incoming Call</a></li>
+                                                <li><a href="call-history.html">Call History</a></li>
+                                            </ul>
+                                        </li>
+                                        <li><a href="calendar.html">Calendar</a></li>
+                                        <li><a href="email.html">Email</a></li>
+                                        <li class="submenu submenu-two">
+                                            <a href="#">Invoices<span class="menu-arrow inside-submenu"></span></a>
+                                            <ul>
+                                                <li><a href="invoice.html">Invoices</a></li>
+                                                <li><a href="invoice-details.html">Invoice Details</a></li>
+                                            </ul>
+                                        </li>
+                                        <li><a href="todo.html">To Do</a></li>
+                                        <li><a href="notes.html">Notes</a></li>
+                                        <li><a href="kanban-view.html">Kanban Board</a></li>
+                                        <li><a href="file-manager.html">File Manager</a></li>
+                                        <li><a href="social-feed.html">Social Feed</a></li>
+                                        <li><a href="search-list.html">Search Result</a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-users"></i><span>Patients</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="all-patients.html">All Patients</a></li>
+                                        <li><a href="patient-details.html">Patient Details</a></li>
+                                        <li><a href="patient-type.html">Patient Type</a></li>
+                                        <li><a href="add-patient.html">Add Patient</a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-stethoscope"></i><span>Doctors</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="all-doctors.html">All Doctors</a></li>
+                                        <li><a href="doctor-details.html">Doctor Details</a></li>
+                                        <li><a href="departments.html">Departments</a></li>
+                                        <li><a href="specializations.html">Specializations</a></li>
+                                        <li><a href="add-doctor.html">Add Doctor</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="visits.html">
+                                        <i class="ti ti-e-passport"></i><span>Visits</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="requests.html">
+                                        <i class="ti ti-calendar-question"></i><span>Requests</span>
+                                    </a>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-calendar-time"></i><span>Appointments</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="all-appointments.html">All Appointments</a></li>
+                                        <li><a href="transactions.html">Transactions</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="laboratory.html">
+                                        <i class="ti ti-test-pipe"></i><span>Laboratory</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="messages.html">
+                                        <i class="ti ti-message-circle-2"></i><span>Messages</span><span class="count">5</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="contacts.html">
+                                        <i class="ti ti-user-star"></i><span>Contacts</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="notifications.html">
+                                        <i class="ti ti-bell"></i><span>Notifications</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title"><span>MEDICAL</span></li>
+                        <li>
+                            <ul>
+                                <li>
+                                    <a href="lab-results.html">
+                                        <i class="ti ti-test-pipe-2"></i><span>Lab Results</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="medical-records.html">
+                                        <i class="ti ti-file-text"></i><span>Medical Records</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title"><span>MANAGE</span></li>
+                        <li>
+                            <ul>
+                                <li>
+                                    <a href="pharmacy.html">
+                                        <i class="ti ti-prescription"></i><span>Pharmacy</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="staffs.html">
+                                        <i class="ti ti-users-group"></i><span>Staffs</span>
+                                    </a>
+                                </li>
+                                 <li>
+                                    <a href="general-settings.html">
+                                        <i class="ti ti-settings"></i><span>Settings</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title"><span>LAYOUTS</span></li>
+                        <li>
+                            <ul>
+                                <li>
+                                    <a href="layout-mini.html">
+                                        <i class="ti ti-layout-navbar"></i><span>Mini</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="layout-hoverview.html">
+                                        <i class="ti ti-details"></i><span>Hover View</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="layout-hidden.html">
+                                        <i class="ti ti-layout-kanban"></i><span>Hidden</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="layout-fullwidth.html">
+                                        <i class="ti ti-layout-sidebar"></i><span>Full Width</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="layout-rtl.html">
+                                        <i class="ti ti-text-direction-rtl"></i><span>RTL</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="layout-dark.html">
+                                        <i class="ti ti-moon"></i><span>Dark</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title"><span>PAGES</span></li>
+                        <li>
+                            <ul>
+                                <li>
+                                    <a href="starter-page.html">
+                                        <i class="ti ti-file"></i><span>Starter Page</span>
+                                    </a>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-lock-square-rounded"></i><span>Authentication</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="login.html">Login</a></li>
+                                        <li><a href="sign-up.html">Sign Up</a></li>
+                                        <li><a href="forgot-password.html">Forgot Password</a></li>
+                                        <li><a href="change-password.html">Change Password</a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-face-id-error"></i><span>Error Pages</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="error-404.html">Error 404</a></li>
+                                        <li><a href="error-500.html">Error 500</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="coming-soon.html">
+                                        <i class="ti ti-hourglass-low"></i><span>Coming Soon</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="under-maintenance.html">
+                                        <i class="ti ti-info-triangle"></i><span>Under Maintenance</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="lock-screen.html">
+                                        <i class="ti ti-lock-access"></i><span>Lock Screen</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="privacy-policy.html">
+                                        <i class="ti ti-shield-check"></i><span>Privacy Policy</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="terms-and-conditions.html">
+                                        <i class="ti ti-file-check"></i><span>Terms & Conditions</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title"><span>UI Interface</span></li>
+                        <li>
+                            <ul>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-hierarchy"></i><span>Base UI</span><span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="ui-accordion.html">Accordion</a></li>
+                                        <li><a href="ui-alerts.html">Alerts</a></li>
+                                        <li><a href="ui-avatar.html">Avatar</a></li>
+                                        <li><a href="ui-badges.html">Badges</a></li>
+                                        <li><a href="ui-breadcrumb.html">Breadcrumb</a></li>
+                                        <li><a href="ui-buttons.html">Buttons</a></li>
+                                        <li><a href="ui-buttons-group.html">Button Group</a></li>
+                                        <li><a href="ui-cards.html">Card</a></li>
+                                        <li><a href="ui-carousel.html">Carousel</a></li>
+                                        <li><a href="ui-collapse.html">Collapse</a></li>
+                                        <li><a href="ui-dropdowns.html">Dropdowns</a></li>
+                                        <li><a href="ui-ratio.html">Ratio</a></li>
+                                        <li><a href="ui-grid.html">Grid</a></li>
+                                        <li><a href="ui-images.html">Images</a></li>
+                                        <li><a href="ui-links.html">Links</a></li>
+                                        <li><a href="ui-list-group.html">List Group</a></li>
+                                        <li><a href="ui-modals.html">Modals</a></li>
+                                        <li><a href="ui-offcanvas.html">Offcanvas</a></li>
+                                        <li><a href="ui-pagination.html">Pagination</a></li>
+                                        <li><a href="ui-placeholders.html">Placeholders</a></li>
+                                        <li><a href="ui-popovers.html">Popovers</a></li>
+                                        <li><a href="ui-progress.html">Progress</a></li>
+                                        <li><a href="ui-scrollspy.html">Scrollspy</a></li>
+                                        <li><a href="ui-spinner.html">Spinner</a></li>
+                                        <li><a href="ui-nav-tabs.html">Tabs</a></li>
+                                        <li><a href="ui-toasts.html">Toasts</a></li>
+                                        <li><a href="ui-tooltips.html">Tooltips</a></li>
+                                        <li><a href="ui-typography.html">Typography</a></li>
+                                        <li><a href="ui-utilities.html">Utilities</a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-whirl"></i><span>Advanced UI</span><span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="ui-dragula.html">Dragula</a></li>
+                                        <li><a href="ui-clipboard.html">Clipboard</a></li>
+                                        <li><a href="ui-rangeslider.html">Range Slider</a></li>
+                                        <li><a href="ui-sweetalerts.html">Sweet Alerts</a></li>
+                                        <li><a href="ui-lightbox.html">Lightbox</a></li>
+                                        <li><a href="ui-rating.html">Rating</a></li>
+                                        <li><a href="ui-scrollbar.html">Scrollbar</a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-forms"></i><span>Forms</span><span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li class="submenu submenu-two">
+                                            <a href="javascript:void(0);">Form Elements<span class="menu-arrow inside-submenu"></span></a>
+                                            <ul>
+                                                <li><a href="form-basic-inputs.html">Basic Inputs</a></li>
+                                                <li><a href="form-checkbox-radios.html">Checkbox & Radios</a></li>
+                                                <li><a href="form-input-groups.html">Input Groups</a></li>
+                                                <li><a href="form-grid-gutters.html">Grid & Gutters</a></li>
+                                                <li><a href="form-mask.html">Input Masks</a></li>
+                                                <li><a href="form-fileupload.html">File Uploads</a></li>
+                                            </ul>
+                                        </li>
+                                        <li class="submenu submenu-two">
+                                            <a href="javascript:void(0);">Layouts<span class="menu-arrow inside-submenu"></span></a>
+                                            <ul>
+                                                <li><a href="form-horizontal.html">Horizontal Form</a></li>
+                                                <li><a href="form-vertical.html">Vertical Form</a></li>
+                                                <li><a href="form-floating-labels.html">Floating Labels</a></li>
+                                            </ul>
+                                        </li>
+                                        <li><a href="form-validation.html">Form Validation</a></li>
+                                        <li><a href="form-select.html">Form Select</a></li>
+                                        <li><a href="form-wizard.html">Form Wizard</a></li>
+                                        <li><a href="form-pickers.html">Form Picker</a></li>
+                                        <li><a href="form-editors.html">Form Editors</a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-table"></i><span>Tables</span><span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="tables-basic.html">Basic Tables </a></li>
+                                        <li><a href="data-tables.html">Data Table </a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-chart-pie-3"></i><span>Charts</span><span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="chart-apex.html">Apex Charts</a></li>
+                                        <li><a href="chart-c3.html">Chart C3</a></li>
+                                        <li><a href="chart-js.html">Chart Js</a></li>
+                                        <li><a href="chart-morris.html">Morris Charts</a></li>
+                                        <li><a href="chart-flot.html">Flot Charts</a></li>
+                                        <li><a href="chart-peity.html">Peity Charts</a></li>
+                                    </ul>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-icons"></i><span>Icons</span><span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="icon-fontawesome.html">Fontawesome Icons</a></li>
+                                        <li><a href="icon-tabler.html">Tabler Icons</a></li>
+                                        <li><a href="icon-bootstrap.html">Bootstrap Icons</a></li>
+                                        <li><a href="icon-remix.html">Remix Icons</a></li>
+                                        <li><a href="icon-feather.html">Feather Icons</a></li>
+                                        <li><a href="icon-ionic.html">Ionic Icons</a></li>
+                                        <li><a href="icon-material.html">Material Icons</a></li>
+                                        <li><a href="icon-pe7.html">Pe7 Icons</a></li>
+                                        <li><a href="icon-simpleline.html">Simpleline Icons</a></li>
+                                        <li><a href="icon-themify.html">Themify Icons</a></li>
+                                        <li><a href="icon-weather.html">Weather Icons</a></li>
+                                        <li><a href="icon-typicon.html">Typicon Icons</a></li>
+                                        <li><a href="icon-flag.html">Flag Icons</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a href="widgets.html">
+                                        <i class="ti ti-components"></i><span>Widgets</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="menu-title"><span>HELP</span></li>
+                        <li>
+                            <ul>
+                                <li>
+                                    <a href="javascript:void(0);"><i class="ti ti-file-type-doc"></i><span>Documentation</span></a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0);"><i class="ti ti-git-compare"></i><span>Changelog</span></a>
+                                </li>
+                                <li class="submenu">
+                                    <a href="javascript:void(0);">
+                                        <i class="ti ti-menu-order"></i><span>Multi Level</span>
+                                        <span class="menu-arrow"></span>
+                                    </a>
+                                    <ul>
+                                        <li><a href="javascript:void(0);">Multilevel 1</a></li>
+                                        <li class="submenu submenu-two">
+                                            <a href="javascript:void(0);">Multilevel 2<span class="menu-arrow inside-submenu"></span></a>
+                                            <ul>
+                                                <li><a href="javascript:void(0);">Multilevel 2.1</a></li>
+                                                <li class="submenu submenu-two submenu-three">
+                                                    <a href="javascript:void(0);">Multilevel 2.2<span class="menu-arrow inside-submenu inside-submenu-two"></span></a>
+                                                    <ul>
+                                                        <li><a href="javascript:void(0);">Multilevel 2.2.1</a></li>
+                                                        <li><a href="javascript:void(0);">Multilevel 2.2.2</a></li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li><a href="javascript:void(0);">Multilevel 3</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        <!-- Sidenav Menu End -->
+
+        <!-- ========================
+			Start Page Content
+		========================= -->
+
+        <div class="page-wrapper">
+
+            <!-- Start Content -->
+            <div class="content">
+
+                <!-- Page Header -->
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
+                    <div class="breadcrumb-arrow">
+                        <h4 class="mb-1">Doctor</h4>
+                        <div class="text-end">
+                            <ol class="breadcrumb m-0 py-0">
+                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                                <li class="breadcrumb-item active">Edit Doctor</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <a href="all-doctors.html" class="fw-medium d-flex align-items-center"><i class="ti ti-arrow-left me-1"></i>Back to Doctors</a>
+                </div>
+				<!-- End Page Header -->
+
+                <!-- row start -->
+                <div class="row doctor-add">
+                    <div class="col-12">
+                        <div class="nav nav-pills nav-pills-outline gap-2 mb-4" id="doctor-pills-tab">
+                            <button class="nav-link fw-semibold border active" id="v-pills-info-tab">Basic Info</button>
+                            <button class="nav-link fw-semibold border" id="v-pills-vituals-tab">Extra Info</button>
+                            <button class="nav-link fw-semibold border" id="v-pills-complaints-tab">Availability</button>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12">
+                        <div class="patient-form-wizard flex-fill" id="v-pills-tabContent">
+
+                            <!-- Basic information -->
+                             <div class="form-wizard-content active" id="v-pills-info">
+                                <form action="all-doctors.html">
+                                    <div class="accordion accordion-bordered" id="accordionExample">
+
+                                        <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingOne">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                    Basic Information
+                                                </button>
+                                            </h5>
+                                            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                                                <div class="accordion-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Profile Image</label>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar avatar-xxxl border border-dashed me-3 flex-shrink-0">
+                                                                <div class="position-relative d-flex align-items-center">
+                                                                    <img src="/static/img/doctors/doctor-01.jpg" class="avatar avatar-xxl" alt="img">
+                                                                    <a href="javascript:void(0);" class="fs-12 text-danger rounded-circle p-1 trash-top d-flex align-items-center justify-content-center"><i class="ti ti-trash"></i></a>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-inline-flex flex-column align-items-start">
+                                                                <div class="drag-upload-btn btn btn-sm btn-dark position-relative mb-2">
+                                                                    <i class="ti ti-photo me-1"></i>Upload
+                                                                    <input type="file" class="form-control image-sign" multiple="">
+                                                                </div>
+                                                                <span>JPG or PNG format, not exceeding 5MB.</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">ID</label>
+                                                                <input type="text" class="form-control" value="#DR0005" disabled="">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">First Name<span class="text-danger ms-1">*</span></label>
+                                                                <input type="text" class="form-control" value="Dr. Andrew Clark">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Middle Name<span class="text-danger ms-1">*</span></label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Last Name<span class="text-danger ms-1">*</span></label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Department<span class="text-danger ms-1">*</span></label>
+                                                                <select class="select">
+                                                                    <option>Select</option>
+                                                                    <option selected="">Anaesthesiology</option>
+                                                                    <option>Dental Surgery</option>
+                                                                    <option>Dermatology</option>
+                                                                    <option>ENT Surgery</option>
+                                                                    <option>General Medicine</option>
+                                                                    <option>Ophthalmology</option>
+                                                                    <option>Orthopaedics</option>
+                                                                    <option>Paediatrics</option>
+                                                                    <option>Radiology</option>
+                                                                    <option>Cardiology</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Specialist<span class="text-danger ms-1">*</span></label>
+                                                                <select class="select">
+                                                                    <option>Select</option>
+                                                                    <option selected="">Nurse</option>
+                                                                    <option>Compounder</option>
+                                                                    <option>Purchase Officer</option>
+                                                                    <option>Supervisor</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Fees ($)<span class="text-danger ms-1">*</span></label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Phone Number<span class="text-danger ms-1">*</span></label>
+                                                                <input type="tel" class="form-control" value="+1 75964 25493">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Email Address<span class="text-danger ms-1">*</span></label>
+                                                                <input type="email" class="form-control" value="andrew@example.com">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">DOB<span class="text-danger ms-1">*</span></label>
+                                                                <div class="input-group w-auto input-group-flat">
+                                                                    <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                                                    <span class="input-group-text">
+                                                                        <i class="ti ti-calendar"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <div class="mb-3">
+                                                                <label class="form-label d-block">Gender</label>
+                                                                <div class="btn-group w-100" role="group" aria-label="Basic radio toggle button group">
+                                                                    <input type="radio" class="btn-check" name="btnradio" id="btnradio1" checked="">
+                                                                    <label class="btn btn-outline-light" for="btnradio1">Male</label>
+
+                                                                    <input type="radio" class="btn-check" name="btnradio" id="btnradio2">
+                                                                    <label class="btn btn-outline-light" for="btnradio2">Female</label>
+
+                                                                    <input type="radio" class="btn-check" name="btnradio" id="btnradio3">
+                                                                    <label class="btn btn-outline-light" for="btnradio3">Others</label>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Registration Number<span class="text-danger ms-1">*</span></label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Known Languages<span class="text-danger ms-1">*</span></label>
+                                                                <select class="select">
+                                                                    <option>Select</option>
+                                                                    <option selected="">English</option>
+                                                                    <option>Spanish</option>
+                                                                    <option>Arabic</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-12">
+                                                            <div class="mb-0">
+                                                                <label class="form-label">About</label>
+                                                                <textarea class="form-control" rows="3">“Highly motivated and experienced doctor with a passion for providing excellent care to patients. Experienced in a wide variety of medical settings, with particular expertise in diagnostics, primary care and emergency medicine. Skilled in using the latest technology to streamline patient care. Committed to delivering compassionate, personalized care to each and every patient.”</textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                         <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingTwo">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                                Address Information
+                                                </button>
+                                            </h5>
+                                            <div id="collapseTwo" class="accordion-collapse collapse show" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                                                <div class="accordion-body pb-0">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Address<span class="text-danger ms-1">*</span></label>
+                                                                <input type="text" class="form-control" value="8/15 Francis street, UK 454787">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Country<span class="text-danger ms-1">*</span></label>
+                                                                <select class="select">
+                                                                    <option>Select</option>
+                                                                    <option selected="">United States</option>
+                                                                    <option>India</option>
+                                                                    <option>Canada</option>
+                                                                    <option>Germany</option>
+                                                                    <option>Brazil</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">City<span class="text-danger ms-1">*</span></label>
+                                                                <select class="select">
+                                                                    <option>Select</option>
+                                                                    <option selected="">Los Angeles</option>
+                                                                    <option>San Francisco</option>
+                                                                    <option>San Jose</option>
+                                                                    <option>Fresno</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">State<span class="text-danger ms-1">*</span></label>
+                                                                <select class="select">
+                                                                    <option>Select</option>
+                                                                    <option selected="">California</option>
+                                                                    <option>Texas</option>
+                                                                    <option>New York</option>
+                                                                    <option>Florida</option>
+                                                                    <option>Illinois</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Pincode<span class="text-danger ms-1">*</span></label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end flex-wrap align-items-center gap-2">
+                                        <button type="submit" class="btn btn-light">Cancel</button>
+                                        <button type="button" class="btn btn-primary next-tab-btn" id="save-basic-info">Save & Next</button>
+                                    </div>
+                                </form>
+                             </div>
+
+                            <!-- Extra info -->
+                            <div class="form-wizard-content" id="v-pills-vituals">
+                                <form>
+                                    <div class="accordion accordion-bordered" id="accordionExample2">
+
+                                        <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingThree">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                                                    Educational Details
+                                                </button>
+                                            </h5>
+                                            <div id="collapseThree" class="accordion-collapse collapse show" aria-labelledby="headingThree" data-bs-parent="#accordionExample2">
+                                                <div class="accordion-body">
+                                                    <div class="diagnosis-info">
+                                                        <div class="row diagnosis_details">
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Institute Name<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Qualification<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Year<span class="text-danger ms-1">*</span></label>
+                                                                    <div class="input-group w-auto input-group-flat">
+                                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                                                        <span class="input-group-text">
+                                                                            <i class="ti ti-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="add-education-details">
+                                                        <a href="javascript:void(0);" class="add-education-details link-primary fw-medium">
+															<i class="ti ti-plus me-1 "></i>Add New
+														</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingFour">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+                                                 Experience
+                                                </button>
+                                            </h5>
+                                            <div id="collapseFour" class="accordion-collapse collapse show" aria-labelledby="headingFour" data-bs-parent="#accordionExample2">
+                                                <div class="accordion-body">
+                                                    <div class="experience-info">
+                                                        <div class="row experience_details">
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Hospital Name<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">No of Years<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Year<span class="text-danger ms-1">*</span></label>
+                                                                    <div class="input-group w-auto input-group-flat">
+                                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                                                        <span class="input-group-text">
+                                                                            <i class="ti ti-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="add-experience">
+                                                        <a href="javascript:void(0);" class="add-experience link-primary fw-medium">
+															<i class="ti ti-plus me-1 "></i>Add New
+														</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingFive">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="true" aria-controls="collapseFive">
+                                                 Social Media
+                                                </button>
+                                            </h5>
+                                            <div id="collapseFive" class="accordion-collapse collapse show" aria-labelledby="headingFive" data-bs-parent="#accordionExample2">
+                                                <div class="accordion-body pb-0">
+                                                    <div class="row">
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Facebook</label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Twitter</label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Linkedin</label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-3 col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Instagram</label>
+                                                                <input type="text" class="form-control">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingSix">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="true" aria-controls="collapseSix">
+                                                 Membership
+                                                </button>
+                                            </h5>
+                                            <div id="collapseSix" class="accordion-collapse collapse show" aria-labelledby="headingSix" data-bs-parent="#accordionExample2">
+                                                <div class="accordion-body">
+                                                    <div class="membership-info">
+                                                        <div class="row membership_details">
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Title<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Year<span class="text-danger ms-1">*</span></label>
+                                                                    <div class="input-group w-auto input-group-flat">
+                                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                                                        <span class="input-group-text">
+                                                                            <i class="ti ti-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Description<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="add-membership">
+                                                        <a href="javascript:void(0);" class="add-membership link-primary fw-medium">
+															<i class="ti ti-plus me-1 "></i>Add New
+														</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingSeven">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven" aria-expanded="true" aria-controls="collapseSeven">
+                                                 Awards
+                                                </button>
+                                            </h5>
+                                            <div id="collapseSeven" class="accordion-collapse collapse show" aria-labelledby="headingSeven" data-bs-parent="#accordionExample2">
+                                                <div class="accordion-body">
+                                                    <div class="awards-info">
+                                                        <div class="row awards_details">
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Award Name<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Year<span class="text-danger ms-1">*</span></label>
+                                                                    <div class="input-group w-auto input-group-flat">
+                                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                                                        <span class="input-group-text">
+                                                                            <i class="ti ti-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-xl-4 col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Description<span class="text-danger ms-1">*</span></label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="add-awards">
+                                                        <a href="javascript:void(0);" class="add-awards link-primary fw-medium">
+															<i class="ti ti-plus me-1 "></i>Add New
+														</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="d-flex justify-content-end flex-wrap align-items-center gap-2">
+                                        <button type="submit" class="btn btn-light" id="backbtn">Back</button>
+                                        <button type="button" class="btn btn-primary" id="save-vitals">Save & Next</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Availability -->
+                            <div class="form-wizard-content" id="v-pills-complaints">
+                                <form action="all-doctors.html">
+                                    <div class="accordion accordion-bordered" id="accordionExample3">
+
+                                        <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingEight">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight" aria-expanded="true" aria-controls="collapseEight">
+                                                    Regular Weekly Availability
+                                                </button>
+                                            </h5>
+                                            <div id="collapseEight" class="accordion-collapse collapse show" aria-labelledby="headingEight" data-bs-parent="#accordionExample3">
+                                                <div class="accordion-body">
+                                                    <div class="text-end mb-3">
+                                                        <a href="javascript:void(0);" class="btn btn-primary fw-normal" data-bs-toggle="modal" data-bs-target="#add_availability_modal"><i class="ti ti-plus me-1"></i>Add Availability</a>
+                                                    </div>
+                                                    <!-- table start -->
+                                                    <div class="table-responsive table-nowrap">
+                                                        <table class="table border mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>From</th>
+                                                                    <th>To</th>
+                                                                    <th>Recurring</th>
+                                                                    <th>Description</th>
+                                                                    <th></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>29 Mar 2025</td>
+                                                                    <td>04 Apr 2025</td>
+                                                                    <td>1 Week</td>
+                                                                    <td>For One Week</td>
+                                                                    <td class="text-end">
+                                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                                                        <ul class="dropdown-menu p-2">
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_availability"><i class="ti ti-edit me-1"></i>Edit</a>
+                                                                            </li>
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>05 Mar 2025</td>
+                                                                    <td>09 Apr 2025</td>
+                                                                    <td>-</td>
+                                                                    <td>Peak Hour Season</td>
+                                                                    <td class="text-end">
+                                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                                                        <ul class="dropdown-menu p-2">
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_availability"><i class="ti ti-edit me-1"></i>Edit</a>
+                                                                            </li>
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>11 Mar 2025</td>
+                                                                    <td>16 Apr 2025</td>
+                                                                    <td>-</td>
+                                                                    <td>Change All Days</td>
+                                                                    <td class="text-end">
+                                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                                                        <ul class="dropdown-menu p-2">
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_availability"><i class="ti ti-edit me-1"></i>Edit</a>
+                                                                            </li>
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>17 Mar 2025</td>
+                                                                    <td>22 Apr 2025</td>
+                                                                    <td>2 Week</td>
+                                                                    <td>Hard Visitor Week</td>
+                                                                    <td class="text-end">
+                                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                                                        <ul class="dropdown-menu p-2">
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_availability"><i class="ti ti-edit me-1"></i>Edit</a>
+                                                                            </li>
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <!-- table start -->
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                         <!-- accordion item -->
+                                        <div class="accordion-item mb-3">
+                                            <h5 class="accordion-header" id="headingNine">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNine" aria-expanded="true" aria-controls="collapseNine">
+                                                Availability Overrides
+                                                </button>
+                                            </h5>
+                                            <div id="collapseNine" class="accordion-collapse collapse show" aria-labelledby="headingNine" data-bs-parent="#accordionExample3">
+                                                <div class="accordion-body">
+                                                    <div class="text-end mb-3">
+                                                        <a href="javascript:void(0);" class="btn btn-primary fw-normal" data-bs-toggle="modal" data-bs-target="#add_availability_override"><i class="ti ti-plus me-1"></i>Add Availability Override</a>
+                                                    </div>
+                                                    <!-- table start -->
+                                                    <div class="table-responsive table-nowrap">
+                                                        <table class="table border mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>From</th>
+                                                                    <th>To</th>
+                                                                    <th>Clients Can Book Online</th>
+                                                                    <th>Available?</th>
+                                                                    <th></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>Sat 29 Apr 2025 1:30 PM</td>
+                                                                    <td>Mon 31 Apr 2025 2:30 PM</td>
+                                                                    <td>No</td>
+                                                                    <td>Yes</td>
+                                                                    <td class="text-end">
+                                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                                                        <ul class="dropdown-menu p-2">
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_availability_override"><i class="ti ti-edit me-1"></i>Edit</a>
+                                                                            </li>
+                                                                            <li>
+                                                                                <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <!-- table start -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end flex-wrap align-items-center gap-2">
+                                        <button type="button" class="btn btn-light" id="backButton">Back</button>
+                                        <button type="submit" class="btn btn-primary">Save Doctor</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- row end -->
+
+            </div>
+            <!-- End Content -->
+
+            <!-- Start Footer -->
+            <footer class="footer d-block d-md-flex justify-content-between text-md-start text-center">
+               <p class="mb-0 text-dark"><script type="12fcdddf76fbb176a579d225-text/javascript">document.write(new Date().getFullYear())</script> &copy; <a href="javascript:void(0);" class="link-primary">DreamsEMR</a> All Rights Reserved</p>
+               <p class="mb-0 text-dark">Design & Developed by Dreams Technologies</p>
+            </footer>
+            <!-- End Footer -->
+
+        </div>
+
+        <!-- ========================
+			End Page Content
+		========================= -->
+
+    </div>
+    <!-- End Wrapper -->
+
+    <!-- Start add Modal -->
+    <div id="add_availability_modal" class="modal fade">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate">Weekly Availability Configuration</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+                </div>
+                <form action="add-doctor.html">
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-xl-4 col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">From</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">To</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <label class="form-label">Recurring</label>
+                                <select class="select">
+                                    <option>Select</option>
+                                    <option>1 Week</option>
+                                    <option>2 Week</option>
+                                    <option>3 Week</option>
+                                    <option>4 Week</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-xl-12">
+                                <h6 class="fw-semibold mb-3">Add Availability</h6>
+                                <label class="form-label">Select Available Days<span class="ms-1 text-danger">*</span></label>
+                            <ul class="nav nav-pills nav-pills-outline schedule-tab mb-3 gap-2" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto active" data-bs-toggle="pill" data-bs-target="#schedule-1" type="button" role="tab" aria-selected="true">Monday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedule-2" type="button" role="tab" aria-selected="false" tabindex="-1">Tuesday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedule-3" type="button" role="tab" aria-selected="false" tabindex="-1">Wednesday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedule-4" type="button" role="tab" aria-selected="false" tabindex="-1">Thursday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedule-5" type="button" role="tab" aria-selected="false" tabindex="-1">Friday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedule-6" type="button" role="tab" aria-selected="false" tabindex="-1">Saturday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedule-7" type="button" role="tab" aria-selected="false" tabindex="-1">Sunday</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content" id="pills-tabContent">
+                                    <div class="tab-pane fade active show" id="schedule-1" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheck">
+                                                            <label class="form-check-label" for="switchCheck">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedule-2" role="tabpanel">
+                                        <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheck2">
+                                                            <label class="form-check-label" for="switchCheck2">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedule-3" role="tabpanel">
+                                        <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheck3">
+                                                            <label class="form-check-label" for="switchCheck3">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedule-4" role="tabpanel">
+                                        <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheck4">
+                                                            <label class="form-check-label" for="switchCheck4">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedule-5" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheck5">
+                                                            <label class="form-check-label" for="switchCheck5">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedule-6" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheck6">
+                                                            <label class="form-check-label" for="switchCheck6">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedule-7" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchCheck7">
+                                                            <label class="form-check-label" for="switchCheck7">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer d-flex align-items-center gap-1">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Availability</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End add Modal -->
+
+
+    <!-- Start add Modal -->
+    <div id="edit_availability" class="modal fade">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate">Weekly Availability Configuration</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+                </div>
+                <form action="edit-doctor.html">
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-xl-4 col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">From</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y" value="29 Mar, 2025">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">To</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y" value="04 Apr, 2025">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <label class="form-label">Recurring</label>
+                                <select class="select">
+                                    <option>Select</option>
+                                    <option selected="">1 Week</option>
+                                    <option>2 Week</option>
+                                    <option>3 Week</option>
+                                    <option>4 Week</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" rows="3">For One Week	</textarea>
+                                </div>
+                            </div>
+                            <div class="col-xl-12">
+                                <h6 class="fw-semibold mb-3">Add Availability</h6>
+                                <label class="form-label">Select Available Days<span class="ms-1 text-danger">*</span></label>
+                            <ul class="nav nav-pills nav-pills-outline schedule-tab mb-3 gap-2" id="pills-tabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto active" data-bs-toggle="pill" data-bs-target="#schedules-1" type="button" role="tab" aria-selected="true">Monday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedules-2" type="button" role="tab" aria-selected="false" tabindex="-1">Tuesday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedules-3" type="button" role="tab" aria-selected="false" tabindex="-1">Wednesday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedules-4" type="button" role="tab" aria-selected="false" tabindex="-1">Thursday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedules-5" type="button" role="tab" aria-selected="false" tabindex="-1">Friday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedules-6" type="button" role="tab" aria-selected="false" tabindex="-1">Saturday</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link btn btn-sm btn-icon border p-2 d-flex align-items-center justify-content-center w-auto" data-bs-toggle="pill" data-bs-target="#schedules-7" type="button" role="tab" aria-selected="false" tabindex="-1">Sunday</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content" id="pills-tabContents">
+                                    <div class="tab-pane fade active show" id="schedules-1" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchChecks">
+                                                            <label class="form-check-label" for="switchChecks">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedules-2" role="tabpanel">
+                                        <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchChecks2">
+                                                            <label class="form-check-label" for="switchChecks2">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedules-3" role="tabpanel">
+                                        <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchChecks3">
+                                                            <label class="form-check-label" for="switchChecks3">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedules-4" role="tabpanel">
+                                        <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchChecks4">
+                                                            <label class="form-check-label" for="switchChecks4">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedules-5" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchChecks5">
+                                                            <label class="form-check-label" for="switchChecks5">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedules-6" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchChecks6">
+                                                            <label class="form-check-label" for="switchChecks6">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="schedules-7" role="tabpanel">
+                                    <div class="p-3 pb-lg-0 rounded border">
+                                            <div class="add-schedule-list">
+                                                <div class="row gx-3 align-items-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="row gx-3">
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">From</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">To</label>
+                                                                    <div class="input-icon-end position-relative">
+                                                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                                                        <span class="input-icon-addon">
+                                                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4 d-flex align-items-center">
+                                                        <div class="form-check form-switch w-100">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="switchChecks7">
+                                                            <label class="form-check-label" for="switchChecks7">Online Bookings</label>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0);" class="btn btn-sm add-schedule-btn p-1 bg-light btn-icon text-dark rounded-circle d-flex align-items-center justify-content-center">
+                                                                <i class="ti ti-plus fs-16"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer d-flex align-items-center gap-1">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Availability</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End add Modal -->
+
+    <!-- Start add Modal -->
+    <div id="add_availability_override" class="modal fade">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate">Availability Override Configuration</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+                </div>
+                <form action="add-doctor.html">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="form-label">Available</label>
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="form-check">
+                                        <input type="radio" id="customRadio1" name="customRadio" class="form-check-input">
+                                        <label class="form-check-label" for="customRadio1">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="radio" id="customRadio2" name="customRadio" class="form-check-input">
+                                        <label class="form-check-label" for="customRadio2">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">From</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Time</label>
+                                    <div class="input-icon-end position-relative">
+                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                        <span class="input-icon-addon">
+                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">To</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Time</label>
+                                    <div class="input-icon-end position-relative">
+                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --">
+                                        <span class="input-icon-addon">
+                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-check form-switch w-100">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="switchCheck9">
+                                    <label class="form-check-label" for="switchCheck9">Clients Can Book Online</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex align-items-center gap-1">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Availability Override</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End add Modal -->
+
+    <!-- Start add Modal -->
+    <div id="edit_availability_override" class="modal fade">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate">Availability Override Configuration</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+                </div>
+                <form action="edit-doctor.html">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="form-label">Available</label>
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="form-check">
+                                        <input type="radio" id="customRadios1" name="customRadio" class="form-check-input" checked="">
+                                        <label class="form-check-label" for="customRadios1">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="radio" id="customRadios2" name="customRadio" class="form-check-input">
+                                        <label class="form-check-label" for="customRadios2">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">From</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y" value="25 Jun, 2025">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Time</label>
+                                    <div class="input-icon-end position-relative">
+                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --" value="18:00">
+                                        <span class="input-icon-addon">
+                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">To</label>
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y" value="25 Jun, 2025">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Time</label>
+                                    <div class="input-icon-end position-relative">
+                                        <input type="text" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --" value="18:30">
+                                        <span class="input-icon-addon">
+                                            <i class="ti ti-clock-hour-10 text-dark"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-check form-switch w-100">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="switchChecks9">
+                                    <label class="form-check-label" for="switchChecks9">Clients Can Book Online</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex align-items-center gap-1">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Availability Override</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End add Modal -->
+
+    <!-- Start Delete Modal  -->
+    <div class="modal fade" id="delete_modal">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center position-relative">
+                    <div class="mb-3 position-relative z-1">
+                        <span class="avatar avatar-xl badge-soft-danger text-danger rounded-circle"><i class="ti ti-trash fs-24"></i></span>
+                    </div>
+                    <h5 class="mb-1">Delete Confirmation</h5>
+                    <p class="mb-3">Are you sure you want to delete?</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="javascript:void(0);" class="btn btn-light position-relative z-1 me-2" data-bs-dismiss="modal">Cancel</a>
+                        <a href="patient-details.html" class="btn btn-danger position-relative z-1" data-bs-dismiss="modal">Yes, Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Delete Modal  -->
+
+    <!-- jQuery -->
+    <script src="/static/js/jquery-3.7.1.min.js" type="12fcdddf76fbb176a579d225-text/javascript"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="/static/js/bootstrap.bundle.min.js" type="12fcdddf76fbb176a579d225-text/javascript"></script>
+
+    <!-- Select2 JS -->
+    <script src="/static/plugins/select2/js/select2.min.js" type="12fcdddf76fbb176a579d225-text/javascript"></script>
+
+    <!-- Flatpickr JS -->
+    <script src="/static/plugins/flatpickr/flatpickr.min.js" type="12fcdddf76fbb176a579d225-text/javascript"></script>
+
+	<!-- Simplebar JS -->
+	<script src="/static/plugins/simplebar/simplebar.min.js" type="12fcdddf76fbb176a579d225-text/javascript"></script>
+
+    <!-- Main JS -->
+    <script src="/static/js/script.js" type="12fcdddf76fbb176a579d225-text/javascript"></script>
+
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="12fcdddf76fbb176a579d225-|49" defer=""></script><script defer="" src="../../beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+
+</html>

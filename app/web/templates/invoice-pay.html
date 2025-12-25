@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice {{ invoice.invoice_no }} | DT-Labs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h3 class="mb-0">Invoice {{ invoice.invoice_no }}</h3>
+      <div class="text-muted">Patient: <strong>{{ invoice.patient.full_name }}</strong> ({{ invoice.patient.patient_no }})</div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ request.url_for('patients') }}">Back to Patients</a>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-2">Billed Tests</h5>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th class="text-end">Amount (GHS)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for it in invoice.items %}
+                <tr>
+                  <td>{{ it.description }}</td>
+                  <td class="text-end">{{ (it.line_total or 0) | float }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th class="text-end">Total</th>
+                  <th class="text-end">{{ (invoice.total_amount or 0) | float }}</th>
+                </tr>
+                <tr>
+                  <th class="text-end">Paid</th>
+                  <th class="text-end">{{ (invoice.amount_paid or 0) | float }}</th>
+                </tr>
+                <tr>
+                  <th class="text-end">Balance</th>
+                  <th class="text-end">{{ (invoice.balance or 0) | float }}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <div class="card-body">
+          <h5 class="card-title mb-2">Payment History</h5>
+          {% if invoice.payments and invoice.payments|length > 0 %}
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Method</th>
+                    <th>Ref</th>
+                    <th class="text-end">Amount (GHS)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in invoice.payments %}
+                  <tr>
+                    <td>{{ p.received_at.strftime('%Y-%m-%d %H:%M') if p.received_at else '-' }}</td>
+                    <td>{{ p.method }}</td>
+                    <td>{{ p.reference or '-' }}</td>
+                    <td class="text-end">{{ (p.amount or 0) | float }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-muted">No payments yet.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-2">Receive Payment</h5>
+
+          <div class="mb-2">
+            <span class="badge {% if invoice.status == 'paid' %}bg-success{% elif invoice.status == 'partial' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+              {{ invoice.status|upper }}
+            </span>
+          </div>
+
+          <form method="post" action="{{ request.url_for('invoice_pay', invoice_id=invoice.id) }}">
+            <div class="mb-3">
+              <label class="form-label">Amount (GHS)</label>
+              <input type="number" step="0.01" min="0" name="amount" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Method</label>
+              <select class="form-control" name="method">
+                <option value="cash">Cash</option>
+                <option value="momo">Mobile Money</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Reference (optional)</label>
+              <input type="text" name="reference" class="form-control" placeholder="MoMo TXN ID">
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Add Payment</button>
+          </form>
+
+          <hr>
+          <div class="small text-muted">
+            After full payment, lab workflow automatically moves from <strong>Booking</strong> → <strong>Sampling</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

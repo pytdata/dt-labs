@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">Test ↔ Analyzer Mapping</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ request.url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ request.url_for('settings') }}">Settings</a></li>
+            <li class="breadcrumb-item active">Test Mapping</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="alert alert-info mb-0">
+            Set the <b>default analyzer</b> and <b>price</b> for each test. When booking lab tests, the system will auto-select the mapped analyzer.
+          </div>
+        </div>
+
+        <form method="post" action="{{ request.url_for('settings_test_mapping_post') }}">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 35%">Test</th>
+                  <th style="width: 20%">Department</th>
+                  <th style="width: 25%">Default Analyzer</th>
+                  <th style="width: 20%">Price (GHS)</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for t in tests %}
+                <tr>
+                  <td>
+                    <input type="hidden" name="test_id" value="{{ t.id }}" />
+                    <div class="fw-semibold">{{ t.name }}</div>
+                  </td>
+                  <td>{{ t.department or '-' }}</td>
+                  <td>
+                    <select class="form-select" name="default_analyzer_id">
+                      <option value="">None</option>
+                      {% for a in analyzers %}
+                        <option value="{{ a.id }}" {% if t.default_analyzer_id == a.id %}selected{% endif %}>
+                          {{ a.name }}{% if a.model %} ({{ a.model }}){% endif %}
+                        </option>
+                      {% endfor %}
+                    </select>
+                    {% if t.default_analyzer %}
+                      <small class="text-muted">Current: {{ t.default_analyzer.name }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <input class="form-control" name="price_ghs" type="text" value="{{ '%.2f'|format(t.price_ghs) if t.price_ghs is not none else '' }}" placeholder="e.g. 50.00" />
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a class="btn btn-light" href="{{ request.url_for('settings') }}">Back</a>
+            <button class="btn btn-primary" type="submit">Save Mapping</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

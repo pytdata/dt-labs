@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Book Lab Test | DT-Labs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h3 class="mb-0">Book Lab Tests</h3>
+      <div class="text-muted">Patient: <strong>{{ patient.full_name }}</strong> ({{ patient.patient_no }})</div>
+    </div>
+    <div>
+      <a class="btn btn-outline-secondary" href="{{ request.url_for('patients') }}">Back to Patients</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post" action="{{ request.url_for('patient_book_lab_post', patient_id=patient.id) }}">
+        <div class="mb-3">
+          <label class="form-label">Select Tests</label>
+          <select id="test_ids" name="test_ids" class="form-control select2" multiple data-toggle="select2">
+            {% for t in tests %}
+              <option value="{{ t.id }}"
+                      data-price="{{ (t.price_ghs or 0) | float }}"
+                      data-analyzer-id="{{ t.default_analyzer_id or '' }}"
+                      data-analyzer-name="{{ t.default_analyzer.name if t.default_analyzer else '' }}">
+                {{ t.name }}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Prices are auto-calculated. Analyzer is selected automatically per test (default analyzer).</div>
+        </div>
+
+        <div id="mappingAlert" class="alert alert-warning d-none">
+          One or more selected tests have <b>no default analyzer mapping</b>. Go to <b>Settings → Test Mapping</b> and set the analyzer.
+        </div>
+
+        <div class="table-responsive mb-3">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Test</th>
+                <th>Analyzer</th>
+                <th class="text-end">Price (GHS)</th>
+              </tr>
+            </thead>
+            <tbody id="selectedTests"></tbody>
+            <tfoot>
+              <tr>
+                <th colspan="2" class="text-end">Total</th>
+                <th class="text-end" id="totalPrice">0.00</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button id="submitBtn" type="submit" class="btn btn-primary">Create Invoice & Continue to Payment</button>
+          <a class="btn btn-light" href="{{ request.url_for('patients') }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Select2 init (if available in template bundle)
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.$ && $.fn.select2) {
+      $('#test_ids').select2({ width: '100%' });
+      $('#test_ids').on('change', renderSelected);
+    } else {
+      document.getElementById('test_ids').addEventListener('change', renderSelected);
+    }
+    renderSelected();
+  });
+
+  function renderSelected() {
+    const sel = document.getElementById('test_ids');
+    const tbody = document.getElementById('selectedTests');
+    const totalEl = document.getElementById('totalPrice');
+    const alertEl = document.getElementById('mappingAlert');
+    const submitBtn = document.getElementById('submitBtn');
+    let total = 0;
+    let missingMap = false;
+    tbody.innerHTML = '';
+    [...sel.selectedOptions].forEach(opt => {
+      const price = parseFloat(opt.dataset.price || '0');
+      const analyzerName = (opt.dataset.analyzerName || '').trim();
+      const analyzerId = (opt.dataset.analyzerId || '').trim();
+      const mapped = !!analyzerId;
+      if (!mapped) missingMap = true;
+      total += price;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${opt.textContent}</td>
+                      <td>${mapped ? analyzerName : '<span class="badge bg-warning">Not mapped</span>'}</td>
+                      <td class="text-end">${price.toFixed(2)}</td>`;
+      tbody.appendChild(tr);
+    });
+    totalEl.textContent = total.toFixed(2);
+
+    if (missingMap) {
+      alertEl.classList.remove('d-none');
+      submitBtn.disabled = true;
+    } else {
+      alertEl.classList.add('d-none');
+      submitBtn.disabled = false;
+    }
+  }
+</script>
+{% endblock %}

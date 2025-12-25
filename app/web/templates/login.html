@@ -1,0 +1,97 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Login | DT-Labs{% endblock %}
+
+{% block content %}
+<!-- Begin Wrapper -->
+    <div class="main-wrapper">
+
+        <!-- Start Content -->
+		<div class="container-fuild position-relative z-1">
+			<div class="w-100 overflow-hidden position-relative flex-wrap d-block vh-100 bg-white">
+                <!-- start row-->
+                <div class="row">
+                    <div class="col-lg-6 col-md-12 col-sm-12">
+                        <div class="row justify-content-center align-items-center overflow-auto flex-wrap vh-100">
+                            <div class="col-md-8 mx-auto">
+                                <form methgod="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
+                                    <div class="d-flex flex-column justify-content-lg-center p-3 flex-fill">
+                                        <div class="card border-1 p-lg-3 shadow-md rounded-3 m-0">
+                                            <div class="card-body">
+                                                <div class="mb-4">
+                                                    <img src="/static/img/logo.svg" class="img-fluid" alt="Logo">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h5 class="mb-1 fs-20 fw-bold">Hi, Welcome Back</h5>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Email<span class="text-danger ms-1">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" value="" class="form-control" style="border-bottom: 1px solid #f2f2f2;">
+                                                        <span class="input-group-text bg-white">
+                                                            <i class="ti ti-mail fs-14 text-dark"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Password<span class="text-danger ms-1">*</span></label>
+                                                    <div class="input-group input-group-flat pass-group">
+                                                        <input type="password" class="form-control pass-input" style="border-bottom: 1px solid #f2f2f2;">
+                                                        <span class="input-group-text toggle-password ">
+                                                            <i class="ti ti-eye-off"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="form-check form-check-md mb-0">
+                                                            <input class="form-check-input" id="remember_me" type="checkbox">
+                                                            <label for="remember_me" class="form-check-label mt-0 text-dark">Remember Me</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <a href="forgot-password.html" class="text-primary">Forgot Password?</a>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <button type="submit" class="btn bg-primary text-white w-100" style="background-color: #18ACCF!important;">Sign In</button>
+                                                </div>
+                                            </div><!-- end card body -->
+                                        </div><!-- end card -->
+                                    </div>
+                                </form>
+                            </div> <!-- end row-->
+                        </div>
+
+                    </div>
+                    <div class="col-lg-6 p-0">
+                        <div class="login-backgrounds login-covers bg-primary d-lg-flex align-items-center justify-content-center d-none flex-wrap position-relative h-100 z-0">
+                            <div class="authentication-card">
+								<div class="authen-overlay-item w-100">
+                                    <div class="authen-head text-center">
+                                        <h1 class="text-white fs-28 fw-bold mb-2">Your Wellness Journey Starts Here</h1>
+                                        <p class="text-light fw-normal text-light mb-0">Our Medical Website Admin Template offers an intuitive interface for efficient administration and organization of medical data</p>
+                                    </div>
+								</div>
+                                <div class="auth-person">
+                                    <img src="/static/img/auth/auth-img-06.png" alt="" class="img-fluid">
+                                </div>
+							</div>
+                            <img src="/static/img/auth/auth-img-01.png" alt="" class="position-absolute top-0 start-0">
+                            <img src="/static/img/auth/auth-img-02.png" alt="" class="img-fluid position-absolute top-0 end-0">
+                            <img src="/static/img/auth/auth-img-03.png" alt="" class="img-fluid position-absolute auth-img-01">
+                            <img src="/static/img/auth/auth-img-04.png" alt="" class="img-fluid position-absolute auth-img-02">
+                            <img src="/static/img/auth/auth-img-05.png" alt="" class="img-fluid position-absolute bottom-0">
+                        </div>
+                    </div> <!-- end row-->
+
+                </div>
+                <!-- end row-->
+
+            </div>
+		</div>
+		<!-- End Content -->
+
+    </div>
+    <!-- End Wrapper -->
+{% endblock %}

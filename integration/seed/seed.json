@@ -1,0 +1,206 @@
+{
+  "company": {
+    "name": "YKG LAB & DIAGNOSTIC CENTER"
+  },
+  "analyzers": [
+    {
+      "name": "Mindray BS-240 Chemistry Analyzer",
+      "protocol": "ASTM",
+      "connection_type": "tcp"
+    },
+    {
+      "name": "Mindray BC-5150 Haematology Analyzer",
+      "protocol": "ASTM",
+      "connection_type": "serial"
+    },
+    {
+      "name": "Electrolyte Analyzer",
+      "protocol": "ASTM",
+      "connection_type": "tcp"
+    },
+    {
+      "name": "Wonfo Fincare Plus",
+      "protocol": "ASTM",
+      "connection_type": "tcp"
+    },
+    {
+      "name": "Bench/Manual Tests",
+      "protocol": "manual",
+      "connection_type": "manual"
+    }
+  ],
+  "tests": [
+    {
+      "name": "LIVER FUNCTION TEST",
+      "department": "Chemistry",
+      "price_ghs": 150,
+      "default_analyzer": "Mindray BS-240 Chemistry Analyzer",
+      "parameters": [
+        {
+          "name": "Total Bilirubin"
+        },
+        {
+          "name": "Direct Bilirubin"
+        },
+        {
+          "name": "ALT"
+        },
+        {
+          "name": "AST"
+        },
+        {
+          "name": "ALP"
+        },
+        {
+          "name": "Total Protein"
+        },
+        {
+          "name": "Albumin"
+        },
+        {
+          "name": "Globulin"
+        },
+        {
+          "name": "Y-GT"
+        },
+        {
+          "name": "Indirect Bilirubin"
+        }
+      ]
+    },
+    {
+      "name": "KIDNEY FUNCTION TEST",
+      "department": "Chemistry",
+      "price_ghs": 120,
+      "default_analyzer": "Mindray BS-240 Chemistry Analyzer",
+      "parameters": [
+        {
+          "name": "Creatinine"
+        },
+        {
+          "name": "Urea"
+        },
+        {
+          "name": "Potassium"
+        },
+        {
+          "name": "Sodium"
+        },
+        {
+          "name": "Chloride"
+        }
+      ]
+    },
+    {
+      "name": "LIPID PROFILE",
+      "department": "Chemistry",
+      "price_ghs": 120,
+      "default_analyzer": "Mindray BS-240 Chemistry Analyzer",
+      "parameters": [
+        {
+          "name": "Total Cholesterol"
+        },
+        {
+          "name": "Triglyceride"
+        },
+        {
+          "name": "HDL-Cholesterol"
+        },
+        {
+          "name": "LDL- Cholesterol"
+        },
+        {
+          "name": "VLDL"
+        }
+      ]
+    },
+    {
+      "name": "URIC ACID",
+      "department": "Chemistry",
+      "price_ghs": 70,
+      "default_analyzer": "Mindray BS-240 Chemistry Analyzer"
+    },
+    {
+      "name": "FULL BLOOD COUNT",
+      "department": "Haematology",
+      "price_ghs": 80,
+      "default_analyzer": "Mindray BC-5150 Haematology Analyzer"
+    },
+    {
+      "name": "ELECTROLYTES",
+      "department": "Chemistry",
+      "price_ghs": 70,
+      "default_analyzer": "Electrolyte Analyzer",
+      "parameters": [
+        {
+          "name": "Potassium (K)"
+        },
+        {
+          "name": "Sodium (Na)"
+        },
+        {
+          "name": "Chloride (Cl)"
+        }
+      ]
+    },
+    {
+      "name": "HAEMOGLOBIN A1C",
+      "department": "Hormonal",
+      "price_ghs": 150,
+      "default_analyzer": "Wonfo Fincare Plus"
+    },
+    {
+      "name": "PROLACTIN",
+      "department": "Hormonal",
+      "price_ghs": 120,
+      "default_analyzer": "Wonfo Fincare Plus"
+    },
+    {
+      "name": "PROGESTERONE TEST",
+      "department": "Hormonal",
+      "price_ghs": 120,
+      "default_analyzer": "Wonfo Fincare Plus"
+    },
+    {
+      "name": "LUTEINIZING HORMONE",
+      "department": "Hormonal",
+      "price_ghs": 120,
+      "default_analyzer": "Wonfo Fincare Plus"
+    },
+    {
+      "name": "ESTROGEN",
+      "department": "Hormonal",
+      "price_ghs": 120,
+      "default_analyzer": "Wonfo Fincare Plus"
+    },
+    {
+      "name": "TESTOSTERONE TEST",
+      "department": "Hormonal",
+      "price_ghs": 120,
+      "default_analyzer": "Wonfo Fincare Plus"
+    },
+    {
+      "name": "PROSTATE SPECIFIC ANTIGEN",
+      "department": "Hormonal",
+      "price_ghs": 150,
+      "default_analyzer": "Wonfo Fincare Plus"
+    },
+    {
+      "name": "THYROID FUNCTION TEST",
+      "department": "Hormonal",
+      "price_ghs": 120,
+      "default_analyzer": "Wonfo Fincare Plus",
+      "parameters": [
+        {
+          "name": "Thyroid Stimulating Hormone (TSH)"
+        },
+        {
+          "name": "Triiodothyroinine (T3)"
+        },
+        {
+          "name": "Thyroxine (T4)"
+        }
+      ]
+    }
+  ]
+}

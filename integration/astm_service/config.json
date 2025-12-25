@@ -1,0 +1,32 @@
+{
+  "api_url": "http://127.0.0.1:8000/api/v1/integration/astm/results",
+  "analyzers": [
+    {
+      "name": "Mindray BS-240 Chemistry Analyzer",
+      "connection": "tcp",
+      "host": "192.168.10.10",
+      "port": 4001
+    },
+    {
+      "name": "Mindray BC-5150 Haematology Analyzer",
+      "connection": "serial",
+      "port": "COM3"
+    },
+    {
+      "name": "Electrolyte Analyzer",
+      "connection": "tcp",
+      "host": "192.168.10.11",
+      "port": 4002
+    },
+    {
+      "name": "Wonfo Fincare Plus",
+      "connection": "tcp",
+      "host": "192.168.10.12",
+      "port": 4003
+    },
+    {
+      "name": "Bench/Manual Tests",
+      "connection": "manual"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+from datetime import date, datetime
+from pydantic import BaseModel, EmailStr, Field
+
+class PatientCreate(BaseModel):
+    first_name: str
+    surname: str
+    other_names: str | None = None
+    sex: str | None = None
+    date_of_birth: date | None = None
+    phone: str | None = None
+    email: EmailStr | None = None
+    address: str | None = None
+
+    patient_type: str = Field(default="cash", pattern="^(cash|insurance)$")
+    insurance_company_id: int | None = None
+    insurance_member_id: str | None = None
+
+    guardian_name: str | None = None
+    guardian_phone: str | None = None
+    guardian_relation: str | None = None
+
+class PatientOut(PatientCreate):
+    id: int
+    patient_no: str
+    full_name: str
+    created_at: datetime | None = None
+    model_config = {"from_attributes": True}
+
+class LabOrderCreate(BaseModel):
+    patient_id: int
+    test_ids: list[int]
+
+class LabOrderOut(BaseModel):
+    id: int
+    patient_id: int
+    status: str
+    model_config = {"from_attributes": True}

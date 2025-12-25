@@ -1,0 +1,493 @@
+http://127.0.0.1:8000/patients
+
+Internal Server Error
+
+console:
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\clsregistry.py", line 516, in _resolve_name
+    rval = d[token]
+           ~^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\util\_collections.py", line 345, in __missing__
+    self[key] = val = self.creator(key)
+                      ~~~~~~~~~~~~^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\clsregistry.py", line 484, in _access_cls
+    return self.fallback[key]
+           ~~~~~~~~~~~~~^^^^^
+KeyError: 'Analyzers'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 410, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 119, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 105, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 312, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\app\web\router.py", line 49, in patients_page
+    patients = (await db.execute(stmt)).scalars().all()
+                ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1633, in _execute_clauseelement
+    compiled_sql, extracted_params, cache_hit = elem._compile_w_cache(
+                                                ~~~~~~~~~~~~~~~~~~~~~^
+        dialect=dialect,
+        ^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        linting=self.dialect.compiler_linting | compiler.WARN_LINTING,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 716, in _compile_w_cache
+    compiled_sql = self._compiler(
+        dialect,
+    ...<4 lines>...
+        **kw,
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 324, in _compiler
+    return dialect.statement_compiler(dialect, self, **kw)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 1447, in __init__
+    Compiled.__init__(self, dialect, statement, **kwargs)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 887, in __init__
+    self.string = self.process(self.statement, **compile_kwargs)
+                  ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 933, in process
+    return obj._compiler_dispatch(self, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\visitors.py", line 138, in _compiler_dispatch
+    return meth(self, **kw)  # type: ignore  # noqa: E501
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 4782, in visit_select
+    compile_state = select_stmt._compile_state_factory(
+        select_stmt, self, **kwargs
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\base.py", line 701, in create_for_statement
+    return klass.create_for_statement(statement, compiler, **kw)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 447, in create_for_statement
+    return cls._create_orm_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        cast("Union[Select, FromStatement]", statement),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        **kw,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 1175, in _create_orm_context
+    _QueryEntity.to_compile_state(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<2 lines>...
+        is_current_entities=True,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 2628, in to_compile_state
+    _MapperEntity(
+    ~~~~~~~~~~~~~^
+        compile_state,
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        is_current_entities,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 2708, in __init__
+    entity._post_inspect
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1338, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ~~~~~~~~~^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2733, in _post_inspect
+    self._check_configure()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2410, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4227, in _configure_registries
+    _do_configure_registries(registries, cascade)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4268, in _do_configure_registries
+    mapper._post_configure_properties()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2427, in _post_configure_properties
+    prop.init()
+    ~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\interfaces.py", line 595, in init
+    self.do_init()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1655, in do_init
+    self._setup_entity()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1865, in _setup_entity
+    self._clsregistry_resolve_name(argument)(),
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\clsregistry.py", line 520, in _resolve_name
+    self._raise_for_name(name, err)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\clsregistry.py", line 501, in _raise_for_name
+    raise exc.InvalidRequestError(
+    ...<5 lines>...
+    ) from err
+sqlalchemy.exc.InvalidRequestError: When initializing mapper Mapper[AnalyzerTestMapping(analyzer_test_mapping)], expression 'Analyzers' failed to locate a name ('Analyzers'). If this is a class name, consider adding this relationship() to the <class 'app.models.analyzer_test_mapping.AnalyzerTestMapping'> class after both dependent classes have been defined.
+INFO:     127.0.0.1:3159 - "GET /patients HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 410, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 119, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 105, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 312, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\app\web\router.py", line 49, in patients_page
+    patients = (await db.execute(stmt)).scalars().all()
+                ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1633, in _execute_clauseelement
+    compiled_sql, extracted_params, cache_hit = elem._compile_w_cache(
+                                                ~~~~~~~~~~~~~~~~~~~~~^
+        dialect=dialect,
+        ^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        linting=self.dialect.compiler_linting | compiler.WARN_LINTING,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 716, in _compile_w_cache
+    compiled_sql = self._compiler(
+        dialect,
+    ...<4 lines>...
+        **kw,
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 324, in _compiler
+    return dialect.statement_compiler(dialect, self, **kw)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 1447, in __init__
+    Compiled.__init__(self, dialect, statement, **kwargs)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 887, in __init__
+    self.string = self.process(self.statement, **compile_kwargs)
+                  ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 933, in process
+    return obj._compiler_dispatch(self, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\visitors.py", line 138, in _compiler_dispatch
+    return meth(self, **kw)  # type: ignore  # noqa: E501
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\compiler.py", line 4782, in visit_select
+    compile_state = select_stmt._compile_state_factory(
+        select_stmt, self, **kwargs
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\sql\base.py", line 701, in create_for_statement
+    return klass.create_for_statement(statement, compiler, **kw)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 447, in create_for_statement
+    return cls._create_orm_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        cast("Union[Select, FromStatement]", statement),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        **kw,
+        ^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 1175, in _create_orm_context
+    _QueryEntity.to_compile_state(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<2 lines>...
+        is_current_entities=True,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 2628, in to_compile_state
+    _MapperEntity(
+    ~~~~~~~~~~~~~^
+        compile_state,
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        is_current_entities,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 2708, in __init__
+    entity._post_inspect
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1338, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ~~~~~~~~~^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2733, in _post_inspect
+    self._check_configure()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2410, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4227, in _configure_registries
+    _do_configure_registries(registries, cascade)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4264, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[AnalyzerTestMapping(analyzer_test_mapping)]'. Original exception was: When initializing mapper Mapper[AnalyzerTestMapping(analyzer_test_mapping)], expression 'Analyzers' failed to locate a name ('Analyzers'). If this is a class name, consider adding this relationship() to the <class 'app.models.analyzer_test_mapping.AnalyzerTestMapping'> class after both dependent classes have been defined.
+INFO:     127.0.0.1:4013 - "POST /cdn-cgi/rum HTTP/1.1" 404 Not Found
+
+
+
+http://127.0.0.1:8000/tasks
+
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 410, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 119, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 105, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 312, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\app\web\router.py", line 596, in tasks_board
+    selectinload(LabOrderItem.order).selectinload(LabOrder.patient),
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\strategy_options.py", line 2447, in selectinload
+    return _generate_from_keys(
+        Load.selectinload, keys, False, {"recursion_depth": recursion_depth}
+    )
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\strategy_options.py", line 2327, in _generate_from_keys
+    lead_element = Load(lead_entity)
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\strategy_options.py", line 1013, in __init__
+    insp._post_inspect
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 1338, in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ~~~~~~~~~^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2733, in _post_inspect
+    self._check_configure()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2410, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4227, in _configure_registries
+    _do_configure_registries(registries, cascade)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4264, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'Mapper[AnalyzerTestMapping(analyzer_test_mapping)]'. Original exception was: When initializing mapper Mapper[AnalyzerTestMapping(analyzer_test_mapping)], expression 'Analyzers' failed to locate a name ('Analyzers'). If this is a class name, consider adding this relationship() to the <class 'app.models.analyzer_test_mapping.AnalyzerTestMapping'> class after both dependent classes have been defined.
+INFO:     127.0.0.1:10514 - "POST /cdn-cgi/rum HTTP/1.1" 404 Not Found

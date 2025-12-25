@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Create Appointment | DT-Labs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h3 class="mb-0">Create Appointment</h3>
+      <div class="text-muted">Patient: <strong>{{ patient.full_name }}</strong> ({{ patient.patient_no }})</div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ request.url_for('patients') }}">Back to Patients</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post" action="{{ request.url_for('appointment_add_post', patient_id=patient.id) }}">
+        <div class="mb-3">
+          <label class="form-label">Appointment Date & Time</label>
+          <input type="text" name="appointment_at" class="form-control" id="appt_dt" placeholder="YYYY-MM-DD HH:MM" required>
+          <div class="form-text">This will be used for reminders/alerts later.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-control" name="notes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Appointment</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.flatpickr) {
+      flatpickr('#appt_dt', { enableTime: true, dateFormat: 'Y-m-d H:i' });
+    }
+  });
+</script>
+{% endblock %}

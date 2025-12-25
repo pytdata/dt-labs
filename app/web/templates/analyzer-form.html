@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>DT-Labs | {% if analyzer %}Edit{% else %}Add{% endif %} Analyzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="/static/img/favicon.png">
+    <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
+
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
+    <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
+    <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+</head>
+<body>
+<div class="main-wrapper">
+
+    {% include "partials/sidebar.html" %}
+
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h4 class="text-dark mb-1">{% if analyzer %}Edit Analyzer{% else %}Add Analyzer{% endif %}</h4>
+                    <div class="text-muted">Register analyzers dynamically (TCP / Serial) and specify output format (ASTM, CSV, XML).</div>
+
+<div class="col-md-6">
+    <label class="form-label">Patient Identifier Source</label>
+    <select class="form-select" name="patient_id_source">
+        <option value="patient_no" {% if analyzer and analyzer.patient_id_source == 'patient_no' %}selected{% endif %}>Patient ID (ASTM P record)</option>
+        <option value="sample_id" {% if analyzer and analyzer.patient_id_source == 'sample_id' %}selected{% endif %}>Sample ID (ASTM O record)</option>
+        <option value="order_id" {% if analyzer and analyzer.patient_id_source == 'order_id' %}selected{% endif %}>Order ID (ASTM O record)</option>
+    </select>
+    <div class="form-text">Choose the primary identifier used to match analyzer results to LIS orders/patients.</div>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label">Identifier Fallbacks (comma-separated)</label>
+    <input type="text" class="form-control" name="patient_id_fallbacks"
+           value="{% if analyzer and analyzer.patient_id_fallbacks %}{{ analyzer.patient_id_fallbacks }}{% endif %}"
+           placeholder="sample_id,order_id">
+    <div class="form-text">If primary identifier is missing, the listener will try these in order.</div>
+</div>
+
+
+                </div>
+                <a class="btn btn-light" href="{{ request.url_for('settings_analyzers') }}">
+                    <i class="ti ti-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    {% if analyzer %}
+                    <form method="post" action="{{ request.url_for('analyzer_edit_post', analyzer_id=analyzer.id) }}">
+                    {% else %}
+                    <form method="post" action="{{ request.url_for('analyzer_add_post') }}">
+                    {% endif %}
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Analyzer Name</label>
+                                <input class="form-control" name="name" required value="{{ analyzer.name if analyzer else '' }}" placeholder="e.g., Mindray BS-240">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Connection Type</label>
+                                <select class="form-select" name="connection_type" id="connection_type">
+                                    {% set ct = (analyzer.connection_type if analyzer else 'tcp') %}
+                                    <option value="tcp" {% if ct=='tcp' %}selected{% endif %}>TCP</option>
+                                    <option value="serial" {% if ct=='serial' %}selected{% endif %}>Serial</option>
+                                    <option value="manual" {% if ct=='manual' %}selected{% endif %}>Manual</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Output Format</label>
+                                {% set rf = (analyzer.result_format if analyzer else 'ASTM') %}
+                                <select class="form-select" name="result_format">
+                                    <option value="ASTM" {% if rf=='ASTM' %}selected{% endif %}>ASTM</option>
+                                    <option value="CSV" {% if rf=='CSV' %}selected{% endif %}>CSV</option>
+                                    <option value="XML" {% if rf=='XML' %}selected{% endif %}>XML</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if analyzer and analyzer.is_active %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_active">Active</label>
+                                </div>
+                            </div>
+
+                            <!-- TCP Settings -->
+                            <div class="col-12">
+                                <div class="border rounded p-3" id="tcp_settings">
+                                    <div class="fw-semibold mb-2">TCP Settings</div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">IP Address / Host</label>
+                                            <input class="form-control" name="tcp_ip" value="{{ analyzer.tcp_ip if analyzer else '' }}" placeholder="e.g., 192.168.1.120">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Port</label>
+                                            <input class="form-control" type="number" name="tcp_port" value="{{ analyzer.tcp_port if analyzer and analyzer.tcp_port else '' }}" placeholder="e.g., 5000">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Serial Settings -->
+                            <div class="col-12">
+                                <div class="border rounded p-3" id="serial_settings">
+                                    <div class="fw-semibold mb-2">Serial Settings</div>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">COM Port</label>
+                                            <input class="form-control" name="serial_port" value="{{ analyzer.serial_port if analyzer else '' }}" placeholder="e.g., COM3">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Baud Rate</label>
+                                            <input class="form-control" type="number" name="baud_rate" value="{{ analyzer.baud_rate if analyzer and analyzer.baud_rate else '' }}" placeholder="e.g., 9600">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Parity</label>
+                                            {% set par = (analyzer.parity if analyzer else '') %}
+                                            <select class="form-select" name="parity">
+                                                <option value="">Select</option>
+                                                <option value="none" {% if par=='none' %}selected{% endif %}>None</option>
+                                                <option value="even" {% if par=='even' %}selected{% endif %}>Even</option>
+                                                <option value="odd" {% if par=='odd' %}selected{% endif %}>Odd</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Stop Bits</label>
+                                            <input class="form-control" type="number" name="stop_bits" value="{{ analyzer.stop_bits if analyzer and analyzer.stop_bits else '' }}" placeholder="1">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Data Bits</label>
+                                            <input class="form-control" type="number" name="data_bits" value="{{ analyzer.data_bits if analyzer and analyzer.data_bits else '' }}" placeholder="8">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Flow Control</label>
+                                            {% set fc = (analyzer.flow_control if analyzer else '') %}
+                                            <select class="form-select" name="flow_control">
+                                                <option value="">Select</option>
+                                                <option value="none" {% if fc=='none' %}selected{% endif %}>None</option>
+                                                <option value="rtscts" {% if fc=='rtscts' %}selected{% endif %}>RTS/CTS</option>
+                                                <option value="xonxoff" {% if fc=='xonxoff' %}selected{% endif %}>XON/XOFF</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Manufacturer</label>
+                                <input class="form-control" name="manufacturer" value="{{ analyzer.manufacturer if analyzer else '' }}" placeholder="e.g., Mindray">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Model</label>
+                                <input class="form-control" name="model" value="{{ analyzer.model if analyzer else '' }}" placeholder="e.g., BS-240">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Protocol</label>
+                                <input class="form-control" value="ASTM" disabled>
+                                <div class="form-text">ASTM can be used over TCP or Serial. CSV/XML supports folder watch or direct export.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" name="notes" rows="3" placeholder="Any special connection notes...">{{ analyzer.notes if analyzer else '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a class="btn btn-light" href="{{ request.url_for('settings_analyzers') }}">Cancel</a>
+                            <button class="btn btn-primary" type="submit">Save</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/jquery-3.7.1.min.js"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/plugins/simplebar/simplebar.min.js"></script>
+<script src="/static/js/script.js"></script>
+
+<script>
+(function() {
+  function toggleBlocks() {
+    var ct = document.getElementById('connection_type').value;
+    var tcp = document.getElementById('tcp_settings');
+    var ser = document.getElementById('serial_settings');
+    if (ct === 'tcp') {
+      tcp.style.display = '';
+      ser.style.display = 'none';
+    } else if (ct === 'serial') {
+      tcp.style.display = 'none';
+      ser.style.display = '';
+    } else {
+      tcp.style.display = 'none';
+      ser.style.display = 'none';
+    }
+  }
+  document.getElementById('connection_type').addEventListener('change', toggleBlocks);
+  toggleBlocks();
+})();
+</script>
+
+</body>
+</html>

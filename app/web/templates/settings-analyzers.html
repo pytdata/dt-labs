@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>DT-Labs | Analyzer Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="/static/img/favicon.png">
+    <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
+
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
+    <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
+    <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+</head>
+<body>
+<div class="main-wrapper">
+
+    {% include "partials/sidebar.html" %}
+
+    <div class="page-wrapper">
+        <div class="content container-fluid">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h4 class="mb-1">Analyzer Registration</h4>
+                    <p class="text-muted mb-0">Register analyzers and their connectivity (TCP/Serial) and the format they emit (ASTM/CSV/XML).</p>
+                </div>
+                <a class="btn btn-primary" href="{{ request.url_for('analyzer_add') }}">
+                    <i class="ti ti-plus"></i> Add Analyzer
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Connection</th>
+                                    <th>Endpoint</th>
+                                    <th>Emits</th>
+                                    <th style="width: 160px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in analyzers %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ a.name }}</div>
+                                        {% if a.manufacturer or a.model %}
+                                            <div class="text-muted small">{{ a.manufacturer or '' }} {{ a.model or '' }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if a.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Disabled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="text-uppercase">{{ a.connection_type }}</span></td>
+                                    <td>
+                                        {% if a.connection_type == 'tcp' %}
+                                            {{ a.tcp_ip or '-' }}{% if a.tcp_port %}:{{ a.tcp_port }}{% endif %}
+                                        {% elif a.connection_type == 'serial' %}
+                                            {{ a.serial_port or '-' }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="text-uppercase">{{ a.result_format }}</span></td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-primary" href="{{ request.url_for('analyzer_edit', analyzer_id=a.id) }}">Edit</a>
+                                        <form class="d-inline" method="post" action="{{ request.url_for('settings_analyzers_delete', analyzer_id=a.id) }}" onsubmit="return confirm('Delete this analyzer?');">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No analyzers registered yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/jquery-3.7.1.min.js"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/plugins/simplebar/simplebar.min.js"></script>
+<script src="/static/js/script.js"></script>
+</body>
+</html>
