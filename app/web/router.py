@@ -12,6 +12,7 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models.enums import LabStage
 from app.services.emailer import send_stage_email
+from app.services.sample_service import generate_sample_id
 from app.models import Patient, InsuranceCompany, Test, Analyzer, LabOrder, LabOrderItem, Visit, Appointment, Invoice, InvoiceItem, Payment, LabStatusLog
 
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
@@ -197,7 +198,7 @@ async def patient_book_lab_post(
     db.add(Visit(patient_id=patient_id, reason="Lab service"))
 
     # Create order
-    order = LabOrder(patient_id=patient_id, status="pending")
+    order = LabOrder(patient_id=patient_id, status="pending", sample_id=generate_sample_id())
     db.add(order)
     await db.flush()  # get order.id
 
@@ -221,7 +222,7 @@ async def patient_book_lab_post(
     for t in tests:
         price = float(t.price_ghs or 0)
         total += price
-        item = LabOrderItem(order_id=order.id, test_id=t.id, analyzer_id=t.default_analyzer_id, status="pending", stage="booking")
+        item = LabOrderItem(order_id=order.id, test_id=t.id, analyzer_id=t.default_analyzer_id, status="pending", stage="booking", sample_id=order.sample_id)
         db.add(item)
 
     # Create invoice

@@ -17,6 +17,7 @@ class AnalyzerIngestIn(BaseModel):
     analyzer_name: Optional[str] = None
     format: Literal["ASTM","CSV","XML"] = "ASTM"
     protocol: Optional[str] = None
+    order_id: Optional[str] = None
     sample_id: Optional[str] = None
     patient_no: Optional[str] = None
     raw: str = Field(default="")

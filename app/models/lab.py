@@ -68,7 +68,12 @@ class LabOrder(Base):
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     status: Mapped[str] = mapped_column(String(30), default="pending")  # pending|in_progress|completed|cancelled
 
+    sample_collected_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    collected_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    sample_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     patient = relationship("Patient")
+    collected_by = relationship("User", foreign_keys=[collected_by_user_id])
 
 class LabOrderItem(Base):
     __tablename__ = "lab_order_items"
@@ -78,6 +83,8 @@ class LabOrderItem(Base):
     analyzer_id: Mapped[int | None] = mapped_column(ForeignKey("analyzers.id"), nullable=True)  # chosen per test
     # overall status for LIS
     status: Mapped[str] = mapped_column(String(30), default="pending")  # pending|in_progress|completed|cancelled
+
+    sample_id: Mapped[str | None] = mapped_column(String(80), index=True, nullable=True)
 
     # workflow stage (your lab process)
     stage: Mapped[LabStage] = mapped_column(
@@ -149,16 +156,25 @@ class LabResult(Base):
     analyzer_id: Mapped[int | None] = mapped_column(ForeignKey("analyzers.id"), nullable=True, index=True)
     analyzer_message_id: Mapped[int | None] = mapped_column(ForeignKey("analyzer_messages.id"), nullable=True, index=True)
 
+    sample_id: Mapped[str | None] = mapped_column(String(80), nullable=True, index=True)
+
     # who entered/validated (manual or from analyzer)
     entered_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    verified_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     source: Mapped[str] = mapped_column(String(20), default="analyzer")  # analyzer|manual|import
     status: Mapped[str] = mapped_column(String(20), default="received")  # received|verified|printed
 
     results: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # normalized results JSON
+    merged_from: Mapped[list | None] = mapped_column(JSON, nullable=True)  # analyzer ids merged into this record
     raw_format: Mapped[str | None] = mapped_column(String(10), nullable=True)  # ASTM/CSV/XML
     received_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    verified_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    comments: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     order_item = relationship("LabOrderItem")
     analyzer = relationship("Analyzer")
     analyzer_message = relationship("AnalyzerMessage")
     entered_by_user = relationship("User")
+    verified_by_user = relationship("User", foreign_keys=[verified_by_user_id])

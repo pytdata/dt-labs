@@ -98,9 +98,14 @@ class AnalyzerRuntimeManager:
         parsed: Dict[str, Any] = {}
         sample_id = None
         patient_no = None
+        order_id = None
 
         if fmt == "ASTM":
             parsed, sample_id, patient_no = parse_astm(raw)
+            try:
+                order_id = parsed.get("meta", {}).get("order_id")
+            except Exception:
+                order_id = None
         elif fmt == "CSV":
             parsed = parse_csv(raw)
         elif fmt == "XML":
@@ -115,6 +120,7 @@ class AnalyzerRuntimeManager:
             "protocol": analyzer.protocol,
             "sample_id": sample_id,
             "patient_no": patient_no,
+            "order_id": order_id,
             "raw": raw,
             "parsed": parsed,
         }
@@ -149,5 +155,4 @@ def _resolve_identifier(self, analyzer: Analyzer, sample_id: str | None, patient
             return candidates[fb], fb
 
     return None, None
-
 
