@@ -6,9 +6,8 @@ class AnalyzerTestMapping(Base):
     __tablename__ = "analyzer_test_mapping"
 
     id = Column(Integer, primary_key=True, index=True)
-    analyzer_id = Column(Integer, ForeignKey("analyzer.id"))
-    test_id = Column(Integer, ForeignKey("test.id"))
+    analyzer_id = Column(Integer, ForeignKey("analyzers.id"))
+    test_id = Column(Integer, ForeignKey("tests.id"))
 
-    analyzer = relationship("Analyzers", back_populates="test_mappings")
-    test = relationship("Tests", back_populates="analyzer_mappings")
-
+    analyzer = relationship("Analyzer", back_populates="test_mappings")
+    test = relationship("Test", back_populates="analyzer_mappings")

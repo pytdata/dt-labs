@@ -1,0 +1,25 @@
+{% extends "settings-base.html" %}
+
+{% block settings_title %}General{% endblock %}
+{% block settings_breadcrumb %}General{% endblock %}
+
+{% block settings_body %}
+<div class="card">
+  <div class="card-body">
+    <h5 class="mb-3">Organization Profile</h5>
+    <p class="text-muted mb-4">Manage high-level system preferences from this tab. Additional settings are available in the tabs above.</p>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Facility Name</label>
+        <input class="form-control" type="text" value="DT-Labs LIS" readonly>
+        <small class="text-muted">Read-only for now. Connect this to company profile editing when available.</small>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Environment</label>
+        <input class="form-control" type="text" value="{{ settings.ENV | upper }}" readonly>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

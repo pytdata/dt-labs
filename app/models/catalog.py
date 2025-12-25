@@ -7,6 +7,7 @@ class Analyzer(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    test_mappings = relationship("AnalyzerTestMapping", back_populates="analyzer", cascade="all, delete-orphan")
 
     # Dynamic connectivity
     # tcp | serial | manual
@@ -50,6 +51,7 @@ class Test(Base):
     price_ghs: Mapped[float | None] = mapped_column(Numeric(10,2), nullable=True)
 
     default_analyzer = relationship("Analyzer")
+    analyzer_mappings = relationship("AnalyzerTestMapping", back_populates="test", cascade="all, delete-orphan")
 
 class TestParameter(Base):
     __tablename__ = "test_parameters"

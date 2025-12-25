@@ -1,0 +1,27 @@
+<div class="card mb-3">
+  <div class="card-body">
+    <ul class="nav nav-tabs border-bottom-0">
+      <li class="nav-item">
+        <a class="nav-link {% if active_page == 'settings' %}active{% endif %}" href="{{ request.url_for('settings') }}">General</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if active_page == 'settings_analyzers' %}active{% endif %}" href="{{ request.url_for('settings_analyzers') }}">Analyzers</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if active_page == 'settings_test_mapping' %}active{% endif %}" href="{{ request.url_for('settings_test_mapping') }}">Test Mapping</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if active_page == 'settings_roles' %}active{% endif %}" href="{{ request.url_for('settings_roles') }}">Roles &amp; Permissions</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if active_page == 'settings_insurance' %}active{% endif %}" href="{{ request.url_for('settings_insurance') }}">Insurance</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if active_page == 'settings_templates' %}active{% endif %}" href="{{ request.url_for('settings_templates') }}">Templates</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if active_page == 'settings_prefixes' %}active{% endif %}" href="{{ request.url_for('settings_prefixes') }}">Prefixes</a>
+      </li>
+    </ul>
+  </div>
+</div>

@@ -14,7 +14,7 @@
                     <div class="col-lg-6 col-md-12 col-sm-12">
                         <div class="row justify-content-center align-items-center overflow-auto flex-wrap vh-100">
                             <div class="col-md-8 mx-auto">
-                                <form methgod="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
+                                <form method="POST" action="{{ request.url_for('login') }}" class="d-flex justify-content-center align-items-center">
                                     <div class="d-flex flex-column justify-content-lg-center p-3 flex-fill">
                                         <div class="card border-1 p-lg-3 shadow-md rounded-3 m-0">
                                             <div class="card-body">
@@ -27,7 +27,7 @@
                                                 <div class="mb-3">
                                                     <label class="form-label">Email<span class="text-danger ms-1">*</span></label>
                                                     <div class="input-group">
-                                                        <input type="text" value="" class="form-control" style="border-bottom: 1px solid #f2f2f2;">
+                                                        <input type="text" name="username" value="" class="form-control" style="border-bottom: 1px solid #f2f2f2;">
                                                         <span class="input-group-text bg-white">
                                                             <i class="ti ti-mail fs-14 text-dark"></i>
                                                         </span>
@@ -36,7 +36,7 @@
                                                 <div class="mb-3">
                                                     <label class="form-label">Password<span class="text-danger ms-1">*</span></label>
                                                     <div class="input-group input-group-flat pass-group">
-                                                        <input type="password" class="form-control pass-input" style="border-bottom: 1px solid #f2f2f2;">
+                                                        <input type="password" name="password" class="form-control pass-input" style="border-bottom: 1px solid #f2f2f2;">
                                                         <span class="input-group-text toggle-password ">
                                                             <i class="ti ti-eye-off"></i>
                                                         </span>

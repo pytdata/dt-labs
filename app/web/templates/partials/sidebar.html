@@ -126,33 +126,10 @@
                             </a>
                         </li>
 
-                        <li class="submenu {% if active_group == 'settings' %}active{% endif %}">
-                            <a href="javascript:void(0);">
-                                <i class="ti ti-settings"></i><span>Settings</span><span class="menu-arrow"></span>
+                        <li class="{% if active_group == 'settings' %}active{% endif %}">
+                            <a href="{{ request.url_for('settings') }}">
+                                <i class="ti ti-settings"></i><span>Settings</span>
                             </a>
-                            <ul>
-                                <li class="{% if active_page == 'settings' %}active{% endif %}">
-                                    <a href="{{ request.url_for('settings') }}">General</a>
-                                </li>
-                                <li class="{% if active_page == 'settings_analyzers' %}active{% endif %}">
-                                    <a href="{{ request.url_for('settings_analyzers') }}">Analyzers</a>
-                                </li>
-                                <li class="{% if active_page == 'settings_test_mapping' %}active{% endif %}">
-                                    <a href="{{ request.url_for('settings_test_mapping') }}">Test Mapping</a>
-                                </li>
-                                <li>
-                                    <a href="{{ request.url_for('settings') }}">Roles &amp; Permissions</a>
-                                </li>
-                                <li>
-                                    <a href="{{ request.url_for('settings') }}">Insurance</a>
-                                </li>
-                                <li>
-                                    <a href="{{ request.url_for('settings') }}">Templates</a>
-                                </li>
-                                <li>
-                                    <a href="{{ request.url_for('settings') }}">Prefixes</a>
-                                </li>
-                            </ul>
                         </li>
                     </ul>
                 </li>

@@ -50,14 +50,13 @@ import json
 from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import Analyzer, Test, TestParameter, CompanyProfile
+from app.core.config import settings
+from app.core.security import get_password_hash
+from app.models import Analyzer, Test, TestParameter, CompanyProfile, User
 
 async def seed_from_json(db: AsyncSession, seed_path: str = "integration/seed/seed.json") -> None:
     path = Path(__file__).parent.parent / seed_path
-    if not path.exists():
-        return
-
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
     async with db.begin():
         # Company profile
@@ -91,3 +90,19 @@ async def seed_from_json(db: AsyncSession, seed_path: str = "integration/seed/se
                 await db.flush()
                 for p in t.get("parameters", []):
                     db.add(TestParameter(test_id=test_obj.id, name=p["name"], unit=p.get("unit"), ref_range=p.get("ref_range")))
+
+    # Default admin user (idempotent)
+    admin_email = "s.e@dataglow.tech"
+    admin_name = "Emmanuel Sampah"
+    existing_admin = (await db.execute(select(User).where(User.email == admin_email))).scalar_one_or_none()
+    if not existing_admin:
+        db.add(
+            User(
+                email=admin_email,
+                full_name=admin_name,
+                password_hash=get_password_hash(settings.DEFAULT_ADMIN_PASSWORD),
+                role="admin",
+                is_active=True,
+            )
+        )
+        await db.commit()

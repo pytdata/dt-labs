@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Request, HTTPException, Depends, Form, Query, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 
+from app.core import deps
 from app.core.config import settings
+from app.core.security import create_access_token
 from app.db.session import get_db
 from app.models.enums import LabStage
 from app.services.emailer import send_stage_email
@@ -35,6 +37,28 @@ async def dashboard(request: Request):
 @router.get("/login", response_class=HTMLResponse, name="login")
 async def login(request: Request):
     return _render(request, "login.html")
+
+@router.post("/login", name="login_post")
+async def login_post(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+):
+    user = await deps.authenticate_user(db, username, password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    token = create_access_token(subject=user.email, expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    response = RedirectResponse(url=request.url_for("dashboard"), status_code=303)
+    response.set_cookie(
+        "access_token",
+        token,
+        httponly=True,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        samesite="lax",
+    )
+    return response
 
 @router.get("/patients", response_class=HTMLResponse, name="patients")
 async def patients_page(
@@ -357,8 +381,7 @@ async def messages(request: Request):
 
 @router.get("/settings", response_class=HTMLResponse, name="settings")
 async def settings_page(request: Request):
-    tpl = "general-settings.html" if (settings.TEMPLATES_PATH / "general-settings.html").exists() else "appearance-settings.html"
-    return _render(request, tpl, active_page="settings")
+    return _render(request, "settings-general.html", active_page="settings", active_group="settings", settings=settings)
 
 
 # --- Settings: Test ↔ Analyzer mapping (set default analyzer per test) ---
@@ -430,6 +453,54 @@ async def settings_analyzers(request: Request, db: AsyncSession = Depends(get_db
         active_page="settings_analyzers",
         active_group="settings",
         analyzers=analyzers,
+    )
+
+
+@router.get("/settings/roles", response_class=HTMLResponse, name="settings_roles")
+async def settings_roles(request: Request):
+    return _render(
+        request,
+        "settings-placeholder.html",
+        active_page="settings_roles",
+        active_group="settings",
+        title="Roles & Permissions",
+        message="Roles & permissions management UI coming soon.",
+    )
+
+
+@router.get("/settings/insurance", response_class=HTMLResponse, name="settings_insurance")
+async def settings_insurance(request: Request):
+    return _render(
+        request,
+        "settings-placeholder.html",
+        active_page="settings_insurance",
+        active_group="settings",
+        title="Insurance",
+        message="Insurance configuration will live here. Add carriers and plans to expose them to patients.",
+    )
+
+
+@router.get("/settings/templates", response_class=HTMLResponse, name="settings_templates")
+async def settings_templates(request: Request):
+    return _render(
+        request,
+        "settings-placeholder.html",
+        active_page="settings_templates",
+        active_group="settings",
+        title="Templates",
+        message="Document and notification templates will be configurable in this tab.",
+    )
+
+
+@router.get("/settings/prefixes", response_class=HTMLResponse, name="settings_prefixes")
+async def settings_prefixes(request: Request):
+    return _render(
+        request,
+        "settings-placeholder.html",
+        active_page="settings_prefixes",
+        active_group="settings",
+        title="Prefixes",
+        message="Prefix and numbering rules can be managed here. Connect to LIS numbering logic when ready.",
     )
 
 

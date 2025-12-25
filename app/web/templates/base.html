@@ -264,7 +264,7 @@
 
                                         <!-- View All-->
                                         <div class="p-2 rounded-bottom border-top text-center">
-                                            <a href="notifications.html" class="text-center text-decoration-underline fs-14 mb-0">
+                                            <a href="{{ request.url_for('notifications') }}" class="text-center text-decoration-underline fs-14 mb-0">
                                                 View All Notifications
                                             </a>
                                         </div>
@@ -297,13 +297,13 @@
                                     </div>
 
                                     <!-- Item-->
-                                    <a href="general-settings.html" class="dropdown-item">
+                                    <a href="{{ request.url_for('settings') }}" class="dropdown-item">
                                         <i class="ti ti-user-circle me-1 align-middle"></i>
                                         <span class="align-middle">Profile Settings</span>
                                     </a>
 
                                     <!-- item -->
-                                    <a href="notifications.html" class="dropdown-item">
+                                    <a href="{{ request.url_for('notifications') }}" class="dropdown-item">
                                         <i class="ti ti-bell me-1 align-middle"></i>
                                         <span class="align-middle">Notifications</span>
                                     </a>
@@ -315,14 +315,14 @@
                                     </a>
 
                                     <!-- Item-->
-                                    <a href="general-settings.html" class="dropdown-item">
+                                    <a href="{{ request.url_for('settings') }}" class="dropdown-item">
                                         <i class="ti ti-settings me-1 align-middle"></i>
                                         <span class="align-middle">Settings</span>
                                     </a>
 
                                     <!-- Item-->
                                     <div class="pt-2 mt-2 border-top">
-                                        <a href="login.html" class="dropdown-item text-danger">
+                                        <a href="{{ request.url_for('login') }}" class="dropdown-item text-danger">
                                             <i class="ti ti-logout me-1 fs-17 align-middle"></i>
                                             <span class="align-middle">Sign Out</span>
                                         </a>

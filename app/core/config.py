@@ -6,7 +6,9 @@ class Settings(BaseSettings):
     APP_NAME: str = "DT-Labs LIS"
     ENV: str = "dev"
     SECRET_KEY: str = "5791628bb0huuce0c676dfde280ba245"
+    ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+    DEFAULT_ADMIN_PASSWORD: str = "ChangeMe123!"
 
     # DB
     DATABASE_URL: str = "postgresql+asyncpg://postgres:cN7JmVQE9yztzyX3do@localhost:5432/dt_labs"
