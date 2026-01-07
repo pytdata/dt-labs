@@ -9,10 +9,12 @@ router = APIRouter()
 
 DEFAULT_PREFIX = "YGK"  # can be moved to Settings table later
 
+
 async def _next_patient_no(db: AsyncSession) -> str:
     max_id = (await db.execute(select(func.max(Patient.id)))).scalar() or 0
     nxt = int(max_id) + 1
     return f"{DEFAULT_PREFIX}-PT-{nxt:06d}"
+
 
 @router.post("", response_model=PatientOut)
 async def create_patient(payload: PatientCreate, db: AsyncSession = Depends(get_db)):
@@ -23,13 +25,16 @@ async def create_patient(payload: PatientCreate, db: AsyncSession = Depends(get_
     await db.refresh(patient)
     return patient
 
+
 @router.get("", response_model=list[PatientOut])
 async def list_patients(
     q: str | None = Query(default=None, description="Filter by surname or first_name"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     stmt = select(Patient).order_by(Patient.id.desc())
     if q:
         like = f"%{q.strip()}%"
-        stmt = stmt.where((Patient.surname.ilike(like)) | (Patient.first_name.ilike(like)))
+        stmt = stmt.where(
+            (Patient.surname.ilike(like)) | (Patient.first_name.ilike(like))
+        )
     return (await db.execute(stmt)).scalars().all()

@@ -40,6 +40,9 @@
 from sqlalchemy import String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+from app.models.lab import LabResult
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -50,13 +53,21 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(30), default="admin")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    entered_results = relationship(
+    # entered_results: Mapped[list["LabResult"]] = relationship(
+    #     back_populates="entered_by_user"
+    # )
+    # verified_results: Mapped[list["LabResult"]] = relationship(
+    #     back_populates="verified_by_user"
+    # )
+
+    entered_results: Mapped[list["LabResult"]] = relationship(
         "LabResult",
         foreign_keys="LabResult.entered_by_user_id",
-        back_populates="entered_by_user"
+        back_populates="entered_by_user",
     )
-    verified_results = relationship(
+
+    verified_results: Mapped[list["LabResult"]] = relationship(
         "LabResult",
         foreign_keys="LabResult.verified_by_user_id",
-        back_populates="verified_by_user"
+        back_populates="verified_by_user",
     )

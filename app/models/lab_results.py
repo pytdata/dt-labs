@@ -68,6 +68,7 @@ from sqlalchemy import String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
+from app.models.users import User
 
 
 class LabResult(Base):
@@ -83,10 +84,10 @@ class LabResult(Base):
     )
 
     entered_by_user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"), nullable=True, back_populates="entered_results"
+        ForeignKey("users.id"), nullable=True
     )
     verified_by_user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"), nullable=True, back_populates="verified_results"
+        ForeignKey("users.id"), nullable=True
     )
 
     analyte_code: Mapped[str] = mapped_column(String(80), index=True)
@@ -103,9 +104,15 @@ class LabResult(Base):
     order_item = relationship("LabOrderItem")
 
     # Explicit relationships
-    entered_by_user = relationship(
-        "User", foreign_keys=[entered_by_user_id], back_populates="entered_results"
+    # entered_by_user = relationship("User", back_populates="entered_results")
+    # verified_by_user = relationship("User", back_populates="verified_results")
+    entered_by_user: Mapped["User"] = relationship(
+        "User",
+        back_populates="entered_results",
+        foreign_keys=[entered_by_user_id],
     )
-    verified_by_user = relationship(
-        "User", foreign_keys=[verified_by_user_id], back_populates="verified_results"
+    verified_by_user: Mapped["User"] = relationship(
+        "User",
+        back_populates="verified_results",
+        foreign_keys=[verified_by_user_id],
     )
