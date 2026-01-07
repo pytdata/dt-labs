@@ -1,0 +1,4 @@
+.env
+.env.example
+env_labs
+__pycache__/

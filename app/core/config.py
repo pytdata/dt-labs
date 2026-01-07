@@ -1,6 +1,7 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     # App
     APP_NAME: str = "DT-Labs LIS"
@@ -11,8 +12,7 @@ class Settings(BaseSettings):
     DEFAULT_ADMIN_PASSWORD: str = "ChangeMe123!"
 
     # DB
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:cN7JmVQE9yztzyX3do@localhost:5432/dt_labs"
-
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/dt_labs"
 
     # Integration
     INGEST_TOKEN: str = "dev-ingest-token"
@@ -30,10 +30,10 @@ class Settings(BaseSettings):
     def STATIC_PATH(self) -> Path:
         return Path(self.STATIC_DIR)
 
-
     # Integration
     ASTM_SERVICE_API_URL: str = "http://127.0.0.1:8000/api/v1/integration/astm/results"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
 
 settings = Settings()

@@ -21,10 +21,13 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+
 def get_url():
     # alembic wants sync driver; use psycopg2 style url for migrations
     url = settings.DATABASE_URL
+    print(url)
     return url.replace("postgresql+asyncpg", "postgresql")
+
 
 def run_migrations_offline():
     context.configure(
@@ -36,6 +39,7 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online():
     configuration = config.get_section(config.config_ini_section) or {}
     configuration["sqlalchemy.url"] = get_url()
@@ -46,9 +50,12 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
+        context.configure(
+            connection=connection, target_metadata=target_metadata, compare_type=True
+        )
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
