@@ -1,3 +1,5 @@
+[listener] Starting Analyzer Listener Service
+[listener] DB: postgresql+asyncpg://postgres:cN7JmVQE9yztzyX3do@localhost:5432/dt_labs
 Traceback (most recent call last):
   File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2434, in _determine_joins
     self.primaryjoin = join_condition(
@@ -35,59 +37,28 @@ sqlalchemy.exc.AmbiguousForeignKeysError: Can't determine join between 'lab_resu
 The above exception was the direct cause of the following exception:
 
 Traceback (most recent call last):
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 410, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        self.scope, self.receive, self.send
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
-    await super().__call__(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\applications.py", line 107, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
-    raise exc
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
-    await self.app(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 736, in app
-    await route.handle(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
-    await self.app(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 119, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
-    raise exc
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
-    await app(scope, receive, sender)
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 105, in app
-    response = await f(request)
-               ^^^^^^^^^^^^^^^^
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 426, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ...<3 lines>...
-    )
-    ^
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\fastapi\routing.py", line 312, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\app\web\router.py", line 74, in patients_page
-    patients = (await db.execute(stmt)).scalars().all()
-                ^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\integration\listener_service\run.py", line 21, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 194, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 720, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\integration\listener_service\run.py", line 18, in main
+    await mgr.run()
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\integration\listener_service\manager.py", line 27, in run
+    analyzers = await self.load_analyzers()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\integration\listener_service\manager.py", line 23, in load_analyzers
+    result = await db.execute(select(Analyzer).where(Analyzer.is_active == True))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\sampa\OneDrive\Documents\Projects\FastAPI\dt-labs\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
     result = await greenlet_spawn(
              ^^^^^^^^^^^^^^^^^^^^^
