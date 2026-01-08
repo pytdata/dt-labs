@@ -53,13 +53,6 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(30), default="admin")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    # entered_results: Mapped[list["LabResult"]] = relationship(
-    #     back_populates="entered_by_user"
-    # )
-    # verified_results: Mapped[list["LabResult"]] = relationship(
-    #     back_populates="verified_by_user"
-    # )
-
     entered_results: Mapped[list["LabResult"]] = relationship(
         "LabResult",
         foreign_keys="LabResult.entered_by_user_id",
