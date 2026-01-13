@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from enum import Enum
 from fastapi import (
     APIRouter,
     Request,
@@ -15,13 +16,16 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload
+
 
 from app.core import deps
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.session import get_db
 from app.models.enums import LabStage
-from app.models.users import User
+from app.models.users import Department, User
+from app.schemas.visit import VisitStatus
 from app.services.emailer import send_stage_email
 from app.services.sample_service import generate_sample_id
 from app.models import (
@@ -512,8 +516,61 @@ async def invoice_pay(
 
 
 @router.get("/visits", response_class=HTMLResponse, name="visits")
-async def visits(request: Request):
-    return _render(request, "visits.html", active_page="visits")
+async def visits(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    patients = await db.execute(select(Patient))
+    department = await db.execute(select(Department))
+    doctors = await db.execute(
+        select(User).where(User.role == "doctor", User.is_active == True)  # noqa: E712
+    )
+
+    patients_results = patients.scalars().all()
+    doctors_results = doctors.scalars().all()
+    department_results = department.scalars().all()
+
+    return _render(
+        request=request,
+        template_name="visits.html",
+        active_page="visits",
+        departments=department_results,
+        doctors=doctors_results,
+        patients=patients_results,
+    )
+
+
+@router.post("/visits/add/")
+async def create_visit(
+    request: Request,
+    patient_id: int = Form(...),
+    department_id: int = Form(...),
+    doctor_id: int = Form(...),
+    visit_date: str = Form(...),
+    visit_time: str = Form(...),
+    reason: str | None = Form(None),
+    patient_type: str = Form(...),
+    payment_mode: str | None = Form(None),
+    db: AsyncSession = Depends(get_db),
+):
+    visit_date_obj = datetime.strptime(visit_date, "%d-%m-%Y").date()
+
+    visit = Visit(
+        patient_id=patient_id,
+        department_id=department_id,
+        doctor_id=doctor_id,
+        visit_date=visit_date_obj,
+        reason=reason,
+        status=VisitStatus.pending,
+    )
+
+    db.add(visit)
+    await db.commit()
+
+    return RedirectResponse(
+        url="/visits/",
+        status_code=303,
+    )
 
 
 @router.get("/appointments", response_class=HTMLResponse, name="appointments")

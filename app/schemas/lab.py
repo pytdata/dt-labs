@@ -2,6 +2,7 @@ from datetime import date, datetime
 from pydantic import BaseModel, EmailStr, Field
 from typing import Any, Dict
 
+
 class PatientCreate(BaseModel):
     first_name: str
     surname: str
@@ -20,16 +21,20 @@ class PatientCreate(BaseModel):
     guardian_phone: str | None = None
     guardian_relation: str | None = None
 
+
 class PatientOut(PatientCreate):
     id: int
     patient_no: str
     full_name: str
     created_at: datetime | None = None
+    last_visit_date: datetime | None
     model_config = {"from_attributes": True}
+
 
 class LabOrderCreate(BaseModel):
     patient_id: int
     test_ids: list[int]
+
 
 class LabOrderOut(BaseModel):
     id: int

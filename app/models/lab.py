@@ -41,6 +41,14 @@ class Patient(Base):
     )
 
     insurance_company = relationship("InsuranceCompany", lazy="joined")
+    lab_orders = relationship(
+        "LabOrder",
+        back_populates="patient",
+        cascade="all, delete-orphan",
+    )
+    visits = relationship(
+        "Visit", back_populates="patient", cascade="all, delete-orphan"
+    )
 
     @property
     def full_name(self) -> str:
@@ -52,12 +60,19 @@ class Visit(Base):
     __tablename__ = "visits"
     id: Mapped[int] = mapped_column(primary_key=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    doctor_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True, index=True
+    )
+    department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), index=True)
     visit_date: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    status: Mapped[str] = mapped_column(String(20), default="pending")
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    patient = relationship("Patient")
+    patient = relationship("Patient", back_populates="visits")
+    department = relationship("Department", back_populates="visits")
+    doctor = relationship("User", back_populates="visits")
 
 
 class Appointment(Base):
@@ -98,8 +113,13 @@ class LabOrder(Base):
     )
     sample_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    patient = relationship("Patient")
+    patient = relationship("Patient", back_populates="lab_orders")
     collected_by = relationship("User", foreign_keys=[collected_by_user_id])
+    items = relationship(
+        "LabOrderItem",
+        back_populates="order",
+        cascade="all, delete-orphan",
+    )
 
 
 class LabOrderItem(Base):
@@ -133,7 +153,8 @@ class LabOrderItem(Base):
         String(100), nullable=True
     )  # sample/run id used by analyzer
 
-    order = relationship("LabOrder", backref="items")
+    # Relationship
+    order = relationship("LabOrder", back_populates="items")
     test = relationship("Test")
     analyzer = relationship("Analyzer")
     assigned_to = relationship("User", foreign_keys=[assigned_to_user_id])
@@ -176,6 +197,7 @@ class AnalyzerMessage(Base):
     meta: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     analyzer = relationship("Analyzer")
+    results = relationship("LabResult", back_populates="analyzer_message")
 
 
 class AnalyzerIngestion(Base):
@@ -261,6 +283,11 @@ class LabResult(Base):
     updated_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+    # Relationship
+    order_item = relationship("LabOrderItem", back_populates="result")
+    analyzer = relationship("Analyzer", back_populates="results")
+    analyzer_message = relationship("AnalyzerMessage", back_populates="results")
 
     order_item = relationship("LabOrderItem")
     analyzer = relationship("Analyzer")

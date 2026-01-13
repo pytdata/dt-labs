@@ -1,8 +1,20 @@
 from fastapi import APIRouter
+
 # <<<<<<< HEAD
 # from app.api.v1 import health, company, catalog, patients, orders, integration, seed, auth
 # =======
-from app.api.v1 import health, company, catalog, patients, orders, integration, seed, auth, reports
+from app.api.v1 import (
+    health,
+    company,
+    catalog,
+    patients,
+    orders,
+    integration,
+    seed,
+    auth,
+    reports,
+    visits,
+)
 # >>>>>>> origin/codex/implement-astm-parsing-and-auto-merge-reports
 
 router = APIRouter()
@@ -15,3 +27,4 @@ router.include_router(integration.router, prefix="/integration", tags=["integrat
 router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(reports.router, prefix="/reports", tags=["reports"])
 router.include_router(seed.router, tags=["seed"])
+router.include_router(visits.router, prefix="/visits", tags=["visits"])

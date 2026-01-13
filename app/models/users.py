@@ -64,3 +64,18 @@ class User(Base):
         foreign_keys="LabResult.verified_by_user_id",
         back_populates="verified_by_user",
     )
+
+    # relationships
+    visits = relationship("Visit", back_populates="doctor")
+
+
+class Department(Base):
+    __tablename__ = "departments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True)
+    description: Mapped[str | None] = mapped_column(String(255))
+    is_active: Mapped[bool] = mapped_column(default=True)
+
+    # relationships
+    visits = relationship("Visit", back_populates="department")

@@ -603,48 +603,44 @@
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-users me-1"></i>Patient
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
+                                <ul class="dropdown-menu dropdown-menu-md p-2 search__results">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
+                                                <input type="text" class="form-control form-control-md search__input" placeholder="Search">
                                             </div>
                                         </div>
                                     </li>
-                                    {% for patient in patients %}
-                                    <li>
+                                   
+                                    <!-- <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> {{patient.first_name}}
+                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> John
                                             
-                                            {% if patient.other_names %} {{patient.other_names}} {% endif %}
-
-                                            {{patient.surname}}
                                         </label>
-                                    </li>
-                                    {% endfor %}
+                                    </li> -->
                                   
                                 </ul>
                             </div>
 
                             <!-- gender dropdown -->
-                             <div class="dropdown">
+                             <div class="dropdown gender__dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-user-cog me-1"></i>Gender
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-sm p-2">
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            <input class="form-check-input m-0 me-2 gender__filter" type="checkbox" data-gender="male">
                                             Male
                                         </label>
                                     </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            <input class="form-check-input m-0 me-2 gender__filter" type="checkbox" data-gender="female">
                                             Female
                                         </label>
                                     </li>
@@ -668,14 +664,14 @@
                                         </div>
                                     </li>
                                     
-                                    {% for test in tests %}
+                                   
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            {{test.name}}
+                                            test.name
                                         </label>
                                     </li>
-                                    {% endfor %}
+                                  
                                     
                                 </ul>
                             </div>
@@ -696,14 +692,14 @@
                                             </div>
                                         </div>
                                     </li>
-                                    {% for staff in staffs %}
+                                    
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. {{staff.full_name}}
+                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Prince
                                         </label>
                                     </li>
-                                    {% endfor %}
+                                   
                                 </ul>
                             </div>
 
@@ -737,10 +733,10 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-2">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1 sort-option" data-value="newest">Newest</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1 sort-option" data-value="oldest">Oldest</a>
                                 </li>
                             </ul>
                         </div>
@@ -761,15 +757,15 @@
                                         <th>Patient ID</th>
                                         <th>Patient Name</th>
                                         <th class="no-sort">Gender</th>
-                                        <th class="no-sort">Department</th>
-                                        <th>Doctor Name</th>
+                                        <th class="no-sort">Phone</th>
+                                        <th>Patient Type</th>
                                         <th>Last Visit</th>
                                         <th class="no-sort">Status</th>
                                         <th class="no-sort"></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-  {% for p in patients %}
+                                <tbody class="list__patients">
+  <!-- {% for p in patients %}
   <tr>
     <td class="no-sort">
       <div class="form-check form-check-md">
@@ -806,7 +802,7 @@
       </div>
     </td>
   </tr>
-  {% endfor %}
+  {% endfor %} -->
 </tbody>
                             </table>
                         </div>
@@ -878,6 +874,18 @@
 
 <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
 <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-</body>
 
+<!-- CUSTOM JS SCRIPT -->
+<script>
+    // This urls are generated by jinja2 template engine.
+    // This urls are used in htmls that are later rendered using ajax
+    const patientDetailBaseUrl =
+    "{{ request.url_for('patient_detail', patient_id='__ID__') }}";
+    const patientBookLabBaseUrl = "{{ request.url_for('patient_book_lab', patient_id='__ID__') }}";
+    const patientNewVisitBaseUrl = "{{ request.url_for('patient_new_visit', patient_id='__ID__') }}";
+    const appointmentAddBaseUrl = "{{ request.url_for('appointment_add', patient_id='__ID__') }}";
+ </script>
+
+<script src="{{ url_for('static', path='js/utils/all-patients-list.js') }}"></script>
+</body>
 </html>
