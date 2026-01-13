@@ -74,8 +74,7 @@ async def get_all_visits(
         )
 
     if filter_query.status:
-        status = [VisitStatus.completed, VisitStatus.in_progress, VisitStatus.pending]
-        stmt = stmt.where(Visit.status.in_(status))
+        stmt = stmt.where(Visit.status.in_([filter_query.status]))
 
     result = await db.execute(stmt)
     visits = result.scalars().all()
