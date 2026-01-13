@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init(e) {
   // get patient data
-  let patientList = await getPatientsData(patientsURL);
+  let patientList = await getVisitsData(patientsURL);
   let sortCol = "newest";
   let sortState = sortCol == "newest" ? true : false;
 
@@ -48,7 +48,7 @@ async function init(e) {
       );
 
       // make request to backend
-      patientList = await getPatientsData(patientsURL);
+      patientList = await getVisitsData(patientsURL);
       render(patientList);
     });
   });
@@ -244,7 +244,7 @@ function renderData(patient) {
  * Fetch all patients data
  * @returns Array[objects]
  */
-async function getPatientsData(url) {
+async function getVisitsData(url) {
   const res = await fetch(url);
   const data = await res.json();
   return data;

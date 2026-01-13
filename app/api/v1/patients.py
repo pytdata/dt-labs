@@ -81,7 +81,6 @@ async def list_patients(
         stmt = stmt.order_by(Patient.id.desc())
 
     if filter_query.sex:
-        print(filter_query.sex)
         sexes = [s.capitalize() for s in filter_query.sex]
         stmt = stmt.where(Patient.sex.in_(sexes))
 

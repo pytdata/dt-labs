@@ -596,7 +596,7 @@
                 <div class="card mb-0">
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="d-inline-flex align-items-center mb-0">Total Visits <span class="badge bg-danger ms-2">658</span></h6>
+                        <h6 class="d-inline-flex align-items-center mb-0">Total Visits <span class="badge bg-danger ms-2">{{visits_length}}</span></h6>
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
@@ -617,77 +617,24 @@
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-stethoscope me-1"></i>Doctor
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
+                                <ul class="dropdown-menu dropdown-menu-md p-2 doctor__search__results">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
+                                                <input type="text" class="form-control form-control-md search__doctor" placeholder="Search">
                                             </div>
                                         </div>
                                     </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-03.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Katherine Brooks
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-04.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Benjamin Harris
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-05.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Laura Mitchell
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-06.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Christopher Lewis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-07.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Natalie Foster
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-10.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Jonathan Adams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-08.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Rebecca Scott
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-12.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Samuel Turner
-                                        </label>
-                                    </li>
+<!--                                    
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
                                             <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-11.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Victoria Evans
                                         </label>
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </div>
 
@@ -696,77 +643,24 @@
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-user-shield me-1"></i>Department
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
+                                <ul class="dropdown-menu dropdown-menu-md p-2 department__search__results">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
+                                                <input type="text" class="form-control form-control-md search__department" placeholder="Search">
                                             </div>
                                         </div>
                                     </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Anaesthesiology
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Dental Surgery
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Dermatology
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            ENT Surgery
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            General Medicine
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Ophthalmology
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Orthopaedics
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Paediatrics
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Radiology
-                                        </label>
-                                    </li>
+<!--                                    
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
                                             Cardiology
                                         </label>
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </div>
 
@@ -775,77 +669,24 @@
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-users me-1"></i>Patient
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
+                                <ul class="dropdown-menu dropdown-menu-md p-2 patient__search__results">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
+                                                <input type="text" class="form-control form-control-md search__patient" placeholder="Search">
                                             </div>
                                         </div>
                                     </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> James Carter
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-34.jpg" class="flex-shrink-0 rounded" alt="img"></span> Emily Davis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-6.jpg" class="flex-shrink-0 rounded" alt="img"></span>Michael Johnson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-25.jpg" class="flex-shrink-0 rounded" alt="img"></span>Olivia Miller
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-14.jpg" class="flex-shrink-0 rounded" alt="img"></span>David Smith
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-22.jpg" class="flex-shrink-0 rounded" alt="img"></span>Sophia Wilson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-30.jpg" class="flex-shrink-0 rounded" alt="img"></span>Daniel Williams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-24.jpg" class="flex-shrink-0 rounded" alt="img"></span>Isabella Anderson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-15.jpg" class="flex-shrink-0 rounded" alt="img"></span>William Brown
-                                        </label>
-                                    </li>
+<!--                                     
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
                                             <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-39.jpg" class="flex-shrink-0 rounded" alt="img"></span>Charlotte Taylor
                                         </label>
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </div>
 
@@ -855,21 +696,21 @@
                                   <i class="ti ti-shield-half me-1"></i>Status
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-sm p-2">
-                                    <li>
+                                    <li >
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Inprogress
+                                            <input class="form-check-input m-0 me-2 visit__status" type="checkbox" data-status="in_progress">
+                                            In progress
                                         </label>
                                     </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            <input class="form-check-input m-0 me-2 visit__status" type="checkbox" data-status="pending">
                                             Pending
                                         </label>
                                     </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            <input class="form-check-input m-0 me-2 visit__status" type="checkbox" data-status="completed">
                                             Completed
                                         </label>
                                     </li>

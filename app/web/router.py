@@ -522,6 +522,7 @@ async def visits(
 ):
     patients = await db.execute(select(Patient))
     department = await db.execute(select(Department))
+    visits = await db.execute(select(Visit))
     doctors = await db.execute(
         select(User).where(User.role == "doctor", User.is_active == True)  # noqa: E712
     )
@@ -529,6 +530,7 @@ async def visits(
     patients_results = patients.scalars().all()
     doctors_results = doctors.scalars().all()
     department_results = department.scalars().all()
+    visits_length = len(visits.scalars().all())
 
     return _render(
         request=request,
@@ -537,6 +539,7 @@ async def visits(
         departments=department_results,
         doctors=doctors_results,
         patients=patients_results,
+        visits_length=visits_length,
     )
 
 
