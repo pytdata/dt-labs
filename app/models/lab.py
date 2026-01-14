@@ -87,6 +87,8 @@ class Appointment(Base):
     __tablename__ = "appointments"
     id: Mapped[int] = mapped_column(primary_key=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    doctor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), index=True)
     appointment_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), index=True
     )
@@ -97,8 +99,15 @@ class Appointment(Base):
     created_by_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )
+    # visit_id: Mapped[int | None] = mapped_column(ForeignKey("visits.id"), nullable=True)
 
+    # relationship
     patient = relationship("Patient")
+    doctor = relationship("User", foreign_keys=[doctor_id])
+    department = relationship("Department")
+    created_by_user = relationship("User", foreign_keys=[created_by_user_id])
+
+    # visit = relationship("Visit")
 
 
 class LabOrder(Base):

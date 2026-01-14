@@ -594,7 +594,7 @@
                 <div class="card mb-0">
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="d-inline-flex align-items-center mb-0">Total Appointments <span class="badge bg-primary ms-2">950</span></h6>
+                        <h6 class="d-inline-flex align-items-center mb-0">Total Appointments <span class="badge bg-primary ms-2">{{total_appointment}}</span></h6>
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
@@ -1477,16 +1477,9 @@
                                     <label class="form-label">Select Patient</label>
                                     <select class="select">
                                         <option>Select</option>
-                                        <option>James Carter</option>
-                                        <option>Emily Davis</option>
-                                        <option>Michael Johnson</option>
-                                        <option>Olivia Miller</option>
-                                        <option>David Smith</option>
-                                        <option>Sophia Wilson</option>
-                                        <option>Daniel Williams</option>
-                                        <option>Isabella Anderson</option>
-                                        <option>William Brown</option>
-                                        <option>Charlotte Taylor</option>
+                                        {% for patient in patients %}
+                                        <option value={{patient.id}}>{{patient.full_name}}</option>
+                                        {% endfor %}                                        
                                     </select>
                                 </div>
                             </div>
@@ -1495,8 +1488,8 @@
                                     <label class="form-label">Patient Type</label>
                                     <select class="select">
                                         <option>Select</option>
-                                        <option>In Patient</option>
-                                        <option>Out Patient</option>
+                                        <option value="private">In Patient</option>
+                                        <option value="insurance">Out Patient</option>
                                     </select>
                                 </div>
                             </div>
@@ -1505,15 +1498,10 @@
                                     <label class="form-label">Select Department<span class="text-danger ms-1">*</span></label>
                                     <select class="select">
                                         <option>Select</option>
-                                        <option>Anaesthesiology</option>
-                                        <option>Dental Surgery</option>
-                                        <option>Dermatology</option>
-                                        <option>ENT Surgery</option>
-                                        <option>Ophthalmology</option>
-                                        <option>Orthopaedics</option>
-                                        <option>Paediatrics</option>
-                                        <option>Radiology</option>
-                                        <option>Cardiology</option>
+                                        {% for department in departments %}
+                                        <option>{{department.name}}</option>
+                                        {% endfor %}
+                                       
                                     </select>
                                 </div>
                             </div>
@@ -1811,6 +1799,8 @@
 
     <!-- Main JS -->
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+
+    <script src="{{ url_for('static', path='js/utils/all-appointments.js') }}"></script>
 
 <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
 <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>

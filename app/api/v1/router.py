@@ -4,6 +4,7 @@ from fastapi import APIRouter
 # from app.api.v1 import health, company, catalog, patients, orders, integration, seed, auth
 # =======
 from app.api.v1 import (
+    appointments,
     health,
     company,
     catalog,
@@ -28,3 +29,6 @@ router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(reports.router, prefix="/reports", tags=["reports"])
 router.include_router(seed.router, tags=["seed"])
 router.include_router(visits.router, prefix="/visits", tags=["visits"])
+router.include_router(
+    appointments.router, prefix="/appointments", tags=["appointments"]
+)

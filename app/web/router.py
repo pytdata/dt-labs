@@ -583,54 +583,74 @@ async def create_visit(
     )
 
 
-@router.post("/visits/{id}/")
-async def update_visit(
-    id: int,
-    request: Request,
-    patient_id: int = Form(...),
-    department_id: int = Form(...),
-    doctor_id: int = Form(...),
-    visit_date: str = Form(...),
-    visit_time: str = Form(...),
-    reason: str | None = Form(None),
-    patient_type: str = Form(...),
-    payment_mode: PaymentMode | None = Form(None),
-    db: AsyncSession = Depends(get_db),
-):
-    visit_date_obj = datetime.strptime(visit_date, "%d-%m-%Y").replace(
-        tzinfo=timezone.utc
-    )
-    time_of_visit_obj = (
-        datetime.strptime("14:30", "%H:%M").time().replace(tzinfo=timezone.utc)
-    )
+# @router.post("/visits/{id}/")
+# async def update_visit(
+#     id: int,
+#     request: Request,
+#     patient_id: int = Form(...),
+#     department_id: int = Form(...),
+#     doctor_id: int = Form(...),
+#     visit_date: str = Form(...),
+#     visit_time: str = Form(...),
+#     reason: str | None = Form(None),
+#     patient_type: str = Form(...),
+#     payment_mode: PaymentMode | None = Form(None),
+#     db: AsyncSession = Depends(get_db),
+# ):
+#     visit_date_obj = datetime.strptime(visit_date, "%d-%m-%Y").replace(
+#         tzinfo=timezone.utc
+#     )
+#     time_of_visit_obj = (
+#         datetime.strptime("14:30", "%H:%M").time().replace(tzinfo=timezone.utc)
+#     )
 
-    stmt = select(Visit).where(Visit.id == id)
-    result = await db.execute(stmt)
-    visit_obj = result.scalar()
-    if not visit_obj:
-        raise HTTPException(detail="Resource not found", status_code=404)
+#     stmt = select(Visit).where(Visit.id == id)
+#     result = await db.execute(stmt)
+#     visit_obj = result.scalar()
+#     if not visit_obj:
+#         raise HTTPException(detail="Resource not found", status_code=404)
 
-    visit_obj.patient_id = patient_id
-    visit_obj.department_id = department_id
-    visit_obj.doctor_id = doctor_id
-    visit_obj.visit_date = visit_date_obj
-    visit_obj.reason = reason
-    visit_obj.status = VisitStatus.pending
-    visit_obj.mode_of_payment = payment_mode
-    visit_obj.time_of_visit = time_of_visit_obj
+#     visit_obj.patient_id = patient_id
+#     visit_obj.department_id = department_id
+#     visit_obj.doctor_id = doctor_id
+#     visit_obj.visit_date = visit_date_obj
+#     visit_obj.reason = reason
+#     visit_obj.status = VisitStatus.pending
+#     visit_obj.mode_of_payment = payment_mode
+#     visit_obj.time_of_visit = time_of_visit_obj
 
-    db.add(visit_obj)
-    await db.commit()
+#     db.add(visit_obj)
+#     await db.commit()
 
-    return RedirectResponse(
-        url="/visits/",
-        status_code=303,
-    )
+#     return RedirectResponse(
+#         url="/visits/",
+#         status_code=303,
+#     )
 
 
 @router.get("/appointments", response_class=HTMLResponse, name="appointments")
-async def appointments(request: Request):
-    return _render(request, "all-appointments.html", active_page="appointments")
+async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
+    patients = await db.execute(select(Patient))
+    departments = await db.execute(select(Department))
+    appointments = await db.execute(select(Visit))
+    doctors = await db.execute(
+        select(User).where(User.role == "doctor", User.is_active == True)  # noqa: E712
+    )
+
+    patients_results = patients.scalars().all()
+    doctors_results = doctors.scalars().all()
+    department_results = departments.scalars().all()
+    total_appointment = len(appointments.scalars().all())
+
+    return _render(
+        request,
+        "all-appointments.html",
+        active_page="appointments",
+        department=department_results,
+        patients=patients_results,
+        doctors=doctors_results,
+        total_appointment=total_appointment,
+    )
 
 
 @router.get("/lab", response_class=HTMLResponse, name="lab_main")
@@ -667,6 +687,7 @@ async def staff_list(request: Request):
         if (settings.TEMPLATES_PATH / "staffs.html").exists()
         else "all-doctors-list.html"
     )
+
     return _render(request, tpl, active_page="staff")
 
 

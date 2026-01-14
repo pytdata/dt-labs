@@ -14,7 +14,7 @@ from sqlalchemy import or_
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
-from app.schemas.visit import PaymentMode, UpdateVisit, VisitResponse, VisitStatus
+from app.schemas.visit import UpdateVisit, VisitResponse, VisitStatus
 
 
 router = APIRouter()
@@ -48,8 +48,6 @@ async def get_all_visits(
         .order_by(Visit.visit_date.desc())
     )
 
-    stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
-
     if filter_query.doctor:
         stmt = stmt.where(
             Visit.doctor.has(User.full_name.ilike(f"%{filter_query.doctor.strip()}%"))
@@ -76,6 +74,8 @@ async def get_all_visits(
 
     if filter_query.status:
         stmt = stmt.where(Visit.status.in_([filter_query.status]))
+
+    stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
 
     result = await db.execute(stmt)
     visits = result.scalars().all()
@@ -135,6 +135,23 @@ async def update_visit(
     visit_obj.time_of_visit = time_of_visit_obj
 
     db.add(visit_obj)
+    await db.commit()
+
+    return {"message": "ok"}
+
+
+@router.delete("/{id}/")
+async def delete_visit(
+    id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(Visit).where(Visit.id == id)
+    result = await db.execute(stmt)
+    visit_obj = result.scalar()
+    if not visit_obj:
+        raise HTTPException(detail="Resource not found", status_code=404)
+
+    await db.delete(visit_obj)
     await db.commit()
 
     return {"message": "ok"}
