@@ -5,6 +5,7 @@ const searchDepartmentEl = document.querySelector(".search__department");
 const searchPatientEl = document.querySelector(".search__patient");
 const fitlerByStatusEl = document.querySelectorAll(".visit__status");
 
+
 let visitsURL = "/api/v1/visits";
 let searchTimeout = null;
 let activeController = null;
@@ -70,7 +71,85 @@ async function init(e) {
       console.log(visitsList)
     });
   });
+
+
+document.querySelector(".list__visits").addEventListener("click", async function(e) {
+  const button = e.target.closest(".edit__visit__btn");
+    if (!button) return;
+
+   // send changes to the backend and save
+   const visitId = button.dataset.visitId;
+
+   try {
+        const res = await fetch(`/api/v1/visits/${visitId}`);
+        if (!res.ok) throw new Error("Failed to fetch visit");
+
+        const visit = await res.json();
+
+        console.log(visit)
+
+        populateEditModal(visit);
+        // openVisitModal();
+
+    } catch (err) {
+        console.error(err);
+        alert("Could not load visit details");
+    }
+
+});
+
+// submit the edit made to the visit.
+document.querySelector(".edit__form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+
+    const visitId = this.dataset.visitId;
+
+    const payload = {
+        patient_id: document.getElementById("patient").value,
+        patient_type: document.getElementById("patient_type").value,
+        department_id: document.getElementById("department").value,
+        doctor_id: document.getElementById("doctor").value,
+        visit_date: document.getElementById("visit_date").value,
+        visit_time: document.getElementById("visit_time").value,
+        reason: document.getElementById("reason").value,
+        payment_mode: document.getElementById("payment_mode").value
+    };
+
+    await fetch(`/api/v1/visits/${visitId}/`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+
+    // location.reload(); // or re-render list
+});
+
+
 }
+
+/**
+ * Prepopulates the edit model of visit for the client to make changes
+ * @param {Object} visit 
+ */
+function populateEditModal(visit) {
+    // Selects
+    document.getElementById("patient").value = visit.patient.id;
+    document.getElementById("patient_type").value = visit.patient_type;
+    document.getElementById("department").value = visit.department.id;
+    document.getElementById("doctor").value = visit.doctor.id;
+    document.getElementById("payment_mode").value = visit.mode_of_payment ? visit.mode_of_payment :"cash";
+
+    // Inputs
+    document.getElementById("visit_date").value = formatDate(visit.visit_date);
+    document.getElementById("visit_time").value = formatTime(visit.time_of_visit);
+    document.getElementById("reason").value = visit.reason;
+
+    // Store visit id for submit
+    document.querySelector("#edit_modal form").dataset.visitId = visit.id;
+}
+
+
 
 /**
  * render patient search results
@@ -342,7 +421,7 @@ function renderData(visit) {
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Past History</a>
                 </li>
                 <li>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_modal"><i class="ti ti-edit me-1"></i>Edit</a>
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center edit__visit__btn" data-bs-toggle="modal" data-bs-target="#edit_modal" data-visit-id=${visit.id}><i class="ti ti-edit me-1"></i>Edit</a>
                 </li>
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
@@ -355,8 +434,32 @@ function renderData(visit) {
   return htmlElement;
 }
 
-function formatDate(date_arg) {
-  const date = new Date(date_arg);
-  const formatted = date.toISOString().split("T")[0];
-  return formatted;
+// function formatDate(date_arg) {
+//   const date = new Date(date_arg);
+//   const formatted = date.toISOString().split("T")[0];
+//   return formatted;
+// }
+
+
+function formatDate(dateStr) {
+    // "2026-01-13" → "13 Jan, 2026"
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+}
+
+function formatTime(timeStr) {
+    // "08:17" → "08:17 AM"
+    if (!timeStr) return "not set";
+    const [h, m] = timeStr.split(":");
+    const date = new Date();
+    date.setHours(h, m);
+    return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+    });
 }

@@ -1,9 +1,11 @@
-from sqlalchemy import String, Date, DateTime, ForeignKey, Text, JSON
+from sqlalchemy import String, Date, DateTime, ForeignKey, Text, JSON, Time
 from sqlalchemy import Enum as SAEnum
 from app.models.enums import LabStage
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+
 from app.db.base import Base
+from datetime import datetime, time
 
 
 class Patient(Base):
@@ -67,7 +69,13 @@ class Visit(Base):
     visit_date: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    time_of_visit: Mapped[time | None] = mapped_column(
+        Time(timezone=True), nullable=True
+    )
     status: Mapped[str] = mapped_column(String(20), default="pending")
+    mode_of_payment: Mapped[str] = mapped_column(
+        String(15), default="cash", nullable=True
+    )
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     patient = relationship("Patient", back_populates="visits")

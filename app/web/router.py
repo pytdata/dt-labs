@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 from fastapi import (
     APIRouter,
@@ -25,7 +25,7 @@ from app.core.security import create_access_token
 from app.db.session import get_db
 from app.models.enums import LabStage
 from app.models.users import Department, User
-from app.schemas.visit import VisitStatus
+from app.schemas.visit import PaymentMode, VisitStatus
 from app.services.emailer import send_stage_email
 from app.services.sample_service import generate_sample_id
 from app.models import (
@@ -553,10 +553,15 @@ async def create_visit(
     visit_time: str = Form(...),
     reason: str | None = Form(None),
     patient_type: str = Form(...),
-    payment_mode: str | None = Form(None),
+    payment_mode: PaymentMode | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    visit_date_obj = datetime.strptime(visit_date, "%d-%m-%Y").date()
+    visit_date_obj = datetime.strptime(visit_date, "%d-%m-%Y").replace(
+        tzinfo=timezone.utc
+    )
+    time_of_visit_obj = (
+        datetime.strptime("14:30", "%H:%M").time().replace(tzinfo=timezone.utc)
+    )
 
     visit = Visit(
         patient_id=patient_id,
@@ -565,9 +570,56 @@ async def create_visit(
         visit_date=visit_date_obj,
         reason=reason,
         status=VisitStatus.pending,
+        mode_of_payment=payment_mode,
+        time_of_visit=time_of_visit_obj,
     )
 
     db.add(visit)
+    await db.commit()
+
+    return RedirectResponse(
+        url="/visits/",
+        status_code=303,
+    )
+
+
+@router.post("/visits/{id}/")
+async def update_visit(
+    id: int,
+    request: Request,
+    patient_id: int = Form(...),
+    department_id: int = Form(...),
+    doctor_id: int = Form(...),
+    visit_date: str = Form(...),
+    visit_time: str = Form(...),
+    reason: str | None = Form(None),
+    patient_type: str = Form(...),
+    payment_mode: PaymentMode | None = Form(None),
+    db: AsyncSession = Depends(get_db),
+):
+    visit_date_obj = datetime.strptime(visit_date, "%d-%m-%Y").replace(
+        tzinfo=timezone.utc
+    )
+    time_of_visit_obj = (
+        datetime.strptime("14:30", "%H:%M").time().replace(tzinfo=timezone.utc)
+    )
+
+    stmt = select(Visit).where(Visit.id == id)
+    result = await db.execute(stmt)
+    visit_obj = result.scalar()
+    if not visit_obj:
+        raise HTTPException(detail="Resource not found", status_code=404)
+
+    visit_obj.patient_id = patient_id
+    visit_obj.department_id = department_id
+    visit_obj.doctor_id = doctor_id
+    visit_obj.visit_date = visit_date_obj
+    visit_obj.reason = reason
+    visit_obj.status = VisitStatus.pending
+    visit_obj.mode_of_payment = payment_mode
+    visit_obj.time_of_visit = time_of_visit_obj
+
+    db.add(visit_obj)
     await db.commit()
 
     return RedirectResponse(
