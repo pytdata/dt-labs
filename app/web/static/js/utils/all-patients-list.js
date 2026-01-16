@@ -228,9 +228,7 @@ function renderData(patient) {
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" href="${patientDetailURL}">View Patient</a></li>
-          <li><a class="dropdown-item" href="${patientBookLabUrl}">Book Lab Test</a></li>
-          <li><a class="dropdown-item" href="${patientNewVisitUrl}">Register Visit</a></li>
-          <li><a class="dropdown-item" href="${appointmentAddUrl}">Create Appointment</a></li>
+          <li><a class="dropdown-item" href="${appointmentAddUrl}">Book Appointment</a></li>
         </ul>
       </div>
     </td>

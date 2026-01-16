@@ -417,12 +417,6 @@ function renderData(visit) {
                     <a href="start-visit.html" class="dropdown-item d-flex align-items-center"><i class="ti ti-e-passport me-1"></i>Start Visit</a>
                 </li>
                 <li>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Past History</a>
-                </li>
-                <li>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center edit__visit__btn" data-bs-toggle="modal" data-bs-target="#edit_modal" data-visit-id=${visit.id}><i class="ti ti-edit me-1"></i>Edit</a>
-                </li>
-                <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
                 </li>
             </ul>
