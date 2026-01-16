@@ -15,6 +15,7 @@ from app.api.v1 import (
     auth,
     reports,
     visits,
+    test_categories,
 )
 # >>>>>>> origin/codex/implement-astm-parsing-and-auto-merge-reports
 
@@ -31,4 +32,8 @@ router.include_router(seed.router, tags=["seed"])
 router.include_router(visits.router, prefix="/visits", tags=["visits"])
 router.include_router(
     appointments.router, prefix="/appointments", tags=["appointments"]
+)
+
+router.include_router(
+    test_categories.router, prefix="/test-categories", tags=["test-categories"]
 )

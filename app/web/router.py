@@ -23,8 +23,10 @@ from app.core import deps
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.session import get_db
+from app.models.catalog import TestCategory
 from app.models.enums import LabStage
 from app.models.users import Department, User
+from app.schemas.appointment import CreateAppointment
 from app.schemas.visit import PaymentMode, VisitStatus
 from app.services.emailer import send_stage_email
 from app.services.sample_service import generate_sample_id
@@ -583,51 +585,6 @@ async def create_visit(
     )
 
 
-# @router.post("/visits/{id}/")
-# async def update_visit(
-#     id: int,
-#     request: Request,
-#     patient_id: int = Form(...),
-#     department_id: int = Form(...),
-#     doctor_id: int = Form(...),
-#     visit_date: str = Form(...),
-#     visit_time: str = Form(...),
-#     reason: str | None = Form(None),
-#     patient_type: str = Form(...),
-#     payment_mode: PaymentMode | None = Form(None),
-#     db: AsyncSession = Depends(get_db),
-# ):
-#     visit_date_obj = datetime.strptime(visit_date, "%d-%m-%Y").replace(
-#         tzinfo=timezone.utc
-#     )
-#     time_of_visit_obj = (
-#         datetime.strptime("14:30", "%H:%M").time().replace(tzinfo=timezone.utc)
-#     )
-
-#     stmt = select(Visit).where(Visit.id == id)
-#     result = await db.execute(stmt)
-#     visit_obj = result.scalar()
-#     if not visit_obj:
-#         raise HTTPException(detail="Resource not found", status_code=404)
-
-#     visit_obj.patient_id = patient_id
-#     visit_obj.department_id = department_id
-#     visit_obj.doctor_id = doctor_id
-#     visit_obj.visit_date = visit_date_obj
-#     visit_obj.reason = reason
-#     visit_obj.status = VisitStatus.pending
-#     visit_obj.mode_of_payment = payment_mode
-#     visit_obj.time_of_visit = time_of_visit_obj
-
-#     db.add(visit_obj)
-#     await db.commit()
-
-#     return RedirectResponse(
-#         url="/visits/",
-#         status_code=303,
-#     )
-
-
 @router.get("/appointments", response_class=HTMLResponse, name="appointments")
 async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     patients = await db.execute(select(Patient))
@@ -636,20 +593,46 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     doctors = await db.execute(
         select(User).where(User.role == "doctor", User.is_active == True)  # noqa: E712
     )
+    # TODO: Change to subquery to get tests in addition
+    test_categories = await db.execute(select(TestCategory))
+    tests_bac = await db.execute(
+        select(Test).where(Test.test_category_id == 2).order_by(Test.id.asc())
+    )
+    tests_chem = await db.execute(
+        select(Test).where(Test.test_category_id == 3).order_by(Test.id.asc())
+    )
 
     patients_results = patients.scalars().all()
-    doctors_results = doctors.scalars().all()
+    staff_results = doctors.scalars().all()
     department_results = departments.scalars().all()
+    test_categories_results = test_categories.scalars().all()
     total_appointment = len(appointments.scalars().all())
 
+    bac_test_results = tests_bac.scalars().all()
+    chem_test_results = tests_chem.scalars().all()
+    total_appointment = len(appointments.scalars().all())
+
+    print(len(bac_test_results))
+    print(len(chem_test_results))
     return _render(
         request,
         "all-appointments.html",
         active_page="appointments",
-        department=department_results,
+        departments=department_results,
         patients=patients_results,
-        doctors=doctors_results,
+        staffs=staff_results,
+        test_categories=test_categories_results,
         total_appointment=total_appointment,
+    )
+
+
+@router.get("/appointments/add", response_class=HTMLResponse, name="appointments")
+async def create_appointments(
+    request: Request, data: CreateAppointment, db: AsyncSession = Depends(get_db)
+):
+    return RedirectResponse(
+        url="/appointments/",
+        status_code=303,
     )
 
 

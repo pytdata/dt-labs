@@ -12,17 +12,17 @@ from sqlalchemy import or_
 
 from app.db.session import get_db
 from app.models import Patient
+from app.models.catalog import Test
 from app.models.lab import Appointment
-from app.models.users import Department, User
+from app.models.users import User
+from app.schemas.appointment import (
+    AppointmenCreate,
+    AppointmentResponse,
+    AppointmentStatus,
+)
 
 
 router = APIRouter()
-
-
-class AppointmentStatus(str, Enum):
-    upcoming = "upcoming"
-    in_progress = "in_progress"
-    completed = "completed"
 
 
 class FilterParams(BaseModel):
@@ -36,19 +36,18 @@ class FilterParams(BaseModel):
     status: AppointmentStatus | None = None
 
 
-@router.get("/appointment")
-async def get_all_appointment(
+@router.get("/", response_model=list[AppointmentResponse])
+async def get_all_appointments(
     filter_query: Annotated[FilterParams, Query()], db: AsyncSession = Depends(get_db)
 ):
     stmt = (
         select(Appointment)
         .join(Appointment.patient)
         .join(Appointment.doctor)
-        # .join(Appointment.created_by_user)
         .options(
             selectinload(Appointment.patient),
             selectinload(Appointment.doctor),
-            # selectinload(Appointment.created_by_user),
+            selectinload(Appointment.tests),
         )
         .order_by(Appointment.appointment_at.desc())
     )
@@ -71,12 +70,12 @@ async def get_all_appointment(
             )
         )
 
-    if filter_query.department:
-        stmt = stmt.where(
-            Appointment.department.has(
-                Department.name.ilike(f"%{filter_query.department.strip()}%")
-            )
-        )
+    # if filter_query.department:
+    #     stmt = stmt.where(
+    #         Appointment.department.has(
+    #             Department.name.ilike(f"%{filter_query.department.strip()}%")
+    #         )
+    #     )
 
     if filter_query.status:
         stmt = stmt.where(Appointment.status.in_([filter_query.status]))
@@ -87,3 +86,72 @@ async def get_all_appointment(
     appointment = result.scalars().all()
 
     return appointment
+
+
+@router.get("/{id}/")
+async def get_appointment(
+    id: int,
+    filter_query: Annotated[FilterParams, Query()],
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(Appointment)
+        .where(Appointment.id == id)
+        .join(Appointment.patient)
+        .join(Appointment.doctor)
+        # .join(Appointment.created_by_user)
+        .options(
+            selectinload(Appointment.patient),
+            selectinload(Appointment.doctor),
+            # selectinload(Appointment.created_by_user),
+        )
+        .order_by(Appointment.appointment_at.desc())
+    )
+
+    stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
+
+    result = await db.execute(stmt)
+    appointment = result.scalar()
+
+    return appointment
+
+
+@router.post("/")
+async def create_appointment(
+    data: AppointmenCreate, db: AsyncSession = Depends(get_db)
+):
+    # fetch all selected tests
+    stmt = select(Test).where(Test.id.in_(data.test_ids))
+    result = await db.execute(stmt)
+    tests = result.scalars().all()
+
+    if not tests:
+        raise HTTPException(status_code=400, detail="No valid tests selected")
+
+    # convert date to utc
+    appointment_at_utc = datetime.strptime(data.appointment_at, "%Y-%m-%d").replace(
+        tzinfo=timezone.utc
+    )
+
+    start_time = datetime.strptime(data.start_time, "%H:%M").time()
+    end_time = datetime.strptime(data.end_time, "%H:%M").time()
+
+    # create appointment
+    appointment = Appointment(
+        patient_id=data.patient_id,
+        doctor_id=data.doctor_id,
+        appointment_at=appointment_at_utc,
+        start_time=start_time,
+        end_time=end_time,
+        preffered_mode=data.preffered_mode,
+        reason=data.reason,
+        notes=data.notes,
+        mode_of_payment=data.mode_of_payment,
+        tests=tests,
+    )
+
+    db.add(appointment)
+    await db.commit()
+    await db.refresh(appointment)
+
+    return {"message": "ok"}

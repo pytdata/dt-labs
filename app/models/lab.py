@@ -1,4 +1,15 @@
-from sqlalchemy import String, Date, DateTime, ForeignKey, Text, JSON, Time
+from enum import Enum
+from sqlalchemy import (
+    Column,
+    String,
+    Date,
+    DateTime,
+    ForeignKey,
+    Table,
+    Text,
+    JSON,
+    Time,
+)
 from sqlalchemy import Enum as SAEnum
 from app.models.enums import LabStage
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -6,6 +17,10 @@ from sqlalchemy.sql import func
 
 from app.db.base import Base
 from datetime import datetime, time
+
+from app.schemas.appointment import AppointmentStatus
+from app.schemas.visit import ModeOfConsultation, PaymentMode
+from . import association
 
 
 class Patient(Base):
@@ -88,14 +103,22 @@ class Appointment(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
     doctor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), index=True)
+    # test_id: Mapped[int] = mapped_column(
+    #     ForeignKey("tests.id"), index=True, nullable=True
+    # )
+    # department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), index=True)
     appointment_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), index=True
     )
+    start_time: Mapped[time] = mapped_column(Time)
+    end_time: Mapped[time] = mapped_column(Time)
+    preffered_mode: Mapped[str] = mapped_column(default="in_person", nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(
-        String(20), default="scheduled"
+        String(20), default=AppointmentStatus.upcoming
     )  # scheduled|completed|cancelled
+    mode_of_payment: Mapped[str] = mapped_column(default=PaymentMode.cash)
     created_by_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )
@@ -104,7 +127,10 @@ class Appointment(Base):
     # relationship
     patient = relationship("Patient")
     doctor = relationship("User", foreign_keys=[doctor_id])
-    department = relationship("Department")
+    tests = relationship(
+        "Test", secondary=association.appointment_tests, back_populates="appointments"
+    )
+    # department = relationship("Department")
     created_by_user = relationship("User", foreign_keys=[created_by_user_id])
 
     # visit = relationship("Visit")

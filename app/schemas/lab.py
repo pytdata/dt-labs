@@ -27,7 +27,8 @@ class PatientOut(PatientCreate):
     patient_no: str
     full_name: str
     created_at: datetime | None = None
-    last_visit_date: datetime | None
+    # last_visit_date: datetime | None
+
     model_config = {"from_attributes": True}
 
 

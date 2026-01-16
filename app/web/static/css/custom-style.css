@@ -1,0 +1,20 @@
+.is_cat_table_hidden {
+    display: none;
+}
+
+.bac__hidden {
+    display: none;
+}
+
+.bac__visible {
+    display: block;
+}
+
+
+.chem__hidden {
+    display: none;
+}
+
+.chem__visible {
+    display: block;
+}

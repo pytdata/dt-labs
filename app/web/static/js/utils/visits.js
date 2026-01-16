@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", init);
 
 async function init(e) {
   let visitsList = await getVisitsData(visitsURL);
-  console.log(visitsList);
 
   render(visitsList);
 
@@ -339,7 +338,7 @@ function buildDynamicURLParam(key, value, state) {
 }
 
 /**
- * Fetch all patients data
+ * Fetch all visits data
  * @returns Array[objects]
  */
 async function getVisitsData(url) {

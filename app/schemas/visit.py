@@ -30,7 +30,8 @@ class DepartmentMini(BaseModel):
 
 class PaymentMode(str, Enum):
     cash = "cash"
-    insurance = "payment"
+    momo = "momo"
+    hybrid = "cash_momo"
 
 
 class VisitResponse(BaseModel):
@@ -58,14 +59,7 @@ class UpdateVisit(BaseModel):
     payment_mode: PaymentMode | None
 
 
-# class VisitResponse(BaseModel):
-#     id: int
-#     visit_date: datetime
-#     reason: str | None
-#     status: VisitStatus
-#     patient: PatientMini
-#     department: DepartmentMini
-#     doctor: DoctorMini
-#     mode_of_payment: PaymentMode | None
-
-#     model_config = ConfigDict(from_attributes=True)
+class ModeOfConsultation(str, Enum):
+    in_person = "in_person"
+    video = "video"
+    phone = "phone"

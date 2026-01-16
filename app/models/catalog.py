@@ -1,13 +1,28 @@
-from sqlalchemy import String, Text, ForeignKey, Numeric, UniqueConstraint, Boolean, Integer
+from sqlalchemy import (
+    String,
+    Text,
+    ForeignKey,
+    Numeric,
+    UniqueConstraint,
+    Boolean,
+    Integer,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import DateTime, func, Time
+from datetime import datetime, time
+
 from app.db.base import Base
+from . import association
+
 
 class Analyzer(Base):
     __tablename__ = "analyzers"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    test_mappings = relationship("AnalyzerTestMapping", back_populates="analyzer", cascade="all, delete-orphan")
+    test_mappings = relationship(
+        "AnalyzerTestMapping", back_populates="analyzer", cascade="all, delete-orphan"
+    )
 
     # Dynamic connectivity
     # tcp | serial | manual
@@ -25,39 +40,84 @@ class Analyzer(Base):
     # Comma-separated fallbacks to try if the primary source is missing (e.g. "sample_id,order_id")
     patient_id_fallbacks: Mapped[str | None] = mapped_column(String(120), nullable=True)
 
-
     # TCP
     tcp_ip: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tcp_port: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Serial
-    serial_port: Mapped[str | None] = mapped_column(String(50), nullable=True)  # e.g., COM3 or /dev/ttyUSB0
+    serial_port: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # e.g., COM3 or /dev/ttyUSB0
     baud_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    parity: Mapped[str | None] = mapped_column(String(10), nullable=True)  # none|even|odd
+    parity: Mapped[str | None] = mapped_column(
+        String(10), nullable=True
+    )  # none|even|odd
     stop_bits: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 1|2
     data_bits: Mapped[int | None] = mapped_column(Integer, nullable=True)  # usually 8
-    flow_control: Mapped[str | None] = mapped_column(String(20), nullable=True)  # none|rtscts|xonxoff
+    flow_control: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )  # none|rtscts|xonxoff
 
     manufacturer: Mapped[str | None] = mapped_column(String(120), nullable=True)
     model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+
+class TestCategory(Base):
+    __tablename__ = "test_categories"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    category_name: Mapped[str] = mapped_column(String)
+    category_description: Mapped[str] = mapped_column(String)
+    date_added: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    date_modified: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    added_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    modified_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+
+    # relationship
+    added_by = relationship("User", foreign_keys=[added_by_id])
+    modified_by = relationship("User", foreign_keys=[modified_by_id])
+
+
 class Test(Base):
     __tablename__ = "tests"
     id: Mapped[int] = mapped_column(primary_key=True)
+
+    test_category_id: Mapped[int] = mapped_column(
+        ForeignKey("test_categories.id"), index=True
+    )
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     department: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    default_analyzer_id: Mapped[int | None] = mapped_column(ForeignKey("analyzers.id"), nullable=True)
-    price_ghs: Mapped[float | None] = mapped_column(Numeric(10,2), nullable=True)
+    default_analyzer_id: Mapped[int | None] = mapped_column(
+        ForeignKey("analyzers.id"), nullable=True
+    )
+    price_ghs: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
 
     default_analyzer = relationship("Analyzer")
-    analyzer_mappings = relationship("AnalyzerTestMapping", back_populates="test", cascade="all, delete-orphan")
+    analyzer_mappings = relationship(
+        "AnalyzerTestMapping", back_populates="test", cascade="all, delete-orphan"
+    )
+    test_category = relationship("TestCategory")
+    appointments = relationship(
+        "Appointment", secondary=association.appointment_tests, back_populates="tests"
+    )
+
 
 class TestParameter(Base):
     __tablename__ = "test_parameters"
-    __table_args__ = (UniqueConstraint("test_id","name", name="uq_test_param"),)
+    __table_args__ = (UniqueConstraint("test_id", "name", name="uq_test_param"),)
     id: Mapped[int] = mapped_column(primary_key=True)
-    test_id: Mapped[int] = mapped_column(ForeignKey("tests.id"), nullable=False, index=True)
+    test_id: Mapped[int] = mapped_column(
+        ForeignKey("tests.id"), nullable=False, index=True
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
     ref_range: Mapped[str | None] = mapped_column(String(100), nullable=True)
