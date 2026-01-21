@@ -2,7 +2,7 @@ from datetime import date, datetime, time
 from decimal import Decimal
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from app.schemas.lab import PatientOut
 from app.schemas.visit import PaymentMode
@@ -10,8 +10,8 @@ from app.schemas.visit import PaymentMode
 
 class PrefferedModeOfAppointment(str, Enum):
     in_person = "in_person"
-    video = "video"
-    phone = "phone"
+    # video = "video"
+    # phone = "phone"
 
 
 class AppointmentStatus(str, Enum):
@@ -25,6 +25,7 @@ class UserResponse(BaseModel):
     id: int
     full_name: str
     email: str | None
+    role: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -32,14 +33,26 @@ class UserResponse(BaseModel):
 class AppointmenCreate(BaseModel):
     patient_id: int
     doctor_id: int
-    appointment_at: str
-    start_time: str
-    end_time: str
-    preffered_mode: PrefferedModeOfAppointment
-    reason: str | None = None
+    total_price: Decimal
+    # appointment_at: str
+    # start_time: str
+    # end_time: str
+    # preffered_mode: PrefferedModeOfAppointment
+    # reason: str | None = None
     notes: str | None = None
     mode_of_payment: PaymentMode
     test_ids: List[int]
+
+
+class AppointmentUpdate(BaseModel):
+    patient_id: Optional[int] = None
+    doctor_id: Optional[int] = None
+    appointment_at: Optional[datetime] = None
+    notes: Optional[str] = None
+    status: Optional[str] = None
+    mode_of_payment: Optional[str] = None
+    total_price: Optional[Decimal] = None
+    test_ids: Optional[List[int]] = None
 
 
 class TestResponse(BaseModel):
@@ -59,11 +72,11 @@ class AppointmentResponse(BaseModel):
     # created_at: datetime | None
     appointment_at: datetime
     start_time: time
-    end_time: time
+    end_time: time | None
     preffered_mode: PrefferedModeOfAppointment | None
-    reason: str | None
     notes: str | None
     status: str | None
+    total_price: Decimal | None
     mode_of_payment: PaymentMode
     tests: List[TestResponse] = []
     # created_at: datetime | None
@@ -71,19 +84,19 @@ class AppointmentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class CreateAppointment(BaseModel):
-    patient_id: int
-    doctor_id: int
-    test_type: int
-    preffered_mode: PrefferedModeOfAppointment
-    start_time: time
-    end_time: time
-    mode_of_payment: PaymentMode
-    reason: str | None
-    quick_notes: str | None
-    status: AppointmentStatus | None = AppointmentStatus.upcoming
+# class CreateAppointment(BaseModel):
+#     patient_id: int
+#     doctor_id: int
+#     test_type: int
+#     preffered_mode: PrefferedModeOfAppointment
+#     # start_time: time
+#     # end_time: time
+#     mode_of_payment: PaymentMode
+#     reason: str | None
+#     quick_notes: str | None
+#     status: AppointmentStatus | None = AppointmentStatus.upcoming
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
 
 class TestCategoryResponse(BaseModel):

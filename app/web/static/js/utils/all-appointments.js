@@ -1,3 +1,5 @@
+console.log("appointments.js loaded");
+
 let searchBacterialTestEl = document.querySelector(".search__bact");
 let searchChemTestEl = document.querySelector(".search__chem");
 let catSelectEl = document.querySelector(".test__cat__type");
@@ -8,6 +10,12 @@ let bacterialTestDivEl = document.querySelector("#bacteria-test");
 let chemistryTestDivEl = document.querySelector("#chemistry-test");
 
 let totalPriceEL = document.querySelector(".total__price");
+let totalNumOfAppointments = 0;
+
+// render accordion
+let selectedTestAccordionListEl = document.querySelector(
+  ".selected__accordion",
+);
 
 let testCategoriesURL = "/api/v1/test-categories";
 let appointmentsURL = "/api/v1/appointments/";
@@ -26,8 +34,15 @@ let chem__search__resultsEl = document.querySelector(".chem__search__results");
 // VIEW: form data
 let appointmentForm = document.querySelector(".appointmentForm");
 
+// FILTERING / SEARCH
+const searchPatientEl = document.querySelector(".search__patient");
+const searchStaffEl = document.querySelector(".search__staff");
+const filterByStatus = document.querySelector(".appointment_status");
+
 document.addEventListener("DOMContentLoaded", async (e) => {
   const res = await getTestCategoriessData(appointmentsURL);
+  // total number of appointment
+  totalNumOfAppointments = res.length;
 
   render(res);
 
@@ -68,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async (e) => {
       let value = e.target.value;
       buildDynamicURLParam("name", value);
       const data = await performSearch(value);
-      console.log(data);
+      console.log("renderrr:", data);
 
       renderBacteriaSearchResults(data);
     });
@@ -95,8 +110,8 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     if (!checkbox.classList.contains("bac__option")) return;
     const optionId = Number(checkbox.dataset.bacId);
     const priceOfTest = Number(checkbox.dataset.bacPrice);
-
-    console.log("Price of Test", priceOfTest);
+    const testName = checkbox.dataset.bacName;
+    console.log("test name: ", testName);
 
     if (checkbox.checked) {
       selectedTests["bacteriology"].push(optionId);
@@ -105,24 +120,28 @@ document.addEventListener("DOMContentLoaded", async (e) => {
       const selectedOption = {
         id: optionId,
         price: priceOfTest,
+        name: testName,
       };
 
       selectedTestOrderList.push(selectedOption);
       const totalPrice = computeTotalPrice(selectedTestOrderList);
-      console.log(totalPrice);
+
+      // render accordion
+      accordionListRender(selectedTestOrderList);
     } else {
       selectedTests["bacteriology"] = selectedTests["bacteriology"].filter(
-        (id) => id !== optionId
+        (id) => id !== optionId,
       );
 
       // remove test from testlist
       selectedTestOrderList = selectedTestOrderList.filter(
-        (item) => item.id !== optionId
+        (item) => item.id !== optionId,
       );
       let totalPrice2 = computeTotalPrice(selectedTestOrderList);
-      console.log(totalPrice2);
     }
 
+    // render accordion
+    accordionListRender(selectedTestOrderList);
     // console.log(selectedTestOrderList);
   });
 
@@ -132,6 +151,7 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     if (!checkbox.classList.contains("chem_option")) return;
     const optionId = Number(checkbox.dataset.chemId);
     const priceOfTest = Number(checkbox.dataset.chemPrice);
+    const testName = checkbox.dataset.chemName;
 
     if (checkbox.checked) {
       selectedTests["chemistry"].push(optionId);
@@ -140,22 +160,29 @@ document.addEventListener("DOMContentLoaded", async (e) => {
       const selectedOption = {
         id: optionId,
         price: priceOfTest,
+        name: testName,
       };
       selectedTestOrderList.push(selectedOption);
       let totalPrice = computeTotalPrice(selectedTestOrderList);
       console.log(totalPrice);
+
+      // render accordion
+      accordionListRender(selectedTestOrderList);
     } else {
       selectedTests["chemistry"] = selectedTests["chemistry"].filter(
-        (id) => id !== optionId
+        (id) => id !== optionId,
       );
 
       // from test from testlist
       selectedTestOrderList = selectedTestOrderList.filter(
-        (item) => item.id !== optionId
+        (item) => item.id !== optionId,
       );
       // re-compute the total score
       let totalPrice2 = computeTotalPrice(selectedTestOrderList);
       console.log(totalPrice2, "is now");
+
+      // render accordion
+      accordionListRender(selectedTestOrderList);
     }
   });
 
@@ -165,21 +192,21 @@ document.addEventListener("DOMContentLoaded", async (e) => {
     .addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      // show notification
+      const appointment_toast = document.getElementById("liveToast");
+      const toastAppointment =
+        bootstrap.Toast.getOrCreateInstance(appointment_toast);
+      console.log(toastAppointment);
+
       const form = e.target;
       const formData = new FormData(form);
 
       const payload = {
         patient_id: Number(formData.get("patient_id")),
-        // patient_type: formData.get("patient_type"),
         doctor_id: Number(formData.get("staff_id")),
-        // test_category_id: Number(formData.get("test_category_id")),
-        preffered_mode: formData.get("preffered_mode"),
-        appointment_at: formData.get("appointment_at"),
-        start_time: formData.get("start_time"),
-        end_time: formData.get("end_time"),
-        reason: formData.get("reason"),
         notes: formData.get("notes"),
         mode_of_payment: formData.get("payment_mode"),
+        total_price: Number(formData.get("total__price")),
 
         test_ids: [
           ...new Set([
@@ -196,15 +223,59 @@ document.addEventListener("DOMContentLoaded", async (e) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-      const data = await res.json();
-      console.log("created appo", data);
+        const data = await res.json();
 
+        console.log("created appo", data);
 
+        // close modal
+        const modalEl = document.getElementById("add_modal");
+        const modalInstance =
+          bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+
+        modalInstance.hide();
+
+        // reset form data and global state for forms
+        form.reset();
+        selectedTests["bacteriology"] = [];
+        selectedTests["chemistry"] = [];
+        selectedTestOrderList = [];
+
+        // set success notification information for toast to show
+        document.querySelector(".notification__header").textContent =
+          "New Appointment Added";
+        document.querySelector(".notification__body").textContent =
+          "Appointment was successfully added.";
+
+        if (
+          !document.querySelector(".toast").classList.contains("bg-success")
+        ) {
+          document.querySelector(".toast").classList.add("bg-success");
+        } else {
+          document.querySelector(".toast").classList.remove("bg-success");
+        }
+
+        // show toast
+        toastAppointment.show();
       } catch (error) {
         console.log(error);
-      }
+        // set success notification information for toast to show
+        document.querySelector(".notification__header").textContent =
+          "New Appointment Failed";
+        document.querySelector(".notification__body").textContent =
+          "Failed to add new Appointment. Please try again.";
 
-     
+        // show toast
+        toastAppointment.show();
+      }
+    });
+
+  // edit button to show edit modal
+  document
+    .querySelector(".appointments__table")
+    .addEventListener("click", async function (e) {
+      const button = e.target.closest(".edit__appointment__btn");
+      if (!button) return;
+      console.log(button.dataset);
     });
 });
 
@@ -240,6 +311,42 @@ function computeTotalPrice(data) {
  */
 function showComputedAmount(totalAmount) {
   totalPriceEL.textContent = `${totalAmount}`;
+}
+
+// VIEW:
+/**
+ * Render a list of selected Tests to the DOM when the client selects a list of tests
+ * @param {Array[object]} selectedTestList
+ */
+function accordionListRender(selectedTestList) {
+  console.log(selectedTestList);
+  if (selectedTestList.length === 0) {
+    selectedTestAccordionListEl.innerHTML = `<p class="p-4 fs-4 text-align-center">No test selected</p>`;
+  } else {
+    const filterDuplicate = selectedTestList.reduce((acc, currrent) => {
+      const x = acc.find((item) => item.id == currrent.id);
+      if (!x) {
+        return acc.concat([currrent]);
+      } else {
+        return acc;
+      }
+    }, []);
+
+    const accordionListHTML = filterDuplicate
+      .map((selectedTest) => {
+        return `
+      <li class="list-group-item d-flex justify-content-between align-items-start selected__accordion">
+        <div class="ms-2 me-auto">
+       ${selectedTest.name}
+        </div>
+        <span class="badge text-bg-primary rounded-pill">${selectedTest.price}</span>
+      </li>
+      `;
+      })
+      .join("");
+
+    selectedTestAccordionListEl.innerHTML = accordionListHTML;
+  }
 }
 
 /**
@@ -282,8 +389,10 @@ function renderData(appointment) {
                     <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">${
                       appointment.patient.first_name
                     } ${
-    appointment.patient.other_names ? appointment.patient.other_names : ""
-  } ${appointment.patient.surname}</a></h6>
+                      appointment.patient.other_names
+                        ? appointment.patient.other_names
+                        : ""
+                    } ${appointment.patient.surname}</a></h6>
                 </div>
             </div>
         </td>
@@ -305,10 +414,10 @@ function renderData(appointment) {
           appointment.status == "completed"
             ? `<td><span class="badge badge-soft-success border border-success text-success py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>Completed</span></td>`
             : appointment.status == "upcoming"
-            ? `<td><span class="badge badge-soft-info border border-info text-info py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>Upcoming</span></td>`
-            : appointment.status == "cancelled"
-            ? `<td><span class="badge badge-soft-danger border border-danger text-danger py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>Cancelled</span></td>`
-            : `<td><span class="badge badge-soft-warning border border-warning text-warning py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>In Progress</span></td>`
+              ? `<td><span class="badge badge-soft-info border border-info text-info py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>Upcoming</span></td>`
+              : appointment.status == "cancelled"
+                ? `<td><span class="badge badge-soft-danger border border-danger text-danger py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>Cancelled</span></td>`
+                : `<td><span class="badge badge-soft-warning border border-warning text-warning py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>In Progress</span></td>`
         }
         <td class="text-end">
             <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
@@ -317,7 +426,7 @@ function renderData(appointment) {
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
                 </li>
                 <li>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_modal"><i class="ti ti-edit me-1"></i>Edit</a>
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center edit__appointment__btn" data-bs-toggle="modal" data-bs-target="#edit_modal" data-appointmentId=${appointment.id}><i class="ti ti-edit me-1"></i>Edit</a>
                 </li>
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
@@ -445,10 +554,12 @@ async function performSearch(query) {
 function renderBacteriaSearchResults(data) {
   const searchResultsHTML = data
     .map((bac) => {
+      const bac_exits = selectedTests["bacteriology"].includes(bac.id);
+
       const htmlElement = `
              <li>
                 <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                    <input data-bac-id=${bac.id} data-bac-price=${bac.price_ghs} class="form-check-input m-0 me-2 bac__option" type="checkbox">
+                    <input data-bac-id=${bac.id} data-bac-price=${bac.price_ghs} data-bac-name="${bac.name}" class="form-check-input m-0 me-2 bac__option" type="checkbox" ${bac_exits ? "checked" : ""}>
                     <span class="avatar avatar-xs rounded-circle me-2"></span>${bac.name}
                 </label>
             </li>
@@ -478,7 +589,7 @@ function renderChemistrySearchResults(data) {
       const htmlElement = `
              <li>
                 <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                    <input class="form-check-input m-0 me-2 chem_option" type="checkbox" data-chem-id=${chem.id} data-chem-price=${chem.price_ghs}>
+                    <input class="form-check-input m-0 me-2 chem_option" type="checkbox" data-chem-id=${chem.id} data-chem-price=${chem.price_ghs} data-chem-name=${chem.name}>
                     <span class="avatar avatar-xs rounded-circle me-2"></span>${chem.name}
                 </label>
             </li>

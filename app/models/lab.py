@@ -1,6 +1,8 @@
+from decimal import Decimal
 from enum import Enum
 from sqlalchemy import (
     Column,
+    Numeric,
     String,
     Date,
     DateTime,
@@ -103,17 +105,20 @@ class Appointment(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
     doctor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    total_price: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=0.0, nullable=True
+    )
     # test_id: Mapped[int] = mapped_column(
     #     ForeignKey("tests.id"), index=True, nullable=True
     # )
     # department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), index=True)
     appointment_at: Mapped[DateTime] = mapped_column(
-        DateTime(timezone=True), index=True
+        DateTime(timezone=True), index=True, default=func.now()
     )
-    start_time: Mapped[time] = mapped_column(Time)
-    end_time: Mapped[time] = mapped_column(Time)
+    start_time: Mapped[time] = mapped_column(Time, default=func.current_time())
+    end_time: Mapped[time] = mapped_column(Time, nullable=True)
     preffered_mode: Mapped[str] = mapped_column(default="in_person", nullable=True)
-    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), default=AppointmentStatus.upcoming

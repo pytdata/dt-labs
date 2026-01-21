@@ -26,7 +26,7 @@ from app.db.session import get_db
 from app.models.catalog import TestCategory
 from app.models.enums import LabStage
 from app.models.users import Department, User
-from app.schemas.appointment import CreateAppointment
+from app.schemas.appointment import AppointmenCreate
 from app.schemas.visit import PaymentMode, VisitStatus
 from app.services.emailer import send_stage_email
 from app.services.sample_service import generate_sample_id
@@ -606,14 +606,11 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     staff_results = doctors.scalars().all()
     department_results = departments.scalars().all()
     test_categories_results = test_categories.scalars().all()
-    total_appointment = len(appointments.scalars().all())
 
-    bac_test_results = tests_bac.scalars().all()
-    chem_test_results = tests_chem.scalars().all()
-    total_appointment = len(appointments.scalars().all())
+    # bac_test_results = tests_bac.scalars().all()
+    # chem_test_results = tests_chem.scalars().all()
+    total_appointments = len(appointments.scalars().all())
 
-    print(len(bac_test_results))
-    print(len(chem_test_results))
     return _render(
         request,
         "all-appointments.html",
@@ -622,13 +619,13 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
         patients=patients_results,
         staffs=staff_results,
         test_categories=test_categories_results,
-        total_appointment=total_appointment,
+        total_appointments=total_appointments,
     )
 
 
 @router.get("/appointments/add", response_class=HTMLResponse, name="appointments")
 async def create_appointments(
-    request: Request, data: CreateAppointment, db: AsyncSession = Depends(get_db)
+    request: Request, data: AppointmenCreate, db: AsyncSession = Depends(get_db)
 ):
     return RedirectResponse(
         url="/appointments/",
