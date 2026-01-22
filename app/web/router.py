@@ -611,6 +611,8 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     # chem_test_results = tests_chem.scalars().all()
     total_appointments = len(appointments.scalars().all())
 
+    print(total_appointments)
+
     return _render(
         request,
         "all-appointments.html",

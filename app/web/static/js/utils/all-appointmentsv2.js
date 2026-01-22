@@ -2,6 +2,9 @@
 const searchBacterialTestEl = document.querySelector(".search__bact");
 const searchChemTestEl = document.querySelector(".search__chem");
 const catSelectEl = document.querySelector(".test__cat__type");
+const searchStaff = document.querySelector(".staff__search");
+const patientSearch = document.querySelector(".search__patient");
+const statusFilter = document.querySelectorAll(".filter__status");
 
 // TABLES / VIEWS
 const appointmentsTableEL = document.querySelector(".appointments__table");
@@ -29,7 +32,7 @@ let searchTimeout = null;
 let activeController = null;
 
 let testCategoriesURL = "/api/v1/test-categories";
-const appointmentsURL = "/api/v1/appointments/";
+let appointmentsURL = "/api/v1/appointments/";
 
 const selectedTests = {
   bacteriology: [],
@@ -39,7 +42,7 @@ const selectedTests = {
 let selectedTestOrderList = [];
 
 (async function init() {
-  const res = await getTestCategoriessData(appointmentsURL);
+  const res = await getRemoteData(appointmentsURL);
   totalNumOfAppointments = res.length;
   render(res);
 })();
@@ -142,22 +145,19 @@ appointmentForm.addEventListener("submit", async (e) => {
     ],
   };
 
-  
-
   try {
     const res = await fetch("/api/v1/appointments/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-  if (!res.ok) throw new Error("Failed to book appointment.: ", res);
+    if (!res.ok) throw new Error("Failed to book appointment.: ", res);
 
-  const data = await res.json();
-  console.log(data);
-
+    const data = await res.json();
+    console.log(data);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 
   appointmentForm.reset();
@@ -173,12 +173,12 @@ appointmentsTableEL.addEventListener("click", async (e) => {
   try {
     const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
       method: "GET",
-       headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
     const appointment = await res.json();
 
-    console.log("appointment detail: ", appointment)
+    console.log("appointment detail: ", appointment);
 
     populateAppointmentDetailModal(appointment);
   } catch (error) {
@@ -186,8 +186,7 @@ appointmentsTableEL.addEventListener("click", async (e) => {
     alert("Failed to load appointment");
     // TODO: app toast notification
   }
-
-})
+});
 
 // show edit appointment form with requested data
 appointmentsTableEL.addEventListener("click", async (e) => {
@@ -199,7 +198,7 @@ appointmentsTableEL.addEventListener("click", async (e) => {
   try {
     const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
       method: "GET",
-       headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
     const appointment = await res.json();
@@ -228,7 +227,7 @@ document
       mode_of_payment: document.getElementById("mode_of_payment").value,
     };
 
-    console.log(payload)
+    console.log(payload);
 
     try {
       const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
@@ -243,16 +242,17 @@ document
       console.log(data);
 
       // reset the form
-      document.querySelector(".edit__appointment__form").reset()
+      document.querySelector(".edit__appointment__form").reset();
     } catch (error) {
       console.log(error);
       alert(error);
     }
   });
 
-
-  // update appointment status
-  document.querySelector("#status__container").addEventListener("click", async (e) => {
+// update appointment status
+document
+  .querySelector("#status__container")
+  .addEventListener("click", async (e) => {
     e.preventDefault();
 
     const button = e.target.closest(".status__updater");
@@ -263,25 +263,24 @@ document
 
     // make patch/put request to update status
     const payload = {
-      "status": status
-    }
+      status: status,
+    };
     try {
       const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
         method: "PUT",
-          headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        
       });
-      if( !res.ok) throw new Error("Failed to update appointment.: ", res);
+      if (!res.ok) throw new Error("Failed to update appointment.: ", res);
 
       const data = await res.json();
 
       populateAppointmentDetailModal(data);
       // document.querySelector("#current_status").innerText = "loading....";
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  })
+  });
 
 // delete appointment
 appointmentsTableEL.addEventListener("click", async (e) => {
@@ -289,36 +288,162 @@ appointmentsTableEL.addEventListener("click", async (e) => {
   if (!button) return;
 
   const appointmentId = button.dataset.appointmentid;
-  document.querySelector(".delete__appointment").dataset.appointmentid=appointmentId;
+  document.querySelector(".delete__appointment").dataset.appointmentid =
+    appointmentId;
 });
 
-document.querySelector(".delete__appointment").addEventListener("click", async (e) => {
-  // send delete request to delete resources
-  e.preventDefault();
-  const button = e.target;
-  if (!button) return;
+document
+  .querySelector(".delete__appointment")
+  .addEventListener("click", async (e) => {
+    // send delete request to delete resources
+    e.preventDefault();
+    const button = e.target;
+    if (!button) return;
 
-  const appointmentId = button.dataset.appointmentid;
-  console.log("del", appointmentId);
+    const appointmentId = button.dataset.appointmentid;
+    console.log("del", appointmentId);
 
-  try {
-    const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
-      method: "DELETE",
-       headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error("Failed to delete appointment: ", res);
+    try {
+      const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error("Failed to delete appointment: ", res);
+    } catch (error) {
+      console.error(error);
+      alert(error);
+    }
+  });
 
-  } catch (error) {
-    console.error(error);
-    alert(error);
+// Search patients by staff
+searchStaff.addEventListener("input", (e) => {
+  console.log(e.target.value);
+  clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(async () => {
+    let value = e.target.value;
+    buildAppointmentDynamicURLParam("doctor", value);
+    console.log(appointmentsURL);
+    const data = await performSearch(value, true);
+    console.log("Data from search 1:", data);
+
+    renderStaffSearchResults(data);
+  });
+});
+
+// clear text from searchStaff input
+searchStaff.addEventListener("blur", (e) => {
+  searchStaff.value = "";
+  buildAppointmentDynamicURLParam("doctor");
+});
+
+// Search patients by patient name
+patientSearch.addEventListener("input", (e) => {
+  console.log(e.target.value);
+  clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(async () => {
+    let value = e.target.value;
+    buildAppointmentDynamicURLParam("patient", value);
+    const data = await performSearch(value, true);
+    console.log("Data from search 2:", data);
+
+    renderPatientsSearchResults(data);
+  });
+});
+
+// clear text from patientsearch input
+patientSearch.addEventListener("blur", (e) => {
+  patientSearch.value = "";
+  buildAppointmentDynamicURLParam("patient");
+});
+
+// FILTERING BY STATUS
+statusFilter.forEach((statusOption) =>
+  statusOption.addEventListener("change", async (e) => {
+    buildAppointmentDynamicURLParam(
+      "status",
+      e.currentTarget.dataset.status,
+      e.currentTarget.checked,
+    );
+
+    // make request to backend
+    const data = await getRemoteData(appointmentsURL);
+    render(data);
+  }),
+);
+
+/**
+ * render patient search results (search by patient name)
+ * @param {object} data
+ */
+function renderPatientsSearchResults(data) {
+  const searchResultsHTML = data
+    .map((appointment) => {
+      const htmlElement = `
+            <li>
+              <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                  <input class="form-check-input m-0 me-2" type="checkbox">
+                  <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>${appointment.patient.first_name} ${appointment.patient.other_names ? appointment.patient.other_names : ""} ${appointment.patient.surname}
+              </label>
+          </li>
+        `;
+      return htmlElement;
+    })
+    .join("");
+
+  const resultUlEl = document.querySelector(".patient__search__results");
+
+  // Remove all li elements except the first one (search input)
+  while (resultUlEl.children.length > 1) {
+    resultUlEl.removeChild(resultUlEl.children[1]);
   }
+
+  // Insert new results after the first li
+  resultUlEl.insertAdjacentHTML("beforeend", searchResultsHTML);
+}
+
+/**
+ * render patient search results (search by staff name)
+ * @param {object} data
+ */
+function renderStaffSearchResults(data) {
+  const searchResultsHTML = data
+    .map((appointment) => {
+      const htmlElement = `
+            <li>
+              <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                  <input class="form-check-input m-0 me-2" type="checkbox">
+                  <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>${appointment.doctor.full_name}
+              </label>
+          </li>
+        `;
+      return htmlElement;
+    })
+    .join("");
+
+  const resultUlEl = document.querySelector(".staff__search__results");
+
+  // Remove all li elements except the first one (search input)
+  while (resultUlEl.children.length > 1) {
+    resultUlEl.removeChild(resultUlEl.children[1]);
+  }
+
+  // Insert new results after the first li
+  resultUlEl.insertAdjacentHTML("beforeend", searchResultsHTML);
+}
+
+// implement the refresh button functionality
+document.querySelector(".ti-refresh").addEventListener("click", async (e) => {
+  const data = await getRemoteData(appointmentsURL);
+  render(data);
 })
 
 /**
  * Fetch all test-categories data
  * @returns Array[objects]
  */
-async function getTestCategoriessData(url) {
+async function getRemoteData(url) {
   const res = await fetch(url);
   const data = await res.json();
   return data;
@@ -416,18 +541,25 @@ function renderData(appointment) {
 }
 
 function populateAppointmentDetailModal(appointment) {
-  console.log("status update: ", appointment)
-  document.getElementById("patient_name").innerText = `${appointment.patient.first_name} ${appointment.patient.other_names ? appointment.other_names : ''} ${appointment.patient.surname}`;
-  document.getElementById("preffered_mode").innerText = `${appointment.preffered_mode == "in_person" ? "In Person" : appointment.preffered_mode}`;
-  document.getElementById("payment_mode").innerText = `Paid: ${appointment.mode_of_payment}`;
+  console.log("status update: ", appointment);
+  document.getElementById("patient_name").innerText =
+    `${appointment.patient.first_name} ${appointment.patient.other_names ? appointment.other_names : ""} ${appointment.patient.surname}`;
+  document.getElementById("preffered_mode").innerText =
+    `${appointment.preffered_mode == "in_person" ? "In Person" : appointment.preffered_mode}`;
+  document.getElementById("payment_mode").innerText =
+    `Paid: ${appointment.mode_of_payment}`;
   document.getElementById("staff").innerText = appointment.doctor.full_name;
   document.getElementById("staff_role").innerText = appointment.doctor.role;
   document.getElementById("note").innerText = appointment.notes;
-  document.getElementById("schedule").innerText =`${formatDate(appointment.appointment_at)}, ${formatTime(appointment.start_time)} to ${appointment.end_time ? formatTime(appointment.end_time) : 'Not available'}`;
-  document.getElementById("current_status").innerText = `${appointment.status == "in_progress" ? "In Progress" : appointment.status == "completed" ? "Completed" : appointment.status == "upcoming" ? "Up-Coming" : "Cancelled"}`;
+  document.getElementById("schedule").innerText =
+    `${formatDate(appointment.appointment_at)}, ${formatTime(appointment.start_time)} to ${appointment.end_time ? formatTime(appointment.end_time) : "Not available"}`;
+  document.getElementById("current_status").innerText =
+    `${appointment.status == "in_progress" ? "In Progress" : appointment.status == "completed" ? "Completed" : appointment.status == "upcoming" ? "Up-Coming" : "Cancelled"}`;
 
   // add appointment id to all li's with the class 'status_updater' that will be used to update the status of an appointment.
-  document.querySelectorAll(".status__updater").forEach((e) => e.dataset.appointmentId=appointment.id);
+  document
+    .querySelectorAll(".status__updater")
+    .forEach((e) => (e.dataset.appointmentId = appointment.id));
 }
 
 /**
@@ -593,8 +725,70 @@ function buildDynamicURLParam(key, value, state) {
   testCategoriesURL = url.pathname + url.search;
 }
 
+function buildAppointmentDynamicURLParam(key, value, state) {
+  const url = new URL(appointmentsURL, window.location.origin);
+
+  // filter by patient
+  if (key === "patient") {
+    if (value && value.trim()) {
+      url.searchParams.set("patient", value.trim());
+    } else {
+      url.searchParams.delete("patient");
+    }
+
+    appointmentsURL = url.pathname + url.search;
+    return;
+  }
+
+  // filter by doctor
+  if (key === "doctor") {
+    if (value && value.trim()) {
+      url.searchParams.set("doctor", value.trim());
+    } else {
+      url.searchParams.delete("doctor");
+    }
+
+    appointmentsURL = url.pathname + url.search;
+    return;
+  }
+
+  // search parameter
+  if (key === "search") {
+    if (value && value.trim()) {
+      url.searchParams.set("search", value.trim());
+    } else {
+      url.searchParams.delete("search");
+    }
+
+    appointmentsURL = url.pathname + url.search;
+    return;
+  }
+
+  // filter params
+  const currentValues = url.searchParams.getAll(key);
+
+  if (state) {
+    if (!currentValues.includes(value)) {
+      url.searchParams.append(key, value);
+    }
+  } else {
+    url.searchParams.delete(key);
+    currentValues
+      .filter((v) => v !== value)
+      .forEach((v) => url.searchParams.append(key, v));
+  }
+
+  appointmentsURL = url.pathname + url.search;
+}
+
 // function to perform search
-async function performSearch(query) {
+/**
+ *
+ * @param {string} query
+ * @param {bool} useAppointment
+ * @returns
+ */
+async function performSearch(query, useAppointment) {
   // cancel previous request
   if (query.length < 3) return [];
 
@@ -605,7 +799,11 @@ async function performSearch(query) {
   activeController = new AbortController();
 
   try {
-    const url = testCategoriesURL;
+    let url = testCategoriesURL;
+    // set url to appointment url if the useAppointment is set
+    if (useAppointment) {
+      url = appointmentsURL;
+    }
 
     const res = await fetch(url, {
       signal: activeController.signal,
@@ -684,28 +882,25 @@ function renderChemistrySearchResults(data) {
   resultUlEl.insertAdjacentHTML("beforeend", searchResultsHTML);
 }
 
-
-
-
 function formatDate(dateStr) {
-    // "2026-01-13" → "13 Jan, 2026"
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    });
+  // "2026-01-13" → "13 Jan, 2026"
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function formatTime(timeStr) {
-    // "08:17" → "08:17 AM"
-    if (!timeStr) return "not set";
-    const [h, m] = timeStr.split(":");
-    const date = new Date();
-    date.setHours(h, m);
-    return date.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true
-    });
+  // "08:17" → "08:17 AM"
+  if (!timeStr) return "not set";
+  const [h, m] = timeStr.split(":");
+  const date = new Date();
+  date.setHours(h, m);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
