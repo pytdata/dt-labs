@@ -155,7 +155,6 @@ appointmentForm.addEventListener("submit", async (e) => {
     if (!res.ok) throw new Error("Failed to book appointment.: ", res);
 
     const data = await res.json();
-    console.log(data);
   } catch (error) {
     console.log(error);
   }
@@ -177,8 +176,6 @@ appointmentsTableEL.addEventListener("click", async (e) => {
     });
     if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
     const appointment = await res.json();
-
-    console.log("appointment detail: ", appointment);
 
     populateAppointmentDetailModal(appointment);
   } catch (error) {
@@ -226,8 +223,6 @@ document
       notes: document.getElementById("note").value,
       mode_of_payment: document.getElementById("mode_of_payment").value,
     };
-
-    console.log(payload);
 
     try {
       const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {

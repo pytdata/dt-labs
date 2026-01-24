@@ -37,10 +37,18 @@ def _json_dumps(value: Any) -> bytes:
                 obj = obj.replace(tzinfo=dt.timezone.utc)
             return int(obj.timestamp())
         if isinstance(obj, dt.date):
-            return int(dt.datetime.combine(obj, dt.time()).replace(tzinfo=dt.timezone.utc).timestamp())
-        raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+            return int(
+                dt.datetime.combine(obj, dt.time())
+                .replace(tzinfo=dt.timezone.utc)
+                .timestamp()
+            )
+        raise TypeError(
+            f"Object of type {obj.__class__.__name__} is not JSON serializable"
+        )
 
-    return json.dumps(value, separators=(",", ":"), sort_keys=True, default=_default_encoder).encode()
+    return json.dumps(
+        value, separators=(",", ":"), sort_keys=True, default=_default_encoder
+    ).encode()
 
 
 def _json_loads(data: str) -> dict[str, Any]:
@@ -61,7 +69,9 @@ def _get_secret_bytes(secret: str | bytes) -> bytes:
     return secret if isinstance(secret, bytes) else secret.encode()
 
 
-def encode(payload: dict[str, Any], secret: str | bytes, algorithm: str = "HS256") -> str:
+def encode(
+    payload: dict[str, Any], secret: str | bytes, algorithm: str = "HS256"
+) -> str:
     signer = _get_signer(algorithm)
     header = {"alg": algorithm, "typ": "JWT"}
 
@@ -74,8 +84,12 @@ def encode(payload: dict[str, Any], secret: str | bytes, algorithm: str = "HS256
     return ".".join([encoded_header, encoded_payload, encoded_signature])
 
 
-def decode(token: str, secret: str | bytes, algorithms: Iterable[str] | str) -> dict[str, Any]:
-    allowed_algorithms = {algorithms} if isinstance(algorithms, str) else set(algorithms)
+def decode(
+    token: str, secret: str | bytes, algorithms: Iterable[str] | str
+) -> dict[str, Any]:
+    allowed_algorithms = (
+        {algorithms} if isinstance(algorithms, str) else set(algorithms)
+    )
 
     parts = token.split(".")
     if len(parts) != 3:
@@ -90,7 +104,9 @@ def decode(token: str, secret: str | bytes, algorithms: Iterable[str] | str) -> 
 
     signer = _get_signer(algorithm)
     signing_input = f"{encoded_header}.{encoded_payload}".encode()
-    expected_signature = hmac.new(_get_secret_bytes(secret), signing_input, signer).digest()
+    expected_signature = hmac.new(
+        _get_secret_bytes(secret), signing_input, signer
+    ).digest()
 
     if not hmac.compare_digest(expected_signature, _b64url_decode(encoded_signature)):
         raise JWTError("Invalid token signature")

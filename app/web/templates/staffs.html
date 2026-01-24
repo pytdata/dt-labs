@@ -563,7 +563,7 @@
                         </div>
                     </div>
                     <div class="gap-2 d-flex align-items-center flex-wrap">
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh" data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a href="javascript:void(0);" id="staff_data_refresh" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh" data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Print" data-bs-original-title="Print"><i class="ti ti-printer"></i></a>
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Download" data-bs-original-title="Download"><i class="ti ti-cloud-download"></i></a>
                         <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_staff"><i class="ti ti-square-rounded-plus me-1"></i>New Staffs</a>
@@ -575,7 +575,7 @@
                 <div class="card mb-0" id="staff-page">
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="d-inline-flex align-items-center mb-0">Total Staffs<span class="badge bg-danger ms-2">720</span></h6>
+                        <h6 class="d-inline-flex align-items-center mb-0">Total Staffs<span class="badge bg-danger ms-2">{{staffs|length}}</span></h6>
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
@@ -798,8 +798,8 @@
                                         <th class="no-sort"></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
+                                <tbody class="staff__list__container">
+                                    <!-- <tr>
                                         <td>
                                             <div class="form-check form-check-md">
                                                 <input class="form-check-input" type="checkbox">
@@ -835,340 +835,7 @@
                                                 </li>
                                             </ul>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0024</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-06.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Emily Foster</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Female</td>
-                                        <td>Nurse</td>
-                                        <td>+1 48912 78015</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1a7f777376635a7f627b776a767f34797577">[email&#160;protected]</a></td>
-                                        <td>10 Jun 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0023</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-31.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Patrick Coleman</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Male</td>
-                                        <td>Purchase Officer</td>
-                                        <td>+1 61397 47103</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e09081949289838ba08598818d908c85ce838f8d">[email&#160;protected]</a></td>
-                                        <td>22 May 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0022</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-24.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Olivia Greene</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Female</td>
-                                        <td>Supervisor</td>
-                                        <td>+1 84910 67381</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f99695908f9098b99c81989489959cd79a9694">[email&#160;protected]</a></td>
-                                        <td>15 May 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0021</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-35.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Eric Dawson</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Male</td>
-                                        <td>Nurse</td>
-                                        <td>+1 19047 89036</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1f7a6d767c5f7a677e726f737a317c7072">[email&#160;protected]</a></td>
-                                        <td>30 Apr 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0020</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-36.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Natalie Henderson</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Female</td>
-                                        <td>Receptionist</td>
-                                        <td>+1 71289 45017</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2b454a5f4a47424e6b4e534a465b474e05484446">[email&#160;protected]</a></td>
-                                        <td>25 Apr 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0019</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-23.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">William Grant</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Male</td>
-                                        <td>Lab Assistant</td>
-                                        <td>+1 57109 25913</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8afde3e6e6e3ebe7caeff2ebe7fae6efa4e9e5e7">[email&#160;protected]</a></td>
-                                        <td>13 Mar 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0018</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-24.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Victoria James</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Female</td>
-                                        <td>Pharmacist</td>
-                                        <td>+1 56193 61902</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7a0c13190e1508131b3a1f021b170a161f54191517">[email&#160;protected]</a></td>
-                                        <td>16 Feb 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0017</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/user-14.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Steven Harrison</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Male</td>
-                                        <td>Nurse</td>
-                                        <td>+1 89105 78103</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5b282f3e2d3e351b3e233a362b373e75383436">[email&#160;protected]</a></td>
-                                        <td>20 Jan 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#SF0016</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                 <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal" data-bs-target="#view_modal">
-                                                    <img src="/static/img/users/avatar-7.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">Rachel Kelly</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Female</td>
-                                        <td>Lab Technician</td>
-                                        <td>+1 78103 78591</td>
-                                        <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5c2e3d3f3439301c39243d312c3039723f3331">[email&#160;protected]</a></td>
-                                        <td>15 Jan 2025</td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_staff"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
+                                    </tr> -->
                                 </tbody>
                             </table>
                         </div>
@@ -1206,12 +873,12 @@
                     <h4 class="text-dark modal-title fw-bold text-truncate">Add New Staff</h4>
                     <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
                 </div>
-                <form action="staffs.html">
+                <form class="add__staff__form" id="staffForm">
                     <div class="modal-body">
                         <div class="add-satff">
                             <div class="nav nav-pills nav-pills-outline gap-2 mb-4" id="staff-tabs">
                                 <a href="javascript:void(0);" class="nav-link fw-semibold border active" id="staff-tab-one">Basic Info</a>
-                                <a href="javascript:void(0);" class="nav-link fw-semibold border" id="staff-tab-two">Salary Info</a>
+                                <!-- <a href="javascript:void(0);" class="nav-link fw-semibold border" id="staff-tab-two">Salary Info</a> -->
                             </div>
 
                             <div class="patient-form-wizard flex-fill" id="staff-tab-Contents">
@@ -1246,64 +913,58 @@
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">ID</label>
-                                                    <input type="text" class="form-control">
+                                                    <input type="text" class="form-control" disabled>
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Name</label>
-                                                    <input type="text" class="form-control">
+                                                    <input type="text" class="form-control" id="staff_full_name" name="staff_full_name">
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Gender</label>
-                                                    <select class="select">
-                                                        <option>Male</option>
-                                                        <option>Female</option>
-                                                        <option>Others</option>
+                                                    <select class="select" name="gender" required>
+                                                        <option value="male">Male</option>
+                                                        <option value="female">Female</option>
                                                     </select>
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">DOB</label>
+                                                    <label class="form-label">Password</label>
                                                     <div class="input-group w-auto input-group-flat">
-                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
-                                                        <span class="input-group-text">
-                                                            <i class="ti ti-calendar"></i>
-                                                        </span>
+                                                        <input type="password" class="form-control" data-provider="flatpickr" name="password" data-date-format="d M, Y">
+                                                        
                                                     </div>
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div> 
+                                            <!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Mobile Number</label>
-                                                    <input type="text" class="form-control phone" name="phone">
+                                                    <input type="text" class="form-control phone" name="phone" id="staff_mobile_phone" required>
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Email</label>
-                                                    <input type="email" class="form-control">
+                                                    <input type="email" class="form-control" id="staff_email" name="staff_email" required>
                                                 </div>
                                             </div><!-- end col -->
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 mt-3">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Designation</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option>Client for Pharmacy</option>
-                                                        <option>Cleaner</option>
-                                                        <option>Assitant</option>
-                                                        <option>Roadways</option>
-                                                        <option>Turner</option>
-                                                        <option>Pharmacist</option>
-                                                        <option>Assitant</option>
+                                                    <label class="form-label">Role</label>
+                                                    <select class="select2" data-toggle="select2" id="staff_role" name="staff_role" required>
+                                                        <option value="admin">Admin</option>
+                                                        <option value="receptionist">Receptionist</option>
+                                                        <option value="lab_scientist">Lab Scientist</option>
+                                                        
                                                     </select>
                                                 </div>
                                             </div><!-- end col -->
-                                            <div class="col-md-6">
+                                            <!-- <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Joining Date</label>
                                                     <div class="input-group w-auto input-group-flat">
@@ -1313,8 +974,8 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-6">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Staff Type</label>
                                                     <select class="select">
@@ -1323,8 +984,8 @@
                                                         <option>Temporary</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-6">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Job Type</label>
                                                     <select class="select">
@@ -1333,20 +994,20 @@
                                                         <option>Half Time</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Address Line 1</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Address Line 2</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">City</label>
                                                     <select class="select2" data-toggle="select2">
@@ -1363,8 +1024,8 @@
                                                         <option>San Jose</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">State</label>
                                                     <select class="select2" data-toggle="select2">
@@ -1381,8 +1042,8 @@
                                                         <option>Michigan</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Country</label>
                                                     <select class="select2" data-toggle="select2">
@@ -1399,136 +1060,135 @@
                                                         <option>South Africa</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div>end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Pin Code</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>end col -->
                                         </div>
                                         <!-- end row -->
 
                                         <div class="d-flex justify-content-end flex-wrap align-items-center gap-2">
-                                            <button type="submit" class="btn btn-light">Cancel</button>
-                                            <button type="button" class="btn btn-primary next-tab-btn" id="save-staff-info">Next</button>
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary next-tab-btn" id="save-staff-info">Save</button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Salery information -->
-                                <div class="form-wizard-content" id="staff-tab-Content-two">
+                                <!-- <div class="form-wizard-content" id="staff-tab-Content-two">
                                     <div>
 
-                                        <!-- start row -->
+                                       
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="mb-3">
                                                     <label class="form-label">Net Salary</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                         </div>
-                                        <!-- end row -->
+                                        
 
                                         <h6 class="mb-3">Earnings</h6>
 
-                                        <!-- start row -->
+                                       
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Basic</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">DA</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">HRA</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Conveyance</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Allowance</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Medical Allowance</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Others</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                         </div>
-                                        <!-- end row -->
+                                        
 
                                         <h6 class="mb-3">Deductions</h6>
 
-                                        <!-- start row -->
+                                       
                                         <div class="row mb-3 border-bottom">
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">TDS</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">PF</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Leave</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Prof . Tax</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Labour Welfare</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Others</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                         </div>
-                                        <!-- end row -->
+                                        
 
                                         <div class="d-flex justify-content-end flex-wrap align-items-center gap-2">
                                             <button type="button" class="btn btn-light" id="backButton">Back</button>
                                             <button type="submit" class="btn btn-primary">Save Staff</button>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -1546,7 +1206,7 @@
                     <h4 class="text-dark modal-title fw-bold text-truncate">Edit Staff</h4>
                     <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
                 </div>
-                <form action="staffs.html">
+                <form id="edit__staff__form">
                     <div class="modal-body">
                         <div class="add-satff">
                             <div class="nav nav-pills nav-pills-outline gap-2 mb-4" id="staff-tabs-1">
@@ -1586,64 +1246,59 @@
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">ID</label>
-                                                    <input type="text" class="form-control" value="#SF0025">
+                                                    <input type="text" class="form-control" id="edit_staff_edit" disabled>
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Name</label>
-                                                    <input type="text" class="form-control" value="Benjamin Clark">
+                                                    <input type="text" class="form-control" id="edit_name" name="staff_full_name">
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Gender</label>
-                                                    <select class="select">
-                                                        <option selected="">Male</option>
-                                                        <option>Female</option>
-                                                        <option>Others</option>
+                                                    <select class="select" name="gender" id="edit_gender">
+                                                        <option value="male">Male</option>
+                                                        <option value="female">Female</option>
+                                                        <!-- <option>Others</option> -->
                                                     </select>
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">DOB</label>
+                                                    <label class="form-label">Change Password</label>
                                                     <div class="input-group w-auto input-group-flat">
-                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y" value="01 Jan, 1995">
-                                                        <span class="input-group-text">
-                                                            <i class="ti ti-calendar"></i>
-                                                        </span>
+                                                        <input type="password" class="form-control" name="password" placeholder="****************">
+                                                       
                                                     </div>
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
+                                            <!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Mobile Number</label>
-                                                    <input type="text" class="form-control phone" name="phone">
+                                                    <input type="text" class="form-control phone" name="phone" id="edit_phone">
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Email</label>
-                                                    <input type="email" class="form-control" value="benjamin@example.com">
+                                                    <input type="email" name="staff_email" class="form-control" id="edit_email">
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Designation</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option>Client for Pharmacy</option>
-                                                        <option>Cleaner</option>
-                                                        <option selected="">Assitant</option>
-                                                        <option>Roadways</option>
-                                                        <option>Turner</option>
-                                                        <option>Pharmacist</option>
-                                                        <option>Assitant</option>
+                                                    <label class="form-label">Role</label>
+                                                    <select class="select2" name="staff_role" data-toggle="select2" id="edit_role">
+                                                        
+                                                        <option value="admin">Admin</option>
+                                                        <option value="lab_scientist">Lab Scientist</option>
+                                                       <option value="receptionist">Receptionist</option>
                                                     </select>
                                                 </div>
                                             </div><!-- end col -->
-                                            <div class="col-md-6">
+                                            <!-- <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Joining Date</label>
                                                     <div class="input-group w-auto input-group-flat">
@@ -1653,8 +1308,9 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-6">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Staff Type</label>
                                                     <select class="select">
@@ -1663,8 +1319,9 @@
                                                         <option>Temporary</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-6">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label">Job Type</label>
                                                     <select class="select">
@@ -1673,20 +1330,23 @@
                                                         <option>Half Time</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Address Line 1</label>
                                                     <input type="text" class="form-control" value="10 Elizabeth town Plaza">
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Address Line 2</label>
                                                     <input type="text" class="form-control" value="Downer's Grove">
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">City</label>
                                                     <select class="select2" data-toggle="select2">
@@ -1703,8 +1363,9 @@
                                                         <option>San Jose</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">State</label>
                                                     <select class="select2" data-toggle="select2">
@@ -1721,8 +1382,9 @@
                                                         <option>Michigan</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Country</label>
                                                     <select class="select2" data-toggle="select2">
@@ -1739,18 +1401,20 @@
                                                         <option>South Africa</option>
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <div class="col-md-4">
+                                            </div> -->
+                                            <!-- end col -->
+                                            <!-- <div class="col-md-4">
                                                 <div class="mb-3">
                                                     <label class="form-label">Pin Code</label>
                                                     <input type="text" class="form-control" value="07202">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div> -->
+                                            <!-- end col -->
                                             <div class="col-md-12">
                                                 <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
                                                     <h6 class="fw-medium mb-0">Status</h6>
-                                                    <div class="form-check form-switch">
-                                                        <input class="form-check-input m-0" type="checkbox" checked="">
+                                                    <div class="form-check form-switch" id="edit_status">
+                                                        <!-- <input name="edit_status_checked" class="form-check-input m-0" type="checkbox"> -->
                                                     </div>
                                                 </div>
                                             </div><!-- end col -->
@@ -1758,125 +1422,124 @@
                                         <!-- end row -->
 
                                         <div class="d-flex justify-content-end flex-wrap align-items-center gap-2">
-                                            <button type="submit" class="btn btn-light">Cancel</button>
-                                            <button type="button" class="btn btn-primary next-tab-btn" id="save-staff-info-1">Next</button>
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary next-tab-btn" id="save-staff-info-1">Submit</button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Salery information -->
-                                <div class="form-wizard-content" id="staff-tab-Content-two-1">
+                                <!-- <div class="form-wizard-content" id="staff-tab-Content-two-1">
                                     <div>
 
-                                        <!-- start row -->
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="mb-3">
                                                     <label class="form-label">Net Salary</label>
                                                     <input type="text" class="form-control" value="$18600">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                         </div>
-                                        <!-- end row -->
+                                       
 
                                         <h6 class="mb-3">Earnings</h6>
 
-                                        <!-- start row -->
+                                       
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Basic</label>
                                                     <input type="text" class="form-control" value="$10000">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">DA</label>
                                                     <input type="text" class="form-control" value="$500">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">HRA</label>
                                                     <input type="text" class="form-control" value="$4000">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Conveyance</label>
                                                     <input type="text" class="form-control" value="$500">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Allowance</label>
                                                     <input type="text" class="form-control" value="$1000">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Medical Allowance</label>
                                                     <input type="text" class="form-control" value="$3000">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Others</label>
                                                     <input type="text" class="form-control" value="$2000">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                         </div>
-                                        <!-- end row -->
+                                        
 
                                         <h6 class="mb-3">Deductions</h6>
 
-                                        <!-- start row -->
+                                       
                                         <div class="row mb-3 border-bottom">
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">TDS</label>
                                                     <input type="text" class="form-control" value="$200">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">PF</label>
                                                     <input type="text" class="form-control" value="$1200">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Leave</label>
                                                     <input type="text" class="form-control" value="$0.00">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Prof . Tax</label>
                                                     <input type="text" class="form-control" value="$200">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Labour Welfare</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label">Others</label>
                                                     <input type="text" class="form-control">
                                                 </div>
-                                            </div><!-- end col -->
+                                            </div>
                                         </div>
-                                        <!-- end row -->
+                                        
 
                                         <div class="d-flex justify-content-end flex-wrap align-items-center gap-2">
                                             <button type="button" class="btn btn-light" id="backButton-1">Back</button>
                                             <button type="submit" class="btn btn-primary">Save Changes</button>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -1892,8 +1555,8 @@
             <div class="modal-content">
                 <div class="modal-header justify-content-between">
                     <h4 class="text-dark modal-title fw-bold text-truncate d-flex align-items-center">Staff Details</h4>
-                    <div class="form-check form-switch ms-3">
-                        <input class="form-check-input me-0" type="checkbox" role="switch">
+                    <div class="form-check form-switch ms-3" id="is_staff_active">
+                        <input class="form-check-input me-0" type="checkbox" role="switch" checked>
                     </div>
                     <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
                 </div>
@@ -1904,38 +1567,38 @@
                         </a>
                         <div class="ms-2">
                             <div>
-                                <span class="badge badge-sm badge-soft-danger mb-1">#SF0025</span>
-                                <h6 class="fw-semibold text-truncate mb-1"><a href="javascript:void(0);">Benjamin Clark</a></h6>
-                                <p class="fs-13 mb-0">Date Joined : 17 Jun 2024</p>
+                                <span class="badge badge-sm badge-soft-danger mb-1" id="staff_id"></span>
+                                <h6 class="fw-semibold text-truncate mb-1"><a href="javascript:void(0);" id="staff_name">Loading...</a></h6>
+                                <!-- <p class="fs-13 mb-0">Date Joined : 17 Jun 2024</p> -->
                             </div>
                         </div>
                     </div>
                     <ul class="nav nav-tabs nav-solid-primary mb-3">
                         <li class="nav-item"><a class="nav-link py-1 px-2 rounded active" href="#solid-tab1" data-bs-toggle="tab">Basic Information</a></li>
-                        <li class="nav-item"><a class="nav-link py-1 px-2 rounded" href="#solid-tab2" data-bs-toggle="tab">Salary Info</a></li>
+                        <!-- <li class="nav-item"><a class="nav-link py-1 px-2 rounded" href="#solid-tab2" data-bs-toggle="tab">Salary Info</a></li> -->
                     </ul>
 
                     <div class="tab-content">
                         <div class="tab-pane show active" id="solid-tab1">
                             <h6 class="mb-3">Basic Information</h6>
                             <div class="row row-gap-2">
-                                <div class="col-6 col-md-4">
+                                <!-- <div class="col-6 col-md-4">
                                     <h6 class="fs-14 fw-semibold mb-1 text-truncate">Job Type</h6>
                                     <p class="fs-13 mb-0 text-truncate">Full Time</p>
-                                </div>
+                                </div> -->
                                 <div class="col-6 col-md-4">
                                     <h6 class="fs-14 fw-semibold mb-1 text-truncate">Mobile</h6>
-                                    <p class="fs-13 mb-0 text-truncate">+1 48902 78194</p>
+                                    <p class="fs-13 mb-0 text-truncate" id="staff_mobile">+1 48902 78194</p>
                                 </div>
                                 <div class="col-6 col-md-4">
                                     <h6 class="fs-14 fw-semibold mb-1 text-truncate">Email</h6>
-                                    <p class="fs-13 mb-0 text-truncate"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e082858e8a818d89898ea08598818d908c85ce838f8d">[email&#160;protected]</a></p>
+                                    <p class="fs-13 mb-0 text-truncate" id="staff_email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e082858e8a818d89898ea08598818d908c85ce838f8d"></a></p>
                                 </div>
                                 <div class="col-6 col-md-4">
-                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate">Gender</h6>
-                                    <p class="fs-13 mb-0 text-truncate">Male</p>
+                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate" >Gender</h6>
+                                    <p class="fs-13 mb-0 text-truncate" id="staff_gender">Male</p>
                                 </div>
-                                <div class="col-6 col-md-4">
+                                <!-- <div class="col-6 col-md-4">
                                     <h6 class="fs-14 fw-semibold mb-1 text-truncate">DOB</h6>
                                     <p class="fs-13 mb-0 text-truncate">01 Jan 1995</p>
                                 </div>
@@ -1946,7 +1609,7 @@
                                 <div class="col-12 col-md-12">
                                     <h6 class="fw-semibold fs-14 mb-2">Address</h6>
                                     <p class="mb-0 fs13">10 Elizabethtown Plaza, Downers Grove, Elizabeth UK07202 </p>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                         <div class="tab-pane show" id="solid-tab2">
@@ -2148,7 +1811,7 @@
                     <p class="mb-3">Are you sure you want to delete?</p>
                     <div class="d-flex justify-content-center">
                         <a href="javascript:void(0);" class="btn btn-light position-relative z-1 me-2" data-bs-dismiss="modal">Cancel</a>
-                        <a href="staffs.html" class="btn btn-danger position-relative z-1" data-bs-dismiss="modal">Yes, Delete</a>
+                        <a href="staffs.html" class="btn btn-danger position-relative z-1 delete__staff" data-bs-dismiss="modal">Yes, Delete</a>
                     </div>
                 </div>
             </div>
@@ -2183,6 +1846,8 @@
 
     <!-- Main JS -->
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+
+    <script src="{{ url_for('static', path='js/utils/staffs.js') }}" defer></script>
 
 <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
 <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>

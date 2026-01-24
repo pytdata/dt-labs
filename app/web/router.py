@@ -595,12 +595,12 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     )
     # TODO: Change to subquery to get tests in addition
     test_categories = await db.execute(select(TestCategory))
-    tests_bac = await db.execute(
-        select(Test).where(Test.test_category_id == 2).order_by(Test.id.asc())
-    )
-    tests_chem = await db.execute(
-        select(Test).where(Test.test_category_id == 3).order_by(Test.id.asc())
-    )
+    # tests_bac = await db.execute(
+    #     select(Test).where(Test.test_category_id == 2).order_by(Test.id.asc())
+    # )
+    # tests_chem = await db.execute(
+    #     select(Test).where(Test.test_category_id == 3).order_by(Test.id.asc())
+    # )
 
     patients_results = patients.scalars().all()
     staff_results = doctors.scalars().all()
@@ -610,8 +610,6 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     # bac_test_results = tests_bac.scalars().all()
     # chem_test_results = tests_chem.scalars().all()
     total_appointments = len(appointments.scalars().all())
-
-    print(total_appointments)
 
     return _render(
         request,
@@ -663,14 +661,18 @@ async def reports(request: Request):
 
 
 @router.get("/staff", response_class=HTMLResponse, name="staff_list")
-async def staff_list(request: Request):
+async def staff_list(request: Request, db: AsyncSession = Depends(get_db)):
     tpl = (
         "staffs.html"
         if (settings.TEMPLATES_PATH / "staffs.html").exists()
         else "all-doctors-list.html"
     )
 
-    return _render(request, tpl, active_page="staff")
+    staffs = await db.execute(select(User))
+
+    staff_results = staffs.scalars().all()
+
+    return _render(request, tpl, active_page="staff", staffs=staff_results)
 
 
 @router.get("/invoice", response_class=HTMLResponse, name="invoice_list")
