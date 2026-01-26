@@ -23,10 +23,11 @@ from app.core import deps
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.session import get_db
-from app.models.catalog import TestCategory
+from app.models.catalog import SampleCategory, TestCategory
 from app.models.enums import LabStage
 from app.models.users import Department, User
 from app.schemas.appointment import AppointmenCreate
+from app.schemas.staff import StaffRole
 from app.schemas.visit import PaymentMode, VisitStatus
 from app.services.emailer import send_stage_email
 from app.services.sample_service import generate_sample_id
@@ -590,8 +591,14 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     patients = await db.execute(select(Patient))
     departments = await db.execute(select(Department))
     appointments = await db.execute(select(Visit))
+    sample_categories = await db.execute(select(SampleCategory))
     doctors = await db.execute(
-        select(User).where(User.role == "doctor", User.is_active == True)  # noqa: E712
+        select(User).where(
+            User.role.in_(
+                [StaffRole.lab_scientist, StaffRole.Admin, StaffRole.Receptionist]
+            ),
+            User.is_active == True,  # noqa: E712
+        )  # noqa: E712
     )
     # TODO: Change to subquery to get tests in addition
     test_categories = await db.execute(select(TestCategory))
@@ -606,7 +613,7 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     staff_results = doctors.scalars().all()
     department_results = departments.scalars().all()
     test_categories_results = test_categories.scalars().all()
-
+    sample_categories_results = sample_categories.scalars().all()
     # bac_test_results = tests_bac.scalars().all()
     # chem_test_results = tests_chem.scalars().all()
     total_appointments = len(appointments.scalars().all())
@@ -620,6 +627,7 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
         staffs=staff_results,
         test_categories=test_categories_results,
         total_appointments=total_appointments,
+        sample_categories=sample_categories_results,
     )
 
 
@@ -737,7 +745,7 @@ async def settings_test_mapping(request: Request, db: AsyncSession = Depends(get
         (
             await db.execute(
                 select(Analyzer)
-                .where(Analyzer.is_active == True)
+                .where(Analyzer.is_active == True)  # noqa: E712
                 .order_by(Analyzer.name.asc())
             )
         )

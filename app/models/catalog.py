@@ -1,4 +1,6 @@
+from enum import Enum
 from sqlalchemy import (
+    JSON,
     String,
     Text,
     ForeignKey,
@@ -12,6 +14,7 @@ from sqlalchemy import DateTime, func, Time
 from datetime import datetime, time
 
 from app.db.base import Base
+from app.schemas.sample import SampleCondition
 from . import association
 
 
@@ -123,3 +126,74 @@ class TestParameter(Base):
     ref_range: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     test = relationship("Test", backref="parameters")
+
+
+class Priority(str, Enum):
+    routine = "routine"
+    urgent = "urgent"
+    stat = "stat"
+
+
+class StorageLocation(str, Enum):
+    fridge = "fridge"
+    freezer = "freezer"
+    ambient = "ambient"
+
+
+class CollectionSite(str, Enum):
+    hospital = "hospital"
+    clinic = "clinic"
+    ward = "ward"
+    home_service = "home_service"
+
+
+class SampleStatus(str, Enum):
+    collected = "collected"
+    in_transit = "in_transit"
+    received = "received"
+    processed = "processed"
+    reported = "reported"
+
+
+class SampleCategory(Base):
+    """
+    model to crete and track new sample category or type.
+    """
+
+    __tablename__ = "sample_categories"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    category_name: Mapped[str] = mapped_column()
+
+
+class Sample(Base):
+    """
+    Table for saving sample data from the client.
+    """
+
+    __tablename__ = "samples"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sample_type: Mapped[int] = mapped_column(ForeignKey("sample_categories.id"))
+    appointment_id: Mapped[int] = mapped_column(
+        ForeignKey("appointments.id"), index=True
+    )
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    test_requested: Mapped[list[int]] = mapped_column(JSON, default=list)
+    priority: Mapped[str] = mapped_column(default=Priority.routine, nullable=True)
+    storage_location: Mapped[str] = mapped_column(default=StorageLocation.fridge)
+    collection_date: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    collector_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), index=True, nullable=True
+    )
+    collection_site: Mapped[str] = mapped_column(default=CollectionSite.hospital)
+    sample_condition: Mapped[str] = mapped_column(
+        nullable=True, default=SampleCondition.fasting
+    )
+    status: Mapped[str] = mapped_column(default=SampleStatus.collected, nullable=True)
+
+    # relationship
+    sample_category = relationship("SampleCategory")
+    collector = relationship("User")

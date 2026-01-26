@@ -27,6 +27,7 @@ from . import association
 
 class Patient(Base):
     __tablename__ = "patients"
+
     id: Mapped[int] = mapped_column(primary_key=True)
 
     patient_no: Mapped[str] = mapped_column(String(50), unique=True, index=True)
@@ -146,6 +147,10 @@ class LabOrder(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
     sample_id: Mapped[str | None] = mapped_column(String(80), index=True, nullable=True)
+    appointment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("appointments.id"),
+        nullable=True,
+    )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -163,6 +168,7 @@ class LabOrder(Base):
 
     patient = relationship("Patient", back_populates="lab_orders")
     collected_by = relationship("User", foreign_keys=[collected_by_user_id])
+    appointment = relationship("Appointment")
     items = relationship(
         "LabOrderItem",
         back_populates="order",
@@ -186,8 +192,7 @@ class LabOrderItem(Base):
     sample_id: Mapped[str | None] = mapped_column(String(80), index=True, nullable=True)
 
     # workflow stage (your lab process)
-    stage: Mapped[LabStage] = mapped_column(
-        SAEnum(LabStage, name="lab_stage"),
+    stage: Mapped[str] = mapped_column(
         default=LabStage.BOOKING,
     )  # booking|sampling|running|complete|analyzing|printing|ended
 

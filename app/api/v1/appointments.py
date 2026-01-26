@@ -136,13 +136,12 @@ async def update_appointment(
         appointment.tests = tests.all()
 
     await db.commit()
-
     await db.refresh(appointment)
 
     return appointment
 
 
-@router.get("/{id}/")
+@router.get("/{id}/", response_model=AppointmentResponse)
 async def get_appointment(
     id: int,
     filter_query: Annotated[FilterParams, Query()],
@@ -153,10 +152,12 @@ async def get_appointment(
         .where(Appointment.id == id)
         .join(Appointment.patient)
         .join(Appointment.doctor)
+        .join(Appointment.tests)
         # .join(Appointment.created_by_user)
         .options(
             selectinload(Appointment.patient),
             selectinload(Appointment.doctor),
+            selectinload(Appointment.tests),
             # selectinload(Appointment.created_by_user),
         )
         .order_by(Appointment.appointment_at.desc())

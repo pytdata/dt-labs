@@ -26,6 +26,7 @@ const chemSearchResultsEl = document.querySelector(".chem__search__results");
 
 // FORM
 const appointmentForm = document.querySelector("#appointmentForm");
+const addSampleForm = document.querySelector("#addSample");
 
 let totalNumOfAppointments = 0;
 let searchTimeout = null;
@@ -34,10 +35,14 @@ let activeController = null;
 let testCategoriesURL = "/api/v1/test-categories";
 let appointmentsURL = "/api/v1/appointments/";
 
+// Form data
 const selectedTests = {
   bacteriology: [],
   chemistry: [],
 };
+
+// selected test data for required tests
+let selectedTestForSample = [];
 
 let selectedTestOrderList = [];
 
@@ -310,6 +315,103 @@ document
     }
   });
 
+// Get appointment data for sample
+appointmentsTableEL.addEventListener("click", async (e) => {
+  const button = e.target.closest(".add__sample__btn");
+  if (!button) return;
+
+  const appointmentId = +button.dataset.appointmentid;
+
+  // fetch appointment data
+  try {
+    const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
+    const appointment = await res.json();
+    console.log(appointment);
+
+    populateAddSampleModal(
+      appointment.tests,
+      appointment.id,
+      appointment.patient.id,
+    );
+
+    // Listen to event on the checkbox to populate selectedTestForSample
+    document
+      .querySelector("#test__requested")
+      .addEventListener("click", (e) => {
+        console.log("target is: ", e.target.closest(".test__required__choice"));
+
+        let selectedInputEl = e.target.closest(".test__required__choice");
+        if (!selectedInputEl) return;
+
+        let inputValue = Number(selectedInputEl.value);
+
+        if (selectedTestForSample.includes(inputValue)) {
+          selectedTestForSample = selectedTestForSample.filter(
+            (e) => e !== inputValue,
+          );
+        } else {
+          selectedTestForSample.push(inputValue);
+        }
+
+        console.log(selectedTestForSample);
+      });
+  } catch (error) {
+    console.error(error);
+    alert("Failed to load appointment");
+    // TODO: app toast notification
+  }
+});
+
+// populate selected tests in tests required for sample creation
+// document.querySelector("#test__requested").addEventListener("click", e => {
+//     console.log("target is: ", e.target.closest(".test__required__choice"))
+//   });
+
+// add sample
+addSampleForm.addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(addSampleForm);
+  const patientId = this.dataset.patientId;
+  const appointmentId = this.dataset.appointmentId;
+
+  const payload = {
+    patient_id: +patientId,
+    appointment_id: +appointmentId,
+    sample_type: +formData.get("add__sample__categories"),
+    test_requested: [...selectedTestForSample],
+    priority: formData.get("add__priority"),
+    storage_location: formData.get("add__storage__location"),
+    collection_site: formData.get("add__collection__site"),
+    sample_condition: formData.get("add__sample__condition"),
+  };
+
+  // post data to backend
+  try {
+    const res = await fetch("/api/v1/samples/", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("Failed to post sample data: ", res);
+
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+
+  // reset form
+  addSampleForm.reset();
+  selectedTestForSample = []
+});
+
 // Search patients by staff
 searchStaff.addEventListener("input", (e) => {
   console.log(e.target.value);
@@ -320,7 +422,6 @@ searchStaff.addEventListener("input", (e) => {
     buildAppointmentDynamicURLParam("doctor", value);
     console.log(appointmentsURL);
     const data = await performSearch(value, true);
-    console.log("Data from search 1:", data);
 
     renderStaffSearchResults(data);
   });
@@ -341,7 +442,6 @@ patientSearch.addEventListener("input", (e) => {
     let value = e.target.value;
     buildAppointmentDynamicURLParam("patient", value);
     const data = await performSearch(value, true);
-    console.log("Data from search 2:", data);
 
     renderPatientsSearchResults(data);
   });
@@ -432,7 +532,33 @@ function renderStaffSearchResults(data) {
 document.querySelector(".ti-refresh").addEventListener("click", async (e) => {
   const data = await getRemoteData(appointmentsURL);
   render(data);
-})
+});
+
+/**
+ * Renders a list of test request in the browser
+ * @param {Array[object]} samples
+ * @param {Number} appointmentId
+ * @param {Number} patientId
+ */
+function populateAddSampleModal(samples, appointmentId, patientId) {
+  console.log("status update: ", samples);
+  const requestedTestsHTML = samples
+    .map((sample) => {
+      return `
+    <li class="list-group-item">
+        <input class="form-check-input me-1 test__required__choice" type="checkbox" value="${sample.id}" data-name="${sample.name}">
+        ${sample.name}
+    </li>
+    `;
+    })
+    .join("");
+
+  document.getElementById("test__requested").innerHTML = requestedTestsHTML;
+  document.querySelector("#add_sample_modal form").dataset.appointmentId =
+    appointmentId;
+  document.querySelector("#add_sample_modal form").dataset.patientId =
+    patientId;
+}
 
 /**
  * Fetch all test-categories data
@@ -473,7 +599,7 @@ function renderData(appointment) {
             </div>
         </td>
         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">${
-          appointment.id
+          appointment.patient.patient_no
         }</a></td>
         <td>
             <div class="d-flex align-items-center">
@@ -517,6 +643,9 @@ function renderData(appointment) {
         <td class="text-end">
             <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
             <ul class="dropdown-menu p-2">
+            <li>
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center add__sample__btn" data-bs-toggle="modal" data-bs-target="#add_sample_modal" data-appointmentId=${appointment.id}><i class="ti ti-plus me-1"></i>Add Sample</a>
+                </li>
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center view__appointment__btn" data-bs-toggle="modal" data-bs-target="#view_modal" data-appointmentId=${appointment.id}><i class="ti ti-eye me-1"></i>View Details</a>
                 </li>
@@ -526,6 +655,7 @@ function renderData(appointment) {
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center delete__appointment__btn" data-appointmentId=${appointment.id} data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
                 </li>
+                
             </ul>
         </td>
     </tr>

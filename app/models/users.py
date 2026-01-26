@@ -42,7 +42,7 @@ from sqlalchemy import String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 from app.models.lab import LabResult
-from app.schemas.staff import Gender
+from app.schemas.staff import Gender, StaffRole
 
 
 class User(Base):
@@ -52,9 +52,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255))
-    role: Mapped[str] = mapped_column(String(30), default="admin")
-    phone_number: Mapped[str] = mapped_column(default="")
-    gender: Mapped[str] = mapped_column(default=Gender.MALE)
+    role: Mapped[str] = mapped_column(String(30), default=StaffRole.Receptionist)
+    phone_number: Mapped[str | None] = mapped_column(default="", nullable=True)
+    gender: Mapped[str | None] = mapped_column(default=Gender.MALE, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     entered_results: Mapped[list["LabResult"]] = relationship(
