@@ -39,21 +39,13 @@ async def get_all_staffs(
 ):
     stmt = select(User).order_by(User.id.desc())
     if filter_query.name:
-        stmt = stmt.where(
-            User.full_name.has(User.full_name.ilike(f"%{filter_query.name.strip()}%"))
-        )
+        stmt = stmt.where(User.full_name.ilike(f"%{filter_query.name.strip()}%"))
 
     if filter_query.role:
         q = f"%{filter_query.role.strip()}%"
-        stmt = stmt.where(
-            User.role.has(
-                or_(
-                    User.full_name.ilike(q),
-                )
-            )
-        )
+        stmt = stmt.where(User.role.ilike(q))
     if filter_query.gender:
-        stmt = stmt.where(User.role.in_([filter_query.gender]))
+        stmt = stmt.where(User.gender.in_([filter_query.gender]))
 
     stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
 

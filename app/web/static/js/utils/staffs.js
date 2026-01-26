@@ -3,6 +3,15 @@ const addStaffForm = document.querySelector("#staffForm");
 const editFormData = document.querySelector("#edit__staff__form");
 const refreshStaffEl = document.querySelector("#staff_data_refresh");
 
+// search elements
+const searchStaffName = document.querySelector(".search__staff");
+const roleStaffSearch = document.querySelector(".search__role");
+const genderFilter = document.querySelectorAll(".filter__gender");
+
+// search functionality
+let searchTimeout = null;
+let activeController = null;
+
 let staffURL = "/api/v1/staffs/";
 
 (async function init() {
@@ -136,6 +145,228 @@ editFormData.addEventListener("submit", async function (e) {
     alert(error);
   }
 });
+
+// perform role search
+roleStaffSearch.addEventListener("input", async (e) => {
+   clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(async () => {
+    let value = e.target.value;
+    buildStaffDynamicURLParam("role", value);
+    const data = await performSearch(value, true);
+
+    renderStaffRoleSearchResults(data);
+  });
+});
+
+// clear search input of rolestaff
+roleStaffSearch.addEventListener("blur", e => {
+  roleStaffSearch.value = ""
+  buildStaffDynamicURLParam("role")
+})
+
+
+genderFilter.forEach(genderEl => {
+  genderEl.addEventListener("click", async (e) => {
+    buildStaffDynamicURLParam("gender",e.currentTarget.dataset.gender ,e.currentTarget.checked);
+    
+    const data = await getRemoteData(staffURL);
+    render(data);
+  });
+
+});
+
+// const dropdown = document.querySelector(".search__staffrole__results");
+// const genderF = dropdown.querySelectorAll(".gender-filter");
+
+// dropdown.addEventListener("blur", e => {
+//   // delay allows click events to finish
+//   setTimeout(() => {
+//     if (!dropdown.contains(document.activeElement)) {
+//       genderF.forEach(cb => cb.checked = false);
+//     }
+//   }, 100);
+// });
+
+
+
+// perform staff search
+searchStaffName.addEventListener("input", async (e) => {
+
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(async () => {
+    let value = e.target.value;
+    buildStaffDynamicURLParam("name", value);
+    console.log(staffURL);
+    const data = await performSearch(value, true);
+    renderStaffSearchResults(data);
+  });
+})
+
+// clear search input of staff search
+searchStaffName.addEventListener("blur", e => {
+  searchStaffName.value = ""
+  buildStaffDynamicURLParam("name")
+})
+
+
+
+
+
+// function to perform search
+/**
+ *
+ * @param {string} query
+ * @param {bool} useAppointment
+ * @returns
+ */
+async function performSearch(query) {
+  // cancel previous request
+  if (query.length < 3) return [];
+
+  if (activeController) {
+    activeController.abort();
+  }
+
+  activeController = new AbortController();
+
+  try {
+    let url = staffURL;
+    const res = await fetch(url, {
+      signal: activeController.signal,
+    });
+
+    const data = await res.json();
+
+    return data;
+  } catch (err) {
+    // TODO: Add model to show error
+    if (err.name !== "AbortError") {
+      console.error("Search error:", err);
+    }
+  }
+}
+
+
+
+
+function buildStaffDynamicURLParam(key, value, state) {
+  const url = new URL(staffURL, window.location.origin);
+
+  // filter by name
+  if (key === "name") {
+    if (value && value.trim()) {
+      url.searchParams.set("name", value.trim());
+    } else {
+      url.searchParams.delete("patient");
+    }
+
+    staffURL = url.pathname + url.search;
+    return;
+  }
+
+
+  // filter by role
+  if (key === "role") {
+    if (value && value.trim()) {
+      url.searchParams.set("role", value.trim());
+    } else {
+      url.searchParams.delete("role");
+    }
+
+    staffURL = url.pathname + url.search;
+    return;
+  }
+
+  // search parameter
+  if (key === "search") {
+    if (value && value.trim()) {
+      url.searchParams.set("search", value.trim());
+    } else {
+      url.searchParams.delete("search");
+    }
+
+    staffURL = url.pathname + url.search;
+    return;
+  }
+
+  // filter params
+  const currentValues = url.searchParams.getAll(key);
+
+
+  if (state) {
+    if (!currentValues.includes(value)) {
+      url.searchParams.append(key, value);
+    }
+  } else {
+    url.searchParams.delete(key);
+    currentValues
+      .filter((v) => v !== value)
+      .forEach((v) => url.searchParams.append(key, v));
+  }
+
+  staffURL = url.pathname + url.search;
+}
+
+
+function renderStaffRoleSearchResults(data) {
+  const searchResultsHTML = data
+    .map((staffRole) => {
+      const htmlElement = `
+            <li>
+              <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                  <input class="form-check-input m-0 me-2" type="checkbox">
+                  ${staffRole.full_name}
+              </label>
+          </li>
+        `;
+      return htmlElement;
+    })
+    .join("");
+
+  const resultUlEl = document.querySelector(".search__staffrole__results");
+
+  // Remove all li elements except the first one (search input)
+  while (resultUlEl.children.length > 1) {
+    resultUlEl.removeChild(resultUlEl.children[1]);
+  }
+
+  // Insert new results after the first li
+  resultUlEl.insertAdjacentHTML("beforeend", searchResultsHTML);
+}
+
+
+/**
+ * render patient search results (search by staff name)
+ * @param {object} data
+ */
+function renderStaffSearchResults(data) {
+  const searchResultsHTML = data
+    .map((staff) => {
+      const htmlElement = `
+            <li>
+              <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                  <input class="form-check-input m-0 me-2" type="checkbox">
+                  <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>${staff.full_name}
+              </label>
+          </li>
+        `;
+      return htmlElement;
+    })
+    .join("");
+
+  const resultUlEl = document.querySelector(".search__staff__results");
+
+  // Remove all li elements except the first one (search input)
+  while (resultUlEl.children.length > 1) {
+    resultUlEl.removeChild(resultUlEl.children[1]);
+  }
+
+  // Insert new results after the first li
+  resultUlEl.insertAdjacentHTML("beforeend", searchResultsHTML);
+}
+
 
 /**
  * Prepopulates the edit model of staff for the client to make changes

@@ -1,5 +1,5 @@
-from typing import Literal
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Annotated, Literal
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -83,6 +83,7 @@ async def create_sample(
 
 @router.get("/", summary="Get all samples", response_model=list[SampleResponse])
 async def get_all_samples(
+    filter_query: Annotated[FilterParams, Query()],
     db: AsyncSession = Depends(get_db),
 ):
     stmt = (

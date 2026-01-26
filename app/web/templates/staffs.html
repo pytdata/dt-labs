@@ -575,7 +575,7 @@
                 <div class="card mb-0" id="staff-page">
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="d-inline-flex align-items-center mb-0">Total Staffs<span class="badge bg-danger ms-2">{{staffs|length}}</span></h6>
+                        <h6 class="d-inline-flex align-items-center mb-0">Total Staffs<span class="badge bg-danger ms-2">{{staff_counts}}</span></h6>
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
@@ -596,144 +596,50 @@
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-user-bolt me-1"></i>Staff Name
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
+                                <ul class="dropdown-menu dropdown-menu-md p-2 search__staff__results">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
+                                                <input type="text" class="form-control form-control-md search__staff" placeholder="Search">
                                             </div>
                                         </div>
                                     </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-30.jpg" class="flex-shrink-0 rounded" alt="img"></span> Jonathan Blake
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-06.jpg" class="flex-shrink-0 rounded" alt="img"></span> Emily Foster
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-31.jpg" class="flex-shrink-0 rounded" alt="img"></span>Patrick Coleman
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-24.jpg" class="flex-shrink-0 rounded" alt="img"></span>Olivia Greene
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-35.jpg" class="flex-shrink-0 rounded" alt="img"></span>Eric Dawson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-36.jpg" class="flex-shrink-0 rounded" alt="img"></span>Natalie Henderson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-23.jpg" class="flex-shrink-0 rounded" alt="img"></span>William Grant
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-24.jpg" class="flex-shrink-0 rounded" alt="img"></span>Victoria James
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-14.jpg" class="flex-shrink-0 rounded" alt="img"></span>Steven Harrison
-                                        </label>
-                                    </li>
-                                    <li>
+                                    
+                                    <!-- <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
                                             <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-7.jpg" class="flex-shrink-0 rounded" alt="img"></span>Rachel Kelly
                                         </label>
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </div>
 
                             <!-- designation dropdown -->
                              <div class="dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-user-share me-1"></i>Designation
+                                  <i class="ti ti-user-share me-1"></i>Role
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
+                                <ul class="dropdown-menu dropdown-menu-md p-2 search__staffrole__results">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
+                                                <input type="text" class="form-control form-control-md search__role" placeholder="Search">
                                             </div>
                                         </div>
                                     </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Compounder
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Nurse
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Purchase Officer
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Supervisor
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Receptionist
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Lab Assistant
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Pharmacist
-                                        </label>
-                                    </li>
+<!--                                     
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
                                             Lab Technician
                                         </label>
-                                    </li>
+                                    </li> -->
                                 </ul>
                             </div>
 
@@ -745,13 +651,13 @@
                                 <ul class="dropdown-menu dropdown-menu-sm p-2">
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            <input class="form-check-input m-0 me-2 filter__gender" data-gender="male" type="checkbox">
                                             Male
                                         </label>
                                     </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            <input class="form-check-input m-0 me-2 filter__gender" data-gender="female" type="checkbox">
                                             Female
                                         </label>
                                     </li>

@@ -103,6 +103,10 @@ class Test(Base):
         ForeignKey("analyzers.id"), nullable=True
     )
     price_ghs: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
+    status: Mapped[bool] = mapped_column(default=True, nullable=True)
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     default_analyzer = relationship("Analyzer")
     analyzer_mappings = relationship(

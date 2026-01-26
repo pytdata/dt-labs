@@ -679,8 +679,15 @@ async def staff_list(request: Request, db: AsyncSession = Depends(get_db)):
     staffs = await db.execute(select(User))
 
     staff_results = staffs.scalars().all()
+    staff_counts = len(staff_results)
 
-    return _render(request, tpl, active_page="staff", staffs=staff_results)
+    return _render(
+        request,
+        tpl,
+        active_page="staff",
+        staffs=staff_results,
+        staff_counts=staff_counts,
+    )
 
 
 @router.get("/invoice", response_class=HTMLResponse, name="invoice_list")
