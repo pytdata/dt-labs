@@ -27,6 +27,7 @@ const chemSearchResultsEl = document.querySelector(".chem__search__results");
 // FORM
 const appointmentForm = document.querySelector("#appointmentForm");
 const addSampleForm = document.querySelector("#addSample");
+const addSampleCategoryForm = document.querySelector("#sampleCategoryForm")
 
 let totalNumOfAppointments = 0;
 let searchTimeout = null;
@@ -164,6 +165,9 @@ appointmentForm.addEventListener("submit", async (e) => {
     console.log(error);
   }
 
+  // reset form
+  selectedTests["bacteriology"] = []
+  selectedTests["chemistry"] = []
   appointmentForm.reset();
 });
 
@@ -366,10 +370,6 @@ appointmentsTableEL.addEventListener("click", async (e) => {
   }
 });
 
-// populate selected tests in tests required for sample creation
-// document.querySelector("#test__requested").addEventListener("click", e => {
-//     console.log("target is: ", e.target.closest(".test__required__choice"))
-//   });
 
 // add sample
 addSampleForm.addEventListener("submit", async function (e) {
@@ -411,6 +411,43 @@ addSampleForm.addEventListener("submit", async function (e) {
   addSampleForm.reset();
   selectedTestForSample = []
 });
+
+
+
+// Add new sample category
+addSampleCategoryForm.addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(addSampleCategoryForm);
+  const payload =  {
+    category_name: formData.get("sample_name")
+    // category_description: formData.get("category_description")
+  };
+  
+  try {
+    const res = await fetch("/api/v1/samples/sample-categories/", {
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error("Failed to save sample data: ", res.statusText);
+
+    const data = await res.json();
+    console.log(data);
+
+      location.reload()
+    // TODO: Add notification
+  } catch (error) {
+    console.error(error);
+    // TODO: Add notification
+
+  }
+
+  addSampleCategoryForm.reset();
+})
 
 // Search patients by staff
 searchStaff.addEventListener("input", (e) => {
@@ -592,6 +629,7 @@ function render(appointmentsList) {
  * @returns htmlement
  */
 function renderData(appointment) {
+  console.log(appointment)
   const htmlElement = ` <tr>
         <td>
             <div class="form-check form-check-md">
@@ -630,7 +668,8 @@ function renderData(appointment) {
             </div>
         </td>
        
-        <td>15 Jan 2025, 05:30 PM to 06:30 PM</td>
+       
+        <td>${formatDate(appointment.appointment_at)}, ${formatTime(appointment.start_time)}</td>
         ${
           appointment.status == "completed"
             ? `<td><span class="badge badge-soft-success border border-success text-success py-1 ps-1 d-inline-flex align-items-center"><i class="ti ti-point-filled me-0 fs-14"></i>Completed</span></td>`
@@ -949,6 +988,7 @@ async function performSearch(query, useAppointment) {
  * render bacteria search results
  * @param {object} data
  */
+
 function renderBacteriaSearchResults(data) {
   const searchResultsHTML = data
     .map((bac) => {
@@ -978,7 +1018,7 @@ function renderBacteriaSearchResults(data) {
 }
 
 /**
- * render bacteria search results
+ * render ultra-scan search results
  * @param {object} data
  */
 function renderChemistrySearchResults(data) {
@@ -1029,3 +1069,6 @@ function formatTime(timeStr) {
     hour12: true,
   });
 }
+
+
+//  <td>15 Jan 2025, 05:30 PM to 06:30 PM</td>

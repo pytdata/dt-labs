@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 from enum import Enum
 from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,7 +15,7 @@ from sqlalchemy import or_
 from app.db.session import get_db
 from app.models import Patient
 from app.models.catalog import Test
-from app.models.lab import Appointment
+from app.models.lab import Appointment, Visit
 from app.models.users import User
 from app.schemas.appointment import (
     AppointmenCreate,
@@ -33,6 +34,7 @@ class FilterParams(BaseModel):
     sort_by: Literal["newest", "oldest"] = "newest"
     doctor: str | None = None
     patient: str | None = None
+    patient_id: int | None = None
     department: str | None = None
     search: str | None = None
     status: AppointmentStatus | None = None
@@ -53,6 +55,12 @@ async def get_all_appointments(
         )
         .order_by(Appointment.appointment_at.desc())
     )
+
+    if filter_query.patient_id:
+        stmt = stmt.where(
+            Appointment.patient.has(Patient.id == filter_query.patient_id)
+        )
+
     if filter_query.doctor:
         stmt = stmt.where(
             Appointment.doctor.has(
@@ -82,7 +90,11 @@ async def get_all_appointments(
     if filter_query.status:
         stmt = stmt.where(Appointment.status.in_([filter_query.status]))
 
-    stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
+    stmt = (
+        stmt.limit(filter_query.limit)
+        .offset(filter_query.offset)
+        .order_by(Appointment.appointment_at.desc())
+    )
 
     result = await db.execute(stmt)
     appointment = result.scalars().all()
@@ -221,7 +233,21 @@ async def create_appointment(
         notes=data.notes,
         mode_of_payment=data.mode_of_payment,
         tests=tests,
+        total_price=Decimal(data.total_price),
     )
+
+    # create visit from appointment
+    visit = Visit(
+        patient_id=appointment.patient_id,
+        doctor_id=appointment.doctor_id,
+        visit_date=appointment.appointment_at,
+        time_of_visit=appointment.start_time,
+        mode_of_payment=appointment.mode_of_payment,
+        reason=appointment.notes,
+    )
+
+    db.add(visit)
+    await db.commit()
 
     db.add(appointment)
     await db.commit()

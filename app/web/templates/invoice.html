@@ -398,151 +398,7 @@
         </div>
 
         <!-- Sidenav Menu Start -->
-        <div class="sidebar" id="sidebar">
-
-            <!-- Start Logo -->
-            <div class="sidebar-logo">
-                <div>
-                    <!-- Logo Normal -->
-                    <a href="index.html" class="logo logo-normal">
-                        <img src="/static/img/logo.svg" alt="Logo">
-                    </a>
-
-                    <!-- Logo Small -->
-                    <a href="index.html" class="logo-small">
-                        <img src="/static/img/logo-small.svg" alt="Logo">
-                    </a>
-
-                    <!-- Logo Dark -->
-                    <a href="index.html" class="dark-logo">
-                        <img src="/static/img/logo-white.svg" alt="Logo">
-                    </a>
-                </div>
-                <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn">
-                    <i class="ti ti-arrow-bar-to-left"></i>
-                </button>
-
-                <!-- Sidebar Menu Close -->
-                <button class="sidebar-close">
-                    <i class="ti ti-x align-middle"></i>
-                </button>
-            </div>
-            <!-- End Logo -->
-
-            <!-- Sidenav Menu -->
-            <div class="sidebar-inner" data-simplebar="">
-                <div id="sidebar-menu" class="sidebar-menu">
-                    <ul>
-                        <li class="menu-title"><span>MAIN</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="index.html">
-                                        <i class="ti ti-layout-board"></i><span>Dashboard</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>Healthcare</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="all-patients.html">
-                                        <i class="ti ti-users"></i><span>Patients</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="all-doctors.html">
-                                        <i class="ti ti-stethoscope"></i><span>Lab Technicians</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="visits.html">
-                                        <i class="ti ti-e-passport"></i><span>Visits</span>
-                                    </a>
-                                </li>
-                                <li class="submenu">
-                                    <a href="javascript:void(0);">
-                                        <i class="ti ti-test-pipe"></i><span>Laboratory</span><span class="menu-arrow"></span>
-                                    </a>
-                                    <ul>
-                                        <li>
-                                            <a href="laboratory.html">Main Lab</a>
-                                        </li>
-                                        <li>
-                                            <a href="lab-results.html">Lab Results
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="medical-records.html">Medical Results</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-hospital"></i><span>Hospitals <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li>
-                                </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-list"></i><span>Inventory <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li>
-                                </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-users"></i><span>PRM (CRM) <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>MANAGE</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="tasks.html">
-                                        <i class="ti ti-users-group"></i><span>Tasks</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="staffs.html">
-                                        <i class="ti ti-users-group"></i><span>Staff</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="transactions.html">
-                                        <i class="ti ti-briefcase"></i><span>Payments Transactions</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="notifications.html">
-                                        <i class="ti ti-bell"></i><span>Notifications</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="messages.html">
-                                        <i class="ti ti-message-circle-2"></i><span>Messages</span><span class="count">5</span>
-                                    </a>
-                                </li>
-                                <li class="active">
-                                    <a href="invoice.html">
-                                        <i class="ti ti-file-invoice"></i><span>Invoice</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="general-settings.html">
-                                        <i class="ti ti-settings"></i><span>Settings</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-        </div>
+            {% include "partials/sidebar.html" %}
         <!-- Sidenav Menu End -->
 
         <!-- ========================
@@ -671,7 +527,7 @@
                     <div class="col-sm-12">
                         <div>
                             <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3 mb-3">
-                                <h5 class="d-flex align-items-center mb-0">Invoices<span class="badge bg-soft-dark ms-2 text-dark fs-12">2000 Invoices</span></h5>
+                                <h5 class="d-flex align-items-center mb-0">Invoices<span class="badge bg-soft-dark ms-2 text-dark fs-12 total__invoices">2000 Invoices</span></h5>
                                 <div class="d-flex align-items-center flex-wrap gap-2">
                                     <div class="input-group w-auto input-group-flat">
                                         <input type="text" class="form-control py-1 flatpickr-input active" data-provider="flatpickr" data-date-format="d M, Y" readonly="readonly" placeholder="Due Date">
@@ -737,9 +593,9 @@
                                                 <th></th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody class="invoice__container">
 
-                                            <tr>
+                                            <!-- <tr>
                                                 <td>
                                                     <div class="form-check form-check-md">
                                                         <input class="form-check-input" type="checkbox">
@@ -1166,7 +1022,7 @@
                                                         <a href="#delete_modal" class="" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash"></i></a>
                                                     </div>
                                                 </td>
-                                            </tr>
+                                            </tr> -->
 
                                         </tbody>
                                     </table>
@@ -1236,6 +1092,9 @@
 
     <!-- Main JS -->
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+
+    <!-- Lab results -->
+    <script src="{{ url_for('static', path='js/utils/invoice.js') }}" defer></script>
 
     <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
     <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>

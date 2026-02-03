@@ -275,8 +275,27 @@ async def appointment_add_get(
     ).scalar_one_or_none()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
+
+    test_categories = await db.execute(select(TestCategory))
+    doctors = await db.execute(
+        select(User).where(
+            User.role.in_(
+                [StaffRole.lab_scientist, StaffRole.Admin, StaffRole.Receptionist]
+            ),
+            User.is_active == True,  # noqa: E712
+        )  # noqa: E712
+    )
+
+    staff_results = doctors.scalars().all()
+    test_categories_results = test_categories.scalars().all()
+
     return _render(
-        request, "appointment-add.html", active_page="appointments", patient=patient
+        request,
+        "appointment-add.html",
+        active_page="appointments",
+        patient=patient,
+        staffs=staff_results,
+        test_categories=test_categories_results,
     )
 
 
@@ -610,8 +629,8 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     # )
 
     patients_results = patients.scalars().all()
-    staff_results = doctors.scalars().all()
     department_results = departments.scalars().all()
+    staff_results = doctors.scalars().all()
     test_categories_results = test_categories.scalars().all()
     sample_categories_results = sample_categories.scalars().all()
     # bac_test_results = tests_bac.scalars().all()

@@ -83,7 +83,9 @@ class Visit(Base):
     doctor_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True, index=True
     )
-    department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), index=True)
+    department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id"), index=True, nullable=True
+    )
     visit_date: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -213,6 +215,13 @@ class LabOrderItem(Base):
     assigned_to = relationship("User", foreign_keys=[assigned_to_user_id])
     entered_by = relationship("User", foreign_keys=[entered_by_user_id])
 
+    result = relationship(
+        "LabResult",
+        uselist=False,
+        back_populates="order_item",
+        cascade="all, delete-orphan",
+    )
+
 
 class LabStatusLog(Base):
     """Audit trail for stage/status changes per order item."""
@@ -300,7 +309,9 @@ class LabResult(Base):
         ForeignKey("analyzer_messages.id"), nullable=True, index=True
     )
 
-    sample_id: Mapped[str | None] = mapped_column(String(80), nullable=True, index=True)
+    sample_id: Mapped[str | None] = mapped_column(
+        ForeignKey("samples.id"), nullable=True
+    )
 
     # who entered/validated (manual or from analyzer)
     entered_by_user_id: Mapped[int | None] = mapped_column(
@@ -342,6 +353,7 @@ class LabResult(Base):
     analyzer = relationship("Analyzer", back_populates="results")
     analyzer_message = relationship("AnalyzerMessage", back_populates="results")
 
+    sample = relationship("Sample")
     order_item = relationship("LabOrderItem")
     analyzer = relationship("Analyzer")
     analyzer_message = relationship("AnalyzerMessage")

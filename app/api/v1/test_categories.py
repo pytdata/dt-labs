@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Annotated, Literal
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi import Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +15,7 @@ from app.models import Patient
 from app.models.catalog import Test, TestCategory
 from app.models.users import User
 from app.schemas.appointment import TestCategoryResponse, TestResponse
+from app.schemas.catalog import TestCategoryCreate
 
 
 router = APIRouter()
@@ -78,3 +79,29 @@ async def get_all_tests(
     test_result = await db.execute(stmt)
     selected_test_result = test_result.scalar()
     return selected_test_result
+
+
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=TestCategoryResponse,
+    summary="Create a new test category",
+)
+async def create_test_category(
+    payload: TestCategoryCreate,
+    db: AsyncSession = Depends(get_db),
+    # current_user: User = Depends(get_current_user),  # staff/admin
+):
+    test_category = TestCategory(
+        category_name=payload.category_name,
+        category_description=payload.category_description,
+        # added_by_id=current_user.id,
+        # modified_by_id=current_user.id,
+        date_modified=datetime.now(timezone.utc),
+    )
+
+    db.add(test_category)
+    await db.commit()
+    await db.refresh(test_category)
+
+    return test_category

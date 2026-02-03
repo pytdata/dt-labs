@@ -401,138 +401,7 @@
         </div>
 
         <!-- Sidenav Menu Start -->
-        <div class="sidebar" id="sidebar">
-
-            <!-- Start Logo -->
-            <div class="sidebar-logo">
-                <div>
-                    <!-- Logo Normal -->
-                    <a href="index.html" class="logo logo-normal">
-                        <img src="/static/img/logo.svg" alt="Logo">
-                    </a>
-
-                    <!-- Logo Small -->
-                    <a href="index.html" class="logo-small">
-                        <img src="/static/img/logo-small.svg" alt="Logo">
-                    </a>
-
-                    <!-- Logo Dark -->
-                    <a href="index.html" class="dark-logo">
-                        <img src="/static/img/logo-white.svg" alt="Logo">
-                    </a>
-                </div>
-                <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn">
-                    <i class="ti ti-arrow-bar-to-left"></i>
-                </button>
-
-                <!-- Sidebar Menu Close -->
-                <button class="sidebar-close">
-                    <i class="ti ti-x align-middle"></i>
-                </button>
-            </div>
-            <!-- End Logo -->
-
-            <!-- Sidenav Menu -->
-            <div class="sidebar-inner" data-simplebar="">
-                <div id="sidebar-menu" class="sidebar-menu">
-                    <ul>
-                        <li class="menu-title"><span>MAIN</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="index.html">
-                                        <i class="ti ti-layout-board"></i><span>Dashboard</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>Healthcare</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="all-patients.html">
-                                        <i class="ti ti-users"></i><span>Patients</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="all-doctors.html">
-                                        <i class="ti ti-stethoscope"></i><span>Lab Technicians</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="visits.html">
-                                        <i class="ti ti-e-passport"></i><span>Visits</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="all-appointments.html">
-                                        <i class="ti ti-e-passport"></i><span>Appointments</span>
-                                    </a>
-                                </li>
-                                <li class="submenu">
-                                    <a href="javascript:void(0);">
-                                        <i class="ti ti-test-pipe"></i><span>Laboratory</span><span class="menu-arrow"></span>
-                                    </a>
-                                    <ul>
-                                        <li>
-                                            <a href="laboratory.html">Main Lab</a>
-                                        </li>
-                                        <li>
-                                            <a href="lab-results.html">Lab Results
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="medical-records.html">Medical Results</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>MANAGE</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="tasks.html">
-                                        <i class="ti ti-users-group"></i><span>Tasks</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="staffs.html">
-                                        <i class="ti ti-users-group"></i><span>Staff</span>
-                                    </a>
-                                </li>
-                                <li class="active">
-                                    <a href="transactions.html">
-                                        <i class="ti ti-briefcase"></i><span>Payments Transactions</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="notifications.html">
-                                        <i class="ti ti-bell"></i><span>Notifications</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="messages.html">
-                                        <i class="ti ti-message-circle-2"></i><span>Messages</span><span class="count">5</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="invoice.html">
-                                        <i class="ti ti-file-invoice"></i><span>Invoice</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="general-settings.html">
-                                        <i class="ti ti-settings"></i><span>Settings</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-        </div>
+            {% include "partials/sidebar.html" %}
         <!-- Sidenav Menu End -->
 
         <!-- ========================
@@ -621,7 +490,7 @@
                 <div class="card mb-0">
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="d-inline-flex align-items-center mb-0">Total Transactions <span class="badge bg-danger ms-2">658</span></h6>
+                        <h6 class="d-inline-flex align-items-center mb-0">Total Transactions <span class="badge bg-danger ms-2 total__amount">Loading...</span></h6>
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
@@ -649,7 +518,7 @@
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
+                                                <input type="text" class="form-control form-control-md search__transaction__patient" placeholder="Search">
                                             </div>
                                         </div>
                                     </li>
@@ -659,60 +528,7 @@
                                             <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> James Carter
                                         </label>
                                     </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-34.jpg" class="flex-shrink-0 rounded" alt="img"></span> Emily Davis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-6.jpg" class="flex-shrink-0 rounded" alt="img"></span>Michael Johnson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-25.jpg" class="flex-shrink-0 rounded" alt="img"></span>Olivia Miller
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-14.jpg" class="flex-shrink-0 rounded" alt="img"></span>David Smith
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-22.jpg" class="flex-shrink-0 rounded" alt="img"></span>Sophia Wilson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-30.jpg" class="flex-shrink-0 rounded" alt="img"></span>Daniel Williams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-24.jpg" class="flex-shrink-0 rounded" alt="img"></span>Isabella Anderson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-15.jpg" class="flex-shrink-0 rounded" alt="img"></span>William Brown
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-39.jpg" class="flex-shrink-0 rounded" alt="img"></span>Charlotte Taylor
-                                        </label>
-                                    </li>
+                                   
                                 </ul>
                             </div>
 
@@ -724,14 +540,14 @@
                                 <ul class="dropdown-menu dropdown-menu-sm p-2">
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            <input class="form-check-input m-0 me-2 payment__type" type="checkbox" data-payment-type="cash">
                                             Cash
                                         </label>
                                     </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Paytm
+                                            <input class="form-check-input m-0 me-2 payment__type" type="checkbox" data-payment-type="momo">
+                                            Momo
                                         </label>
                                     </li>
                                 </ul>
@@ -825,13 +641,13 @@
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Completed
+                                            paid
                                         </label>
                                     </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Pending
+                                            unpaid
                                         </label>
                                     </li>
                                 </ul>
@@ -878,7 +694,7 @@
                                         <th class="no-sort"></th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="payment__table">
                                     <tr>
                                         <td>
                                             <div class="form-check form-check-md">
@@ -923,402 +739,7 @@
                                             </ul>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0024</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-34.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">Emily Davis</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>10 Jun 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-03.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Katherine Brooks</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Diagnostic Test Payment</p></td>
-                                        <td>$500</td>
-                                        <td>Paytm</td>
-                                        <td><span class="badge badge-md badge-soft-warning border border-warning text-warning">Pending</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0023</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/avatar-6.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">Michael Johnson</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>22 May 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-04.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Benjamin Harris</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Fee for consultations with a Doctor</p></td>
-                                        <td>$300</td>
-                                        <td>Paytm</td>
-                                        <td><span class="badge badge-md badge-soft-success border border-success text-success">Completed</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0022</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-25.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">Olivia Miller</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>15 May 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-05.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Laura Mitchell</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Medical Equipment Purchase Payment</p></td>
-                                        <td>$200</td>
-                                        <td>Paytm</td>
-                                        <td><span class="badge badge-md badge-soft-warning border border-warning text-warning">Pending</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0021</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-14.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">David Smith</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>30 Apr 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-06.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Christopher Lewis</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Flu Shot or Vaccination</p></td>
-                                        <td>$100</td>
-                                        <td>Cash</td>
-                                        <td><span class="badge badge-md badge-soft-success border border-success text-success">Completed</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0020</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-22.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">Sophia Wilson</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>25 Apr 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-07.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Natalie Foster</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Medication Refill Fee Payment</p></td>
-                                        <td>$600</td>
-                                        <td>Paytm</td>
-                                        <td><span class="badge badge-md badge-soft-warning border border-warning text-warning">Pending</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0019</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-30.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">Daniel Williams</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>13 Mar 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-10.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Jonathan Adams</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Physical Therapy Session Payment</p></td>
-                                        <td>$700</td>
-                                        <td>Cash</td>
-                                        <td><span class="badge badge-md badge-soft-success border border-success text-success">Completed</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0018</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-24.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">Isabella Anderson</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>16 Feb 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-08.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Rebecca Scott</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Vision Exam Payment</p></td>
-                                        <td>$800</td>
-                                        <td>Paytm</td>
-                                        <td><span class="badge badge-md badge-soft-warning border border-warning text-warning">Pending</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0017</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-15.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">William Brown</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>20 Jan 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-12.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Samuel Turner</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">X-ray or Imaging Payment</p></td>
-                                        <td>$900</td>
-                                        <td>Cash</td>
-                                        <td><span class="badge badge-md badge-soft-success border border-success text-success">Completed</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                            </div>
-                                        </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0016</a></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/users/user-39.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">Charlotte Taylor</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>15 Jan 2025</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                                                    <img src="/static/img/doctors/doctor-11.jpg" alt="img" class="rounded">
-                                                </a>
-                                                <div>
-                                                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Victoria Evans</a></h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td><p class="text-truncate mb-0">Allergy Testing Service Payment</p></td>
-                                        <td>$500</td>
-                                        <td>Paytm</td>
-                                        <td><span class="badge badge-md badge-soft-warning border border-warning text-warning">Pending</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
+                                   
                                 </tbody>
                             </table>
                         </div>
@@ -1533,6 +954,9 @@
 
     <!-- Main JS -->
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+
+    <!-- Lab results -->
+    <script src="{{ url_for('static', path='js/utils/transactions.js') }}" defer></script>
 
 <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
 <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>

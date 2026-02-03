@@ -167,7 +167,7 @@ class SampleCategory(Base):
     __tablename__ = "sample_categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    category_name: Mapped[str] = mapped_column()
+    category_name: Mapped[str] = mapped_column(unique=True)
 
 
 class Sample(Base):

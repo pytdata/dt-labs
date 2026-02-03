@@ -411,156 +411,7 @@
         </div>
 
         <!-- Sidenav Menu Start -->
-        <div class="sidebar" id="sidebar">
-
-            <!-- Start Logo -->
-            <div class="sidebar-logo">
-                <div>
-                    <!-- Logo Normal -->
-                    <a href="index.html" class="logo logo-normal">
-                        <img src="/static/img/logo.svg" alt="Logo">
-                    </a>
-
-                    <!-- Logo Small -->
-                    <a href="index.html" class="logo-small">
-                        <img src="/static/img/logo-small.svg" alt="Logo">
-                    </a>
-
-                    <!-- Logo Dark -->
-                    <a href="index.html" class="dark-logo">
-                        <img src="/static/img/logo-white.svg" alt="Logo">
-                    </a>
-                </div>
-                <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn">
-                    <i class="ti ti-arrow-bar-to-left"></i>
-                </button>
-
-                <!-- Sidebar Menu Close -->
-                <button class="sidebar-close">
-                    <i class="ti ti-x align-middle"></i>
-                </button>
-            </div>
-            <!-- End Logo -->
-
-            <!-- Sidenav Menu -->
-            <div class="sidebar-inner" data-simplebar="">
-                <div id="sidebar-menu" class="sidebar-menu">
-                    <ul>
-                        <li class="menu-title"><span>MAIN</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="index.html">
-                                        <i class="ti ti-layout-board"></i><span>Dashboard</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>Healthcare</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="all-patients.html">
-                                        <i class="ti ti-users"></i><span>Patients</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="all-doctors.html">
-                                        <i class="ti ti-stethoscope"></i><span>Lab Technicians</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="visits.html">
-                                        <i class="ti ti-e-passport"></i><span>Visits</span>
-                                    </a>
-                                </li>
-                                <li class="active">
-                                    <a href="all-appointments.html">
-                                        <i class="ti ti-e-passport"></i><span>Appointments</span>
-                                    </a>
-                                </li>
-                                <li class="submenu">
-                                    <a href="javascript:void(0);">
-                                        <i class="ti ti-test-pipe"></i><span>Laboratory</span><span class="menu-arrow"></span>
-                                    </a>
-                                    <ul>
-                                        <li>
-                                            <a href="laboratory.html">Main Lab</a>
-                                        </li>
-                                        <li>
-                                            <a href="lab-results.html">Lab Results
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="medical-records.html">Medical Results</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <!-- </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-hospital"></i><span>Hospitals <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li>
-                                </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-list"></i><span>Inventory <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li> -->
-                                <!-- </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-users"></i><span>PRM (CRM) <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li> -->
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>MANAGE</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="tasks.html">
-                                        <i class="ti ti-users-group"></i><span>Tasks</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="staffs.html">
-                                        <i class="ti ti-users-group"></i><span>Staff</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="transactions.html">
-                                        <i class="ti ti-briefcase"></i><span>Payments Transactions</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="notifications.html">
-                                        <i class="ti ti-bell"></i><span>Notifications</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="messages.html">
-                                        <i class="ti ti-message-circle-2"></i><span>Messages</span><span class="count">5</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="invoice.html">
-                                        <i class="ti ti-file-invoice"></i><span>Invoice</span>
-                                    </a>
-                                </li>
-                                 <li>
-                                    <a href="general-settings.html">
-                                        <i class="ti ti-settings"></i><span>Settings</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-        </div>
+    {% include "partials/sidebar.html" %}
         <!-- Sidenav Menu End -->
 
         <!-- ========================
@@ -590,7 +441,7 @@
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Print" data-bs-original-title="Print"><i class="ti ti-printer"></i></a>
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Download" data-bs-original-title="Download"><i class="ti ti-cloud-download"></i></a>
                         <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_modal"><i class="ti ti-square-rounded-plus me-1"></i>New Appointment</a>
-                        <a href="javascript:void(0);" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#add_modal"><i class="ti ti-square-rounded-plus me-1"></i>New Test Category</a>
+                        <a href="javascript:void(0);" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#add_sample_category"><i class="ti ti-square-rounded-plus me-1"></i>Add Sample Category</a>
                     </div>
                 </div>
 				<!-- End Page Header -->
@@ -1170,6 +1021,47 @@
         </div>
     </div>
     <!-- End add Modal -->
+
+
+  <!-- Start add Modal -->
+    <div id="add_sample_category" class="modal fade">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate">New Sample Category</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+                </div>
+                <form id="sampleCategoryForm">
+                    <div class="modal-body pb-0">
+                        
+                        <div class="row">
+                          <div class="col-lg-12">
+                            <div class="mb-3">
+
+                                <label for="staticEmail" class="col-sm-2 col-form-label">Name</label>
+                                <input type="text" class="form-control" id="sample_name" name="sample_name" placeholder="Sample Name" required>
+                            </div>
+                          </div>
+                            <!-- <div class="col-lg-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Sample Description</label>
+                                    <textarea class="form-control" placeholder="Additional Information" rows="3" name="category_description" id="category_description"></textarea>
+                                </div>
+                            </div> -->
+                            
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex align-items-center gap-1">
+                        <button type="button" class="btn btn-light appointment__cancel__btn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Sample Category</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End add Modal -->
+
+
 
     <!-- Toast Begins -->
 

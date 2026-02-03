@@ -18,19 +18,39 @@ class Invoice(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     invoice_no: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
-    order_id: Mapped[int | None] = mapped_column(ForeignKey("lab_orders.id"), nullable=True, index=True)
+    order_id: Mapped[int | None] = mapped_column(
+        ForeignKey("lab_orders.id"), nullable=True, index=True
+    )
 
     total_amount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     amount_paid: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     balance: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
-    status: Mapped[str] = mapped_column(String(20), default="unpaid")  # unpaid|partial|paid
+    status: Mapped[str] = mapped_column(
+        String(20), default="unpaid"
+    )  # unpaid|partial|paid
 
-    payment_mode: Mapped[str | None] = mapped_column(String(30), nullable=True)  # cash|momo
+    payment_mode: Mapped[str | None] = mapped_column(
+        String(30), nullable=True
+    )  # cash|momo
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     patient = relationship("Patient")
     order = relationship("LabOrder")
+
+    items: Mapped[list["InvoiceItem"]] = relationship(
+        "InvoiceItem",
+        back_populates="invoice",
+        cascade="all, delete-orphan",
+    )
+
+    payments: Mapped[list["Payment"]] = relationship(
+        "Payment",
+        back_populates="invoice",
+        cascade="all, delete-orphan",
+    )
 
 
 class InvoiceItem(Base):
@@ -44,8 +64,13 @@ class InvoiceItem(Base):
     qty: Mapped[int] = mapped_column(default=1)
     line_total: Mapped[float] = mapped_column(Numeric(12, 2))
 
-    invoice = relationship("Invoice", backref="items")
+    # invoice = relationship("Invoice", backref="items")
     test = relationship("Test")
+
+    invoice: Mapped["Invoice"] = relationship(
+        "Invoice",
+        back_populates="items",
+    )
 
 
 class Payment(Base):
@@ -54,10 +79,24 @@ class Payment(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     invoice_id: Mapped[int] = mapped_column(ForeignKey("invoices.id"), index=True)
     amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    transaction_date: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     method: Mapped[str] = mapped_column(String(30), default="cash")  # cash|momo
-    verified_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
-    reference: Mapped[str | None] = mapped_column(String(100), nullable=True)  # momo txn id etc
-    received_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-
-    invoice = relationship("Invoice", backref="payments")
+    verified_by_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    description: Mapped[str | None] = mapped_column(String(30), default="")
+    reference: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )  # momo txn id etc
+    received_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    # invoice = relationship("Invoice", backref="payments")
     verified_by = relationship("User")
+
+    invoice: Mapped["Invoice"] = relationship(
+        "Invoice",
+        back_populates="payments",
+    )

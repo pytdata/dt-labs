@@ -2,14 +2,19 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import func, select
 from datetime import datetime
 from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
-from app.models.catalog import Sample, Test
+from app.models.catalog import Sample, SampleCategory, Test
 from app.models.lab import Appointment, LabOrder, LabOrderItem
-from app.schemas.sample import SampleCreate, SampleResponse
+from app.schemas.sample import (
+    SampleCategoryCreate,
+    SampleCategoryResponse,
+    SampleCreate,
+    SampleResponse,
+)
 
 
 router = APIRouter()
@@ -100,3 +105,32 @@ async def get_all_samples(
     samples = result.scalars().all()
 
     return samples
+
+
+@router.post(
+    "/sample-categories",
+    response_model=SampleCategoryResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_sample_category(
+    payload: SampleCategoryCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(SampleCategory).where(
+        func.lower(SampleCategory.category_name) == payload.category_name.lower()
+    )
+    existing = await db.scalar(stmt)
+
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sample category already exists",
+        )
+
+    category = SampleCategory(category_name=payload.category_name.strip().lower())
+
+    db.add(category)
+    await db.commit()
+    await db.refresh(category)
+
+    return category

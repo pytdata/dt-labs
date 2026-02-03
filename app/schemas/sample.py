@@ -35,3 +35,15 @@ class SampleResponse(BaseModel):
     collection_site: Optional[str] = None
     sample_condition: Optional[str] = None
     status: Optional[str] = None
+
+
+class SampleCategoryCreate(BaseModel):
+    category_name: str
+
+
+class SampleCategoryResponse(BaseModel):
+    id: int
+    category_name: str
+
+    class Config:
+        from_attributes = True
