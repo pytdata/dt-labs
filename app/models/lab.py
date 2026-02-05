@@ -89,9 +89,7 @@ class Visit(Base):
     visit_date: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    time_of_visit: Mapped[time | None] = mapped_column(
-        Time(timezone=True), nullable=True
-    )
+    time_of_visit: Mapped[time | None] = mapped_column(Time(), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="pending")
     mode_of_payment: Mapped[str] = mapped_column(
         String(15), default="cash", nullable=True

@@ -14,7 +14,7 @@ const chemistryTestDivEl = document.querySelector("#chemistry-test");
 
 // TOTAL PRICE
 const totalPriceEL = document.querySelector(".total__price");
-
+let totalSelectedPrice = 0;
 // ACCORDION
 const selectedTestAccordionListEl = document.querySelector(
   ".selected__accordion",
@@ -145,11 +145,12 @@ appointmentForm.addEventListener("submit", async (e) => {
     doctor_id: Number(formData.get("staff_id")),
     notes: formData.get("notes"),
     mode_of_payment: formData.get("payment_mode"),
-    total_price: Number(formData.get("total__price")),
+    total_price: Number(totalSelectedPrice),
     test_ids: [
       ...new Set([...selectedTests.bacteriology, ...selectedTests.chemistry]),
     ],
   };
+  
 
   try {
     const res = await fetch("/api/v1/appointments/", {
@@ -160,6 +161,8 @@ appointmentForm.addEventListener("submit", async (e) => {
 
     if (!res.ok) throw new Error("Failed to book appointment.: ", res);
 
+    console.log(res.statusText)
+
     const data = await res.json();
   } catch (error) {
     console.log(error);
@@ -168,6 +171,7 @@ appointmentForm.addEventListener("submit", async (e) => {
   // reset form
   selectedTests["bacteriology"] = []
   selectedTests["chemistry"] = []
+  totalSelectedPrice = 0;
   appointmentForm.reset();
 });
 
@@ -783,6 +787,7 @@ function computeTotalPrice(data) {
  */
 function showComputedAmount(totalAmount) {
   totalPriceEL.textContent = `${totalAmount}`;
+  totalSelectedPrice = totalAmount;
 }
 
 // VIEW:

@@ -76,8 +76,7 @@ function renderData(invoice) {
         <td>
             <div class="action-icon d-inline-flex">
                 <a href="invoice-details.html" class="me-2"><i class="ti ti-eye"></i></a>
-                <a href="edit-invoice.html" class="me-2"><i class="ti ti-edit"></i></a>
-                <a href="#delete_modal" class="" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash"></i></a>
+              <!--  <a href="#delete_modal" class="" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash"></i></a> -->
             </div>
         </td>
     </tr>

@@ -114,7 +114,10 @@ class Test(Base):
     )
     test_category = relationship("TestCategory")
     appointments = relationship(
-        "Appointment", secondary=association.appointment_tests, back_populates="tests"
+        "Appointment",
+        secondary=association.appointment_tests,
+        back_populates="tests",
+        viewonly=True,  # ← prevents warning
     )
 
 

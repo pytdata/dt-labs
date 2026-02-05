@@ -23,6 +23,7 @@ class Invoice(Base):
     )
 
     total_amount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
+    # what user paid
     amount_paid: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     balance: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     status: Mapped[str] = mapped_column(

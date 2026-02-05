@@ -322,7 +322,7 @@ endblock %} {% block content %}
     console.log(payload)
 
     try {
-      const res = await fetch("/api/v1/appointments/", {
+      const res = await fetch("/api/v1/appointments/v2/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
