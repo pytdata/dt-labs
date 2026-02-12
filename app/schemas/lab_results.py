@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy import Enum
 from app.schemas.appointment import UserResponse
 from app.schemas.sample import SampleResponse
 
@@ -18,3 +19,10 @@ class LabResultResponse(BaseModel):
     verified_by_user: UserResponse | None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LabResultStatus(str, Enum):
+    received = "Received"
+    verified = "Verified"
+    printed = "printed"
+    pending = "pending"

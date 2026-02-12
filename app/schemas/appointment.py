@@ -1,8 +1,8 @@
-from datetime import date, datetime, time
+from datetime import datetime, time
 from decimal import Decimal
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict
+from typing import List, Optional
 
 from app.schemas.lab import PatientOut
 from app.schemas.visit import PaymentMode
@@ -65,6 +65,30 @@ class TestResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class LabResultResponse(BaseModel):
+    id: int
+    test_no: str | None
+    results: dict | None
+    received_at: datetime
+    comments: str | None
+    # test_category_id: int
+    # default_analyzer_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LabResultCreate(BaseModel):
+    id: int
+    test_no: str
+    lab_result: str
+    comment: str | None
+    unit: str
+    # test_category_id: int
+    # default_analyzer_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class AppointmentResponse(BaseModel):
     id: int
     patient: PatientOut
@@ -105,4 +129,14 @@ class TestCategoryResponse(BaseModel):
     date_added: datetime
     date_modified: datetime
 
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ManualTestResult(BaseModel):
+    test_name_type: str
+    test_code: str
+    result: list[dict]
+    # unit: str
+    # ref_range: str
+    # comment: str | None
     model_config = ConfigDict(from_attributes=True)

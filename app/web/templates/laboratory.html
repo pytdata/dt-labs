@@ -442,7 +442,7 @@
                 <div class="card mb-0">
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="d-inline-flex align-items-center mb-0">Total Tests <span class="badge bg-danger ms-2">658</span></h6>
+                        <h6 class="d-inline-flex align-items-center mb-0">Total Tests <span class="badge bg-danger ms-2" id="total__test__count">0</span></h6>
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
@@ -625,16 +625,17 @@
                                          </div>
                                      </th>
                                         <th>Test ID</th>
+                                        <th>Patient ID</th>
                                         <th>Test Name</th>
                                         <th>Result</th>
                                         <th>Created Date</th>
-                                        <th class="no-sort">Department</th>
+                                        <!-- <th class="no-sort">Department</th> -->
                                         <th class="no-sort">Amount</th>
                                         <th class="no-sort">Status</th>
                                         <th class="no-sort"></th>
                                  </tr>
                              </thead>
-                                <tbody>
+                                <tbody class="labtest__container">
                                     <tr>
                                         <td>
                                             <div class="form-check form-check-md">
@@ -642,10 +643,11 @@
                                          </div>
                                      </td>
                                         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TE0025</a></td>
+                                         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#PTSETD</a></td>
                                         <td>Blood Test</td>
                                         <td>20 days</td>
                                         <td>17 Jun 2025</td>
-                                        <td>Anaesthesiology</td>
+                                        <!-- <td>Anaesthesiology</td> -->
                                         <td>$500</td>
                                         <td><span class="badge badge-md badge-soft-success border border-success text-success">Active</span></td>
                                         <td class="text-end">
@@ -663,7 +665,7 @@
                                          </ul>
                                      </td>
                                  </tr>
-                                    <tr>
+                                    <!-- <tr>
                                         <td>
                                             <div class="form-check form-check-md">
                                                 <input class="form-check-input" type="checkbox">
@@ -914,7 +916,7 @@
                                              </li>
                                          </ul>
                                      </td>
-                                 </tr>
+                                 </tr> -->
                              </tbody>
                          </table>
                      </div>
@@ -1120,86 +1122,54 @@
 
     <!-- Start edit Modal -->
     <div id="edit_modal" class="modal fade">
-        <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-dialog .modal-dialog-scrollable modal-dialog-centered modal-xl">
             <div class="modal-content">
                 <div class="modal-header justify-content-between">
                     <h4 class="text-dark modal-title fw-bold text-truncate">Edit Test</h4>
                     <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
              </div>
-                <form action="laboratory.html">
+                <form id="test__result__form">
                     <div class="modal-body">
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label class="form-label"> Test Name</label>
-                                    <input type="text" class="form-control" value="Blood Test ">
-                             </div>
-                         </div>
-                            <div class="col-md-12">
+                                    <input type="text" class="form-control test__name" name="test_name"  disabled>
+                                </div>
+                            </div>
+
+                            <div id="template-fields">
+
+                            </div>
+                             <!-- <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label class="form-label"> Department</label>
-                                    <select class="select">
-                                        <option>Select</option>
-                                        <option selected="">Anaesthesiology</option>
-                                        <option>Dental Surgery</option>
-                                        <option>Dermatology</option>
-                                        <option>ENT Surgery</option>
-                                        <option>General Medicine</option>
-                                        <option>Ophthalmology</option>
-                                        <option>Orthopaedics</option>
-                                        <option>Paediatrics</option>
-                                        <option>Radiology</option>
-                                        <option>Cardiology</option>
-                                 </select>
-                             </div>
-                         </div>
-                            <div class="col-lg-6">
+                                    <label class="form-label">Result</label>
+                                    <textarea rows="3" class="form-control result__data" name="result" placeholder="Extra Info"></textarea>
+                                </div>
+                            </div> -->
+                            
+                            <!-- <div class="col-lg-6">
                                 <div class="mb-3">
-                                    <label class="form-label"> Cheif Incharge</label>
-                                    <select class="select">
-                                        <option>Select</option>
-                                        <option selected="">David</option>
-                                        <option>Sara</option>
-                                 </select>
+                                    <label class="form-label">Unit</label>
+                                    <input type="text" class="form-control data__unit" name="unit">
                              </div>
-                         </div>
-                            <div class="col-lg-6">
+                            </div> -->
+                           <!-- <input type="hidden" id="test__no" name="test__no"> -->
+
+                         <!-- <div class="col-lg-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Staffs</label>
-                                    <select class="select">
-                                        <option>Select</option>
-                                        <option selected="">Benjamin Clark</option>
-                                        <option>Lance</option>
-                                        <option>Robinson</option>
-                                        <option>Jenifer</option>
-                                 </select>
-                             </div>
-                         </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Price</label>
-                                    <input type="text" class="form-control" value="$250">
-                             </div>
-                         </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Timing for Result</label>
-                                    <input type="text" class="form-control" value="20 Days">
+                                    <label class="form-label">Range</label>
+                                    <input type="text" class="form-control data__range" name="range">
                              </div>
                          </div>
 
                             <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label class="form-label">Quick Notes</label>
-                                    <textarea rows="3" class="form-control" placeholder="Extra Info"></textarea>
-                             </div>
-                         </div>
-                            <div class="col-md-12">
-                                <div class="form-check form-switch  ps-0 d-flex align-items-center justify-content-between mb-0">
-                                    <label class="form-label mb-0" for="user1">Status</label>
-                                    <input class="form-check-input me-0" type="checkbox" role="switch" id="user1">
-                             </div>
-                         </div>
+                                    <label class="form-label">Comment</label>
+                                    <textarea rows="3" class="form-control data__comment" name="comment" placeholder="Extra Info"></textarea>
+                                </div>
+                            </div> -->
+                            
                      </div>
                  </div>
                     <div class="modal-footer d-flex align-items-center gap-1">
@@ -1308,6 +1278,10 @@
 
     <!-- Main JS -->
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+
+
+    <script src="{{ url_for('static', path='js/utils/laboratory.js') }}" defer></script>
+    <script src="{{ url_for('static', path='js/utils/render_result.js') }}" defer></script>
 
     <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
     <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>

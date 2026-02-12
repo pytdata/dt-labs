@@ -17,7 +17,7 @@ from app.db.session import get_db
 from app.models import Patient, association
 from app.models.billing import Invoice, InvoiceItem, Payment
 from app.models.catalog import Test
-from app.models.lab import Appointment, LabOrder, LabOrderItem, Visit
+from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
 from app.models.users import User
 from app.schemas.appointment import (
     AppointmenCreate,
@@ -40,6 +40,15 @@ class FilterParams(BaseModel):
     department: str | None = None
     search: str | None = None
     status: AppointmentStatus | None = None
+
+
+DEFAULT_PREFIX = "YKG"
+
+
+async def _next_test_no(db: AsyncSession) -> str:
+    max_id = (await db.execute(select(func.max(Patient.id)))).scalar() or 0
+    nxt = int(max_id) + 1
+    return f"{DEFAULT_PREFIX}-TEST-{nxt:06d}"
 
 
 @router.post("/")
@@ -110,7 +119,7 @@ async def create_appointment(
             db.add(invoice)
             await db.flush()
 
-            # Invoice Items + Order Items
+            # Invoice Items + Order Items + LabResult
             for test in tests:
                 db.add(
                     InvoiceItem(
@@ -122,12 +131,27 @@ async def create_appointment(
                         line_total=test.price_ghs,
                     )
                 )
+                await db.flush()
 
+                order_item = LabOrderItem(
+                    order_id=order.id,
+                    test_id=test.id,
+                    status="pending",
+                )
+                db.add(order_item)
+                await db.flush()
+
+                # db.add(
+                #     LabOrderItem(
+                #         order_id=order.id,
+                #         test_id=test.id,
+                #         status="pending",
+                #     )
+                # )
+                test_no = await _next_test_no(db)
                 db.add(
-                    LabOrderItem(
-                        order_id=order.id,
-                        test_id=test.id,
-                        status="pending",
+                    LabResult(
+                        order_item_id=order_item.id, status="received", test_no=test_no
                     )
                 )
 
@@ -152,6 +176,7 @@ async def create_appointment(
         }
 
     except Exception as e:
+        print(e)
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -168,6 +193,7 @@ async def get_all_appointments(
             selectinload(Appointment.patient),
             selectinload(Appointment.doctor),
             selectinload(Appointment.tests),
+            # selectinload(LabOrderItem.result),
         )
         .order_by(Appointment.appointment_at.desc())
     )

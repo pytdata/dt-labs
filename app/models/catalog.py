@@ -15,6 +15,7 @@ from datetime import datetime, time
 
 from app.db.base import Base
 from app.schemas.sample import SampleCondition
+from app.schemas.tests import TestStatus
 from . import association
 
 
@@ -97,13 +98,16 @@ class Test(Base):
     test_category_id: Mapped[int] = mapped_column(
         ForeignKey("test_categories.id"), index=True
     )
+    # test_no: Mapped[str | None] = mapped_column(nullable=)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     department: Mapped[str | None] = mapped_column(String(100), nullable=True)
     default_analyzer_id: Mapped[int | None] = mapped_column(
         ForeignKey("analyzers.id"), nullable=True
     )
     price_ghs: Mapped[float | None] = mapped_column(Numeric(10, 2), nullable=True)
-    status: Mapped[bool] = mapped_column(default=True, nullable=True)
+    # eg: 2Hrs, 5 Days, etc
+    test_duration: Mapped[str | None] = mapped_column()
+    test_status: Mapped[bool] = mapped_column(default=True, nullable=True)
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -119,6 +123,7 @@ class Test(Base):
         back_populates="tests",
         viewonly=True,  # ← prevents warning
     )
+    templates = relationship("TestTemplate", back_populates="test")
 
 
 class TestParameter(Base):

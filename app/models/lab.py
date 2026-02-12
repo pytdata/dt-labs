@@ -1,13 +1,10 @@
 from decimal import Decimal
-from enum import Enum
 from sqlalchemy import (
-    Column,
     Numeric,
     String,
     Date,
     DateTime,
     ForeignKey,
-    Table,
     Text,
     JSON,
     Time,
@@ -18,10 +15,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db.base import Base
-from datetime import datetime, time
+from datetime import time
 
 from app.schemas.appointment import AppointmentStatus
-from app.schemas.visit import ModeOfConsultation, PaymentMode
+from app.schemas.lab_results import LabResultStatus
+from app.schemas.visit import PaymentMode
 from . import association
 
 
@@ -138,6 +136,11 @@ class Appointment(Base):
     )
     # department = relationship("Department")
     created_by_user = relationship("User", foreign_keys=[created_by_user_id])
+    lab_orders = relationship(
+        "LabOrder",
+        back_populates="appointment",
+        cascade="all, delete-orphan",
+    )
 
     # visit = relationship("Visit")
 
@@ -168,18 +171,21 @@ class LabOrder(Base):
 
     patient = relationship("Patient", back_populates="lab_orders")
     collected_by = relationship("User", foreign_keys=[collected_by_user_id])
-    appointment = relationship("Appointment")
+    appointment = relationship("Appointment", back_populates="lab_orders")
     items = relationship(
         "LabOrderItem",
         back_populates="order",
         cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
 
 class LabOrderItem(Base):
     __tablename__ = "lab_order_items"
     id: Mapped[int] = mapped_column(primary_key=True)
-    order_id: Mapped[int] = mapped_column(ForeignKey("lab_orders.id"), index=True)
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey("lab_orders.id", ondelete="CASCADE"), index=True
+    )
     test_id: Mapped[int] = mapped_column(ForeignKey("tests.id"), index=True)
     analyzer_id: Mapped[int | None] = mapped_column(
         ForeignKey("analyzers.id"), nullable=True
@@ -300,6 +306,7 @@ class LabResult(Base):
     order_item_id: Mapped[int] = mapped_column(
         ForeignKey("lab_order_items.id"), index=True
     )
+    test_no: Mapped[str | None] = mapped_column(unique=True, nullable=True)
     analyzer_id: Mapped[int | None] = mapped_column(
         ForeignKey("analyzers.id"), nullable=True, index=True
     )
@@ -322,7 +329,7 @@ class LabResult(Base):
         String(20), default="analyzer"
     )  # analyzer|manual|import
     status: Mapped[str] = mapped_column(
-        String(20), default="received"
+        String(20), default=LabResultStatus.pending
     )  # received|verified|printed
 
     results: Mapped[dict | None] = mapped_column(
@@ -352,8 +359,39 @@ class LabResult(Base):
     analyzer_message = relationship("AnalyzerMessage", back_populates="results")
 
     sample = relationship("Sample")
-    order_item = relationship("LabOrderItem")
     analyzer = relationship("Analyzer")
     analyzer_message = relationship("AnalyzerMessage")
     entered_by_user = relationship("User", foreign_keys=[entered_by_user_id])
     verified_by_user = relationship("User", foreign_keys=[verified_by_user_id])
+
+    def __repr__(self) -> str:
+        return f"{self.test_no} {self.results}"
+
+
+class TestTemplate(Base):
+    """
+    Creating Test Templates
+    """
+
+    __tablename__ = "test_templates"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    test_id: Mapped[int] = mapped_column(ForeignKey("tests.id"))
+    test_name: Mapped[str] = mapped_column(String(100))
+    short_code: Mapped[str | None] = mapped_column(nullable=True)
+    result: Mapped[float | None] = mapped_column(nullable=True)
+    unit: Mapped[str] = mapped_column()
+    min_reference_range: Mapped[float | None] = mapped_column(nullable=True)
+    max_reference_range: Mapped[float | None] = mapped_column(nullable=True)
+    comment: Mapped[str | None] = mapped_column(nullable=True)
+
+    created_on: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    # relationship
+    test = relationship("Test", back_populates="templates")
+
+    def __repr__(self) -> str:
+        return f"{self.id!r} {self.test_id!r} {self.test_name!r} {self.unit!r}"

@@ -5,15 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi import Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
-from sqlalchemy import or_
+from sqlalchemy import select
 
 
 from app.db.session import get_db
-from app.models import Patient
 from app.models.catalog import Test, TestCategory
-from app.models.users import User
 from app.schemas.appointment import TestCategoryResponse, TestResponse
 from app.schemas.catalog import TestCategoryCreate
 
@@ -35,15 +31,6 @@ async def get_all_tests_categories(
     db: AsyncSession = Depends(get_db),
 ):
     if not filter_query:
-        # stmt = (
-        #     select(TestCategory)
-        #     .where(TestCategory)
-        #     .order_by(TestCategory.date_added.desc())
-        # )
-        # stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
-        # test_result = await db.execute(stmt)
-        # selected_test_result = test_result.scalar()
-        # return selected_test_result
         raise HTTPException("The query 'test_category; is required")
     stmt = (
         select(TestCategory)
