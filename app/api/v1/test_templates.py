@@ -132,4 +132,6 @@ async def get_templates_by_test(
     result = await db.execute(stmt)
     templates = result.scalars().all()
 
+    print(templates)
+
     return templates

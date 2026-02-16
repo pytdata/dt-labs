@@ -433,22 +433,22 @@
 
                 <!-- row start -->
                 <div class="row patient-add">
-                    <div class="col-xl-3 col-lg-4">
-                        <div class="nav flex-column nav-pills" id="v-pills-tab">
-                            <button class="nav-link active fw-medium d-flex align-items-center rounded" id="v-pills-info-tab"><span></span><i class="ti ti-info-circle fs-16"></i>Basic Information</button>
-                            <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-vituals-tab"><span></span><i class="ti ti-vector-spline fs-16"></i>Vitals</button>
+                    <!-- <div class="col-xl-3 col-lg-4">
+                        <div class="nav flex-column nav-pills" id="v-pills-tab"> -->
+                            <!-- <button class="nav-link active fw-medium d-flex align-items-center rounded" id="v-pills-info-tab"><span></span><i class="ti ti-info-circle fs-16"></i>Basic Information</button> -->
+                            <!-- <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-vituals-tab"><span></span><i class="ti ti-vector-spline fs-16"></i>Vitals</button>
                             <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-medical-history-tab"><span></span><i class="ti ti-files fs-16"></i>Medical HIstory</button>
-                            <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-complaints-tab"><span></span><i class="ti ti-vaccine fs-16"></i>Complaints</button>
-                        </div>
-                    </div>
-                    <div class="col-xl-9 col-lg-8">
+                            <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-complaints-tab"><span></span><i class="ti ti-vaccine fs-16"></i>Complaints</button> -->
+                        <!-- </div>
+                    </div> -->
+                    <div class="col-xl-9 col-lg-8 ms-5">
                         <div class="patient-form-wizard flex-fill" id="v-pills-tabContent">
 
                             <!-- basic information -->
                             <div class="form-wizard-content active" id="v-pills-info">
                                 <form action="{{ request.url_for('patient_add_post') }}" method="post">
   <!-- Stepper -->
-  <ul class="nav nav-pills mb-3" id="patientWizardTabs" role="tablist">
+  <!-- <ul class="nav nav-pills mb-3" id="patientWizardTabs" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" type="button" data-step="0">1. Basic</button>
     </li>
@@ -458,9 +458,9 @@
     <li class="nav-item" role="presentation">
       <button class="nav-link" type="button" data-step="2">3. Guardian (Optional)</button>
     </li>
-  </ul>
+  </ul> -->
 
-  <div class="card patient-step">
+  <div class="card">
     <div class="card-header"><h5 class="mb-0">Basic Information</h5></div>
     <div class="card-body">
       <div class="row">
@@ -500,7 +500,7 @@
     </div>
   </div>
 
-  <div class="card patient-step d-none">
+  <div class="card">
     <div class="card-header"><h5 class="mb-0">Contact & Billing</h5></div>
     <div class="card-body">
       <div class="row">
@@ -545,7 +545,7 @@
     </div>
   </div>
 
-  <div class="card patient-step d-none">
+  <div class="card d-none">
     <div class="card-header"><h5 class="mb-0">Guardian / Next of Kin (Optional)</h5></div>
     <div class="card-body">
       <div class="row">
@@ -572,7 +572,8 @@
 
   <div class="d-flex gap-2 justify-content-end mt-3">
     <button type="button" class="btn btn-light" id="btnPrev" disabled>Back</button>
-    <button type="button" class="btn btn-primary" id="btnNext">Next</button>
+    <!-- <button type="button" class="btn btn-primary" id="btnNext">Next</button> -->
+     <button type="submit" class="btn btn-primary">Save Patient</button>
   </div>
 </form>
 
@@ -625,37 +626,37 @@
   }
 
   // Progressive wizard
-  const steps = Array.from(document.querySelectorAll('.patient-step'));
-  const tabs = Array.from(document.querySelectorAll('#patientWizardTabs [data-step]'));
-  let current = 0;
+//   const steps = Array.from(document.querySelectorAll('.patient-step'));
+//   const tabs = Array.from(document.querySelectorAll('#patientWizardTabs [data-step]'));
+//   let current = 0;
 
-  function showStep(i){
-    current = Math.max(0, Math.min(steps.length-1, i));
-    steps.forEach((el, idx) => el.classList.toggle('d-none', idx !== current));
-    tabs.forEach((t, idx) => {
-      t.classList.toggle('active', idx === current);
-      t.classList.toggle('disabled', idx > current);
-    });
-    document.getElementById('btnPrev').disabled = current === 0;
-    const isLast = current === steps.length - 1;
-    document.getElementById('btnNext').classList.toggle('d-none', isLast);
-  }
+//   function showStep(i){
+//     current = Math.max(0, Math.min(steps.length-1, i));
+//     steps.forEach((el, idx) => el.classList.toggle('d-none', idx !== current));
+//     tabs.forEach((t, idx) => {
+//       t.classList.toggle('active', idx === current);
+//       t.classList.toggle('disabled', idx > current);
+//     });
+//     document.getElementById('btnPrev').disabled = current === 0;
+//     const isLast = current === steps.length - 1;
+//     document.getElementById('btnNext').classList.toggle('d-none', isLast);
+//   }
 
-  tabs.forEach(t => t.addEventListener('click', () => {
-    const idx = parseInt(t.dataset.step || "0", 10);
-    if (idx <= current) showStep(idx);
-  }));
-  document.getElementById('btnPrev').addEventListener('click', () => showStep(current-1));
-  document.getElementById('btnNext').addEventListener('click', () => showStep(current+1));
+//   tabs.forEach(t => t.addEventListener('click', () => {
+//     const idx = parseInt(t.dataset.step || "0", 10);
+//     if (idx <= current) showStep(idx);
+//   }));
+//   document.getElementById('btnPrev').addEventListener('click', () => showStep(current-1));
+//   document.getElementById('btnNext').addEventListener('click', () => showStep(current+1));
 
-  showStep(0);
+//   showStep(0);
 })();
 </script>
 
                             </div>
 
                             <!-- vituals -->
-                            <div class="form-wizard-content" id="v-pills-vituals">
+                            <!-- <div class="form-wizard-content" id="v-pills-vituals">
                                 <form action="add-patient.html">
                                     <div class="card pb-0">
                                         <div class="card-header">
@@ -758,10 +759,10 @@
                                         <button type="button" class="btn btn-primary" id="save-vitals">Save & Add Medical Histroy</button>
                                     </div>
                                 </form>
-                            </div>
+                            </div> -->
 
                             <!-- medical history -->
-                            <div class="form-wizard-content" id="v-pills-medical-history">
+                            <!-- <div class="form-wizard-content" id="v-pills-medical-history">
                                 <form action="add-patient.html">
                                     <div class="card">
                                         <div class="card-header">
@@ -923,10 +924,10 @@
                                         <button type="button" class="btn btn-primary" id="save-medical-history">Save & Add Complaints</button>
                                     </div>
                                 </form>
-                            </div>
+                            </div> -->
 
                             <!-- complaints -->
-                            <div class="form-wizard-content" id="v-pills-complaints">
+                            <!-- <div class="form-wizard-content" id="v-pills-complaints">
                                 <form>
                                     <div class="card pb-0">
                                         <div class="card-header">
@@ -974,7 +975,7 @@
                                         <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#success_modal">Save & Confirm</a>
                                     </div>
                                 </form>
-                            </div>
+                            </div> -->
 
                         </div>
                     </div>

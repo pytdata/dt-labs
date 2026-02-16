@@ -1,0 +1,13 @@
+.env
+.env.example
+env_labs
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# C extensions
+*.so

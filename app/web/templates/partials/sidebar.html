@@ -84,11 +84,11 @@
                 <li class="menu-title"><span>MANAGE</span></li>
                 <li>
                     <ul>
-                        <li class="{% if active_page == 'tasks' %}active{% endif %}">
+                        <!-- <li class="{% if active_page == 'tasks' %}active{% endif %}">
                             <a href="{{ request.url_for('tasks') }}">
                                 <i class="ti ti-users-group"></i><span>Tasks</span>
                             </a>
-                        </li>
+                        </li> -->
                         <li class="{% if active_page == 'reports' %}active{% endif %}">
                             <a href="{{ request.url_for('reports') }}">
                                 <i class="ti ti-report"></i><span>Reports</span>
@@ -113,18 +113,18 @@
                             </a>
                         </li>
 
-                        <li class="{% if active_page == 'notifications' %}active{% endif %}">
+                        <!-- <li class="{% if active_page == 'notifications' %}active{% endif %}">
                             <a href="{{ request.url_for('notifications') }}">
                                 <i class="ti ti-bell"></i><span>Notifications</span>
                             </a>
-                        </li>
+                        </li> -->
 
-                        <li class="{% if active_page == 'messages' %}active{% endif %}">
+                        <!-- <li class="{% if active_page == 'messages' %}active{% endif %}">
                             <a href="{{ request.url_for('messages') }}">
                                 <i class="ti ti-message-circle-2"></i><span>Messages</span>
                                 {% if unread_count %}<span class="count">{{ unread_count }}</span>{% endif %}
                             </a>
-                        </li>
+                        </li> -->
 
                         <li class="{% if active_group == 'settings' %}active{% endif %}">
                             <a href="{{ request.url_for('settings') }}">

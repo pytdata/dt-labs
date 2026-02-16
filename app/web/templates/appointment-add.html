@@ -1,5 +1,7 @@
-{% extends "base.html" %} {% block title %}Create Appointment | DT-Labs{%
-endblock %} {% block content %}
+{% extends "base/main.html" %} {% block title %}Create Appointment | DT-Labs{%
+endblock %}
+
+{% block content %}
 <div class="container py-4">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
@@ -209,6 +211,11 @@ endblock %} {% block content %}
     </div>
   </div>
 </div>
+
+{% endblock %}
+
+{% block include_js %}
+
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -557,6 +564,7 @@ endblock %} {% block content %}
     } catch (err) {
       // TODO: Add model to show error
       if (err.name !== "AbortError") {
+        alert("Failed to search data")
         console.error("Search error:", err);
       }
     }
@@ -630,4 +638,5 @@ endblock %} {% block content %}
     testCategoryURL = url.pathname + url.search;
   }
 </script>
+
 {% endblock %}

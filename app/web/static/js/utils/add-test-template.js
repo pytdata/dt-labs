@@ -8,20 +8,23 @@ const testTemplatesViewContainerEL = document.querySelector(
   ".view__test__templates",
 );
 
+let currentMode = "create"; // "create" | "edit"
+let currentEditTestId = null;
+
+
 // URL
 let testURL = "/api/v1/tests/tests/";
 let testTemplates = "/api/v1/tests-templates/";
 
-
 (async function init() {
   const res = await getRemoteData(testTemplates);
-  renderTemplates(res)
+  renderTemplates(res);
 })();
 
-
 function renderTemplates(data) {
-  const renderedHTML = data.map((e) => {
-    return `
+  const renderedHTML = data
+    .map((e) => {
+      return `
       <tr>
         <th scope="row">${formatDate(e.created_on)}</th>
         <td>${e.test.name}</td>
@@ -48,13 +51,11 @@ function renderTemplates(data) {
         <td>${e.id}</td>
       </tr>
     `;
-  }).join("");
+    })
+    .join("");
 
   testTemplatesViewContainerEL.innerHTML = renderedHTML;
 }
-
-
-
 
 function formatDate(dateStr) {
   // "2026-01-13" → "13 Jan, 2026"
@@ -121,37 +122,42 @@ async function renderTestOptions() {
     " <option>No Test available. A test is needed to be added before a template</option>";
 }
 
-function addField() {
-  const fieldIndex = document.querySelectorAll(".field-block").length;
 
+
+function addField(existingData = null) {
   const fieldHTML = `
     <div class="card mb-3 field-block p-3">
       <div class="row mb-2">
         <div class="col-md-6">
           <label class="form-label">Test Name</label>
-          <input type="text" class="form-control test_name">
+          <input type="text" class="form-control test_name"
+            value="${existingData?.test_name || ""}">
         </div>
 
         <div class="col-md-6">
           <label class="form-label">Short Code</label>
-          <input type="text" class="form-control short_code">
+          <input type="text" class="form-control short_code"
+            value="${existingData?.short_code || ""}">
         </div>
       </div>
 
       <div class="row mb-2">
         <div class="col-md-4">
           <label class="form-label">Unit</label>
-          <input type="text" class="form-control unit">
+          <input type="text" class="form-control unit"
+            value="${existingData?.unit || ""}">
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Min Reference Range</label>
-          <input type="number" step="any" class="form-control min_range">
+          <input type="number" step="any" class="form-control min_range"
+            value="${existingData?.min_reference_range || ""}">
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Max Reference Range</label>
-          <input type="number" step="any" class="form-control max_range">
+          <input type="number" step="any" class="form-control max_range"
+            value="${existingData?.max_reference_range || ""}">
         </div>
       </div>
 
@@ -164,11 +170,62 @@ function addField() {
   dynamicFieldsContainer.insertAdjacentHTML("beforeend", fieldHTML);
 }
 
+
+
 dynamicFieldsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("remove-field")) {
     e.target.closest(".field-block").remove();
   }
 });
+
+// submitBtn.addEventListener("click", async () => {
+//   const testTypeId = document.querySelector("#test_type").value;
+
+//   if (!testTypeId) {
+//     alert("Select a test type first");
+//     return;
+//   }
+
+//   const fieldBlocks = document.querySelectorAll(".field-block");
+
+//   const payload = [];
+
+//   fieldBlocks.forEach((block) => {
+//     payload.push({
+//       test_id: parseInt(testTypeId),
+//       test_name: block.querySelector(".test_name").value.trim(),
+//       short_code: block.querySelector(".short_code").value.trim(),
+//       unit: block.querySelector(".unit").value.trim(),
+//       min_reference_range: parseFloat(block.querySelector(".min_range").value),
+//       max_reference_range: parseFloat(block.querySelector(".max_range").value),
+//     });
+//   });
+
+//   try {
+//     const response = await fetch("/api/v1/tests-templates/bulk", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(payload),
+//     });
+
+//     if (!response.ok) {
+//       console.log(response);
+//       throw new Error("Failed to save templates");
+//     }
+
+//     alert("Templates created successfully");
+
+//     location.reload();
+//   } catch (err) {
+//     console.error(err);
+//     alert("Error creating templates");
+//   }
+// });
+
+
+
 
 submitBtn.addEventListener("click", async () => {
   const testTypeId = document.querySelector("#test_type").value;
@@ -194,28 +251,39 @@ submitBtn.addEventListener("click", async () => {
   });
 
   try {
-    const response = await fetch("/api/v1/tests-templates/bulk", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    let response;
 
-    if (!response.ok) {
-      console.log(response);
-      throw new Error("Failed to save templates");
+    if (currentMode === "create") {
+      response = await fetch("/api/v1/tests-templates/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      response = await fetch(
+        `/api/v1/tests-templates/by-test/${currentEditTestId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
     }
 
-    alert("Templates created successfully");
+    if (!response.ok) throw new Error("Failed operation");
+
+    alert(
+      currentMode === "create"
+        ? "Templates created successfully"
+        : "Templates updated successfully"
+    );
 
     location.reload();
   } catch (err) {
     console.error(err);
-    alert("Error creating templates");
+    alert("Error saving templates");
   }
 });
-
 
 
 
@@ -224,13 +292,31 @@ testTemplatesViewContainerEL.addEventListener("click", async (e) => {
   const btn = e.target.closest(".edit-template-btn");
   if (!btn) return;
 
-  const testId = +btn.dataset.testId;
+  currentMode = "edit";
+  currentEditTestId = +btn.dataset.testId;
 
-  const templates = await getRemoteData(`/api/v1/tests-templates/by-test/${testId}`);
+  // Change modal title
+  document.getElementById("exampleModalLabel").innerText =
+    "Edit Test Template";
 
-//   populateTemplateModal(templates);
-console.log(templates, "templates =============")
+  // Fetch templates for that test
+  const templates = await getRemoteData(
+    `/api/v1/tests-templates/by-test/${currentEditTestId}`
+  );
 
-  const modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+  // Clear previous dynamic fields
+  dynamicFieldsContainer.innerHTML = "";
+
+  // Populate with existing fields
+  templates.forEach((template) => {
+    addField(template); // pass existing data
+  });
+
+  // Set test dropdown to selected test
+  testsDropDownEl.value = currentEditTestId;
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("exampleModal")
+  );
   modal.show();
 });

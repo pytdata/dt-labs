@@ -1,14 +1,19 @@
 document.addEventListener("DOMContentLoaded", async function (e) {
   const patientURL = `/api/v1/patients/${+currentPatient}/`;
   const appointmentsURL = `/api/v1/appointments/?patient_id=${currentPatient}`;
-  const labResultsURL = `/api/v1/lab-results/?patient_id=${currentPatient}`;
+  const labResultsURL = `/api/v1/patients/${currentPatient}/lab-results/`;
+
+  const labResults = await getRemoteData(labResultsURL);
+  console.log(labResults, "lab results =============");
 
   try {
     const res = await fetch(patientURL);
     if (!res.ok) throw new Error("Failed to fetch patient data", res);
     const data = await res.json();
+    console.log("patient data ==========", data)
     populateProfileBadge(data);
   } catch (error) {
+    alert("Failed to fetch patient data.")
     console.log(error);
   }
 
@@ -81,6 +86,7 @@ function populateProfileBadge(data) {
   document.querySelector(".patient__gender").textContent = data.sex;
   document.querySelector(".patient__type").textContent = data.patient_type;
   document.querySelector(".total__bookings").textContent = "Loading...";
+  document.querySelector("#patient__name").textContent = data.full_name;
 }
 
 function formatDate(dateStr) {
@@ -105,3 +111,19 @@ function formatTime(timeStr) {
     hour12: true,
   });
 }
+
+
+
+
+
+
+/**
+ * Fetch all test-categories data
+ * @returns Array[objects]
+ */
+async function getRemoteData(url) {
+  const res = await fetch(url);
+  const data = await res.json();
+  return data;
+}
+

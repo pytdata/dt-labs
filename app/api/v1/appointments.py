@@ -46,7 +46,7 @@ DEFAULT_PREFIX = "YKG"
 
 
 async def _next_test_no(db: AsyncSession) -> str:
-    max_id = (await db.execute(select(func.max(Patient.id)))).scalar() or 0
+    max_id = (await db.execute(select(func.max(LabResult.id)))).scalar() or 0
     nxt = int(max_id) + 1
     return f"{DEFAULT_PREFIX}-TEST-{nxt:06d}"
 

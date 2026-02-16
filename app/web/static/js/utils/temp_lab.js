@@ -61,10 +61,9 @@ async function loadTemplates(testId) {
   }
 }
 
-
-
 labTestsContainerEl.addEventListener("click", async (e) => {
   const button = e.target.closest(".edit__btn");
+  console.log(button, "currently selected button is: ", button);
   if (!button) return;
 
   const labResultId = +button.dataset.labresultId;
@@ -72,87 +71,45 @@ labTestsContainerEl.addEventListener("click", async (e) => {
   const testName = button.dataset.testName;
   const testId = +button.dataset.testId;
 
-  const form = document.querySelector("#test__result__form");
-  form.dataset.id = labResultId;
-  form.dataset.testNo = testNo;
-  form.dataset.testName = testName;
-  form.dataset.testId = testId;
+  console.log("ids are: ", labResultId, testNo, testName, testId);
 
-  try {
-    const res = await fetch(`/api/v1/tests/${labResultId}/`);
-    if (!res.ok) throw new Error("Failed to fetch labresult");
+  // get lab result id in form element to be used later for updating
+  document.querySelector("#test__result__form").dataset.id = labResultId;
+  document.querySelector("#test__result__form").dataset.testNo = testNo;
+  document.querySelector("#test__result__form").dataset.testName = testName;
 
-    const labresults = await res.json();
+  console.log(testId, "test id is =====");
 
-    console.log("this is the lab results =====", labresults)
+  await loadTemplates(testId);
 
-    // CASE 1: If saved results exist → render them
-    if (labresults.results) {
-      renderSavedLabResultsInModal(labresults.results);
+  document.querySelector(".show__results").addEventListener("input", (e) => {
+    const input = e.target.closest(".result__input");
+    if (!input) return;
 
-       document.querySelector("#test__result__form .test__name").value = testName;
+    // get the row the input belongs to
+    const row = input.closest("tr");
+
+    const rangeEl = row.querySelector(".ref__range");
+    const flagEl = row.querySelector(".result__flag");
+
+    const minRange = parseFloat(rangeEl.dataset.min);
+    const maxRange = parseFloat(rangeEl.dataset.max);
+    const value = parseFloat(input.value);
+
+    if (isNaN(value)) {
+      flagEl.innerHTML = "-";
+      return;
     }
-    // CASE 2: No saved result → load fresh template
-    else {
-      await loadTemplates(testId);
-    }
 
-  } catch (error) {
-    console.log(error);
-  }
+    if (value >= minRange && value <= maxRange) {
+      flagEl.innerHTML = `<span class="badge bg-success">N</span>`;
+    } else if (value > maxRange) {
+      flagEl.innerHTML = `<span class="badge bg-danger">H</span>`;
+    } else {
+      flagEl.innerHTML = `<span class="badge bg-warning">L</span>`;
+    }
+  });
 });
-
-
-
-// labTestsContainerEl.addEventListener("click", async (e) => {
-//   const button = e.target.closest(".edit__btn");
-//   console.log(button, "currently selected button is: ", button);
-//   if (!button) return;
-
-//   const labResultId = +button.dataset.labresultId;
-//   const testNo = button.dataset.testNo;
-//   const testName = button.dataset.testName;
-//   const testId = +button.dataset.testId;
-
-//   console.log("ids are: ", labResultId, testNo, testName, testId);
-
-//   // get lab result id in form element to be used later for updating
-//   document.querySelector("#test__result__form").dataset.id = labResultId;
-//   document.querySelector("#test__result__form").dataset.testNo = testNo;
-//   document.querySelector("#test__result__form").dataset.testName = testName;
-
-//   console.log(testId, "test id is =====");
-
-//   await loadTemplates(testId);
-
-//   document.querySelector(".show__results").addEventListener("input", (e) => {
-//     const input = e.target.closest(".result__input");
-//     if (!input) return;
-
-//     // get the row the input belongs to
-//     const row = input.closest("tr");
-
-//     const rangeEl = row.querySelector(".ref__range");
-//     const flagEl = row.querySelector(".result__flag");
-
-//     const minRange = parseFloat(rangeEl.dataset.min);
-//     const maxRange = parseFloat(rangeEl.dataset.max);
-//     const value = parseFloat(input.value);
-
-//     if (isNaN(value)) {
-//       flagEl.innerHTML = "-";
-//       return;
-//     }
-
-//     if (value >= minRange && value <= maxRange) {
-//       flagEl.innerHTML = `<span class="badge bg-success">N</span>`;
-//     } else if (value > maxRange) {
-//       flagEl.innerHTML = `<span class="badge bg-danger">H</span>`;
-//     } else {
-//       flagEl.innerHTML = `<span class="badge bg-warning">L</span>`;
-//     }
-//   });
-// });
 
 function serializeLabResultForm() {
   const rows = document.querySelectorAll(".show__results tr");
@@ -232,43 +189,43 @@ document.querySelector("#edit_modal form").addEventListener("submit", (e) => {
   submitLabResults(testId, testName, labID);
 });
 
-// labTestsContainerEl.addEventListener("click", async (e) => {
-//   const button = e.target.closest(".edit__btn");
-//   if (!button) return;
+labTestsContainerEl.addEventListener("click", async (e) => {
+  const button = e.target.closest(".edit__btn");
+  if (!button) return;
 
-//   const labResultId = +button.dataset.labresultId;
-//   const testNo = button.dataset.testNo;
-//   const testName = button.dataset.testName;
-//   const testId = button.dataset.testId;
+  const labResultId = +button.dataset.labresultId;
+  const testNo = button.dataset.testNo;
+  const testName = button.dataset.testName;
+  const testId = button.dataset.testId;
 
-//   // get lab result id in form element to be used later for updating
-//   document.querySelector("#test__result__form").dataset.id = labResultId;
-//   document.querySelector("#test__result__form").dataset.testNo = testNo;
-//   document.querySelector("#test__result__form").dataset.testName = testName;
-//   document.querySelector("#test__result__form").dataset.testId = testId;
+  // get lab result id in form element to be used later for updating
+  document.querySelector("#test__result__form").dataset.id = labResultId;
+  document.querySelector("#test__result__form").dataset.testNo = testNo;
+  document.querySelector("#test__result__form").dataset.testName = testName;
+  document.querySelector("#test__result__form").dataset.testId = testId;
 
-//   try {
-//     const res = await fetch(`/api/v1/tests/${labResultId}/`, {
-//       method: "GET",
-//       headers: { "Content-Type": "application/json" },
-//     });
-//     if (!res.ok) throw new Error("Failed to fetch labresult: ", res);
+  try {
+    const res = await fetch(`/api/v1/tests/${labResultId}/`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error("Failed to fetch labresult: ", res);
 
-//     const labresults = await res.json();
+    const labresults = await res.json();
 
-//     console.log("<<<<<<<<<<<<<<<<", labresults, ">>>>>>>>>>>>>>>>>>>>>");
+    console.log("<<<<<<<<<<<<<<<<", labresults, ">>>>>>>>>>>>>>>>>>>>>");
 
-//     populateLabResultModal(labresults, testName);
+    populateLabResultModal(labresults, testName);
 
-//     console.log(labresults, "tih sis the reus ==============")
+    console.log(labresults, "tih sis the reus ==============")
 
-//     if (labresults.results) {
-//       renderSavedLabResultsInModal(labresults.results);
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// });
+    if (labresults.results) {
+      renderSavedLabResultsInModal(labresults.results);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 function renderSavedLabResultsInModal(jsonString) {
   const parsed =
@@ -342,31 +299,3 @@ function computeFlag(value, min, max) {
   if (value < min) return "L";
   return "N";
 }
-
-
-
-document.addEventListener("input", (e) => {
-  const input = e.target.closest(".result__input");
-  if (!input) return;
-
-  const row = input.closest("tr");
-  const rangeEl = row.querySelector(".ref__range");
-  const flagEl = row.querySelector(".result__flag");
-
-  const minRange = parseFloat(rangeEl.dataset.min);
-  const maxRange = parseFloat(rangeEl.dataset.max);
-  const value = parseFloat(input.value);
-
-  if (isNaN(value)) {
-    flagEl.innerHTML = "-";
-    return;
-  }
-
-  if (value >= minRange && value <= maxRange) {
-    flagEl.innerHTML = `<span class="badge bg-success">N</span>`;
-  } else if (value > maxRange) {
-    flagEl.innerHTML = `<span class="badge bg-danger">H</span>`;
-  } else {
-    flagEl.innerHTML = `<span class="badge bg-warning">L</span>`;
-  }
-});

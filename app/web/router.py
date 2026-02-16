@@ -215,6 +215,7 @@ async def patient_add_post(
 async def patient_detail(
     request: Request, patient_id: int, db: AsyncSession = Depends(get_db)
 ):
+    print("-========= came here ==========")
     patient = (
         await db.execute(select(Patient).where(Patient.id == patient_id))
     ).scalar_one_or_none()
@@ -226,6 +227,7 @@ async def patient_detail(
         if (settings.TEMPLATES_PATH / "patient-details.html").exists()
         else "all-patients.html"
     )
+    print(tpl)
     return _render(request, tpl, active_page="patients", patient=patient)
 
 
