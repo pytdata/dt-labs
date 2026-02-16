@@ -11,3 +11,16 @@ __pycache__/
 
 # C extensions
 *.so
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+env/
+
+# OS
+.DS_Store
