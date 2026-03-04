@@ -219,7 +219,10 @@ appointmentsTableEL.addEventListener("click", async (e) => {
     if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
     const appointment = await res.json();
 
+    console.log("DEBUG: appointment detail", appointment);
+
     populateEditModal(appointment);
+
   } catch (error) {
     console.error(error);
     alert("Failed to load appointment");
@@ -228,40 +231,75 @@ appointmentsTableEL.addEventListener("click", async (e) => {
 });
 
 // submit the edit made to the appointment
-document
-  .querySelector(".edit__appointment__form")
-  .addEventListener("submit", async function (e) {
+document.querySelector(".edit__appointment__form").addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    const appointmentId = this.dataset.appointmentId;
+    const form = e.target;
+    const appointmentId = form.dataset.appointmentId;
 
     const payload = {
-      patient_id: document.getElementById("patient").value,
-      // patient_type: document.getElementById("patient_type").value,
-      doctor_id: document.getElementById("staff").value,
-      notes: document.getElementById("note").value,
-      mode_of_payment: document.getElementById("mode_of_payment").value,
+        patient_id: document.getElementById("edit_patient").value,
+        doctor_id: document.getElementById("edit_staff").value,
+        appointment_at: document.getElementById("edit_appointment_at").value,
+        start_time: document.getElementById("edit_start_time").value,
+        end_time: document.getElementById("edit_end_time").value,
+        notes: document.getElementById("edit_note").value,
+        status: document.getElementById("edit_status").value,
+        mode_of_payment: document.getElementById("edit_mode_of_payment").value,
+        // Inside your submit listener:
+        test_ids: currentSelectedTests.map(t => t.id) 
     };
 
     try {
-      const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
+            method: "PATCH", // Use PATCH for partial updates
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
 
-      if (!res.ok) throw new Error("Failed to update appointment");
-
-      const data = await res.json();
-      console.log(data);
-
-      // reset the form
-      document.querySelector(".edit__appointment__form").reset();
+        if (res.ok) {
+            alert("Appointment updated successfully");
+            location.reload();
+        } else {
+            alert("Failed to update appointment");
+        }
     } catch (error) {
-      console.log(error);
-      alert(error);
+        console.error("Update Error:", error);
     }
-  });
+});
+// document
+//   .querySelector(".edit__appointment__form")
+//   .addEventListener("submit", async function (e) {
+//     e.preventDefault();
+
+//     const appointmentId = this.dataset.appointmentId;
+
+//     const payload = {
+//       patient_id: document.getElementById("patient").value,
+//       // patient_type: document.getElementById("patient_type").value,
+//       doctor_id: document.getElementById("staff").value,
+//       notes: document.getElementById("note").value,
+//       mode_of_payment: document.getElementById("mode_of_payment").value,
+//     };
+
+//     try {
+//       const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
+//         method: "PUT",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(payload),
+//       });
+
+//       if (!res.ok) throw new Error("Failed to update appointment");
+
+//       const data = await res.json();
+//       console.log(data);
+
+//       // reset the form
+//       document.querySelector(".edit__appointment__form").reset();
+//     } catch (error) {
+//       console.log(error);
+//       alert(error);
+//     }
+//   });
 
 // update appointment status
 document
@@ -717,7 +755,7 @@ function renderData(appointment) {
 function populateAppointmentDetailModal(appointment) {
   console.log("status update: ", appointment);
   document.getElementById("patient_name").innerText =
-    `${appointment.patient.first_name} ${appointment.patient.other_names ? appointment.other_names : ""} ${appointment.patient.surname}`;
+    `${appointment.patient.first_name} ${appointment.patient.other_names ? appointment.patient.other_names : ""} ${appointment.patient.surname}`;
   document.getElementById("preffered_mode").innerText =
     `${appointment.preffered_mode == "in_person" ? "In Person" : appointment.preffered_mode}`;
   document.getElementById("payment_mode").innerText =
@@ -741,25 +779,123 @@ function populateAppointmentDetailModal(appointment) {
  * @param {Object} visit
  */
 function populateEditModal(appointment) {
-  // Selects
-  document.getElementById("patient").value = appointment.patient.id;
-  document.getElementById("patient_type").value =
-    appointment.patient.patient_type;
-  // document.getElementById("department").value = appointment.department.id;
-  document.getElementById("staff").value = appointment.doctor.id;
-  document.getElementById("mode_of_payment").value = appointment.mode_of_payment
-    ? appointment.mode_of_payment
-    : "cash";
+  // IDs for foreign keys
+  document.getElementById("edit_patient").value = appointment.patient.id;
+  document.getElementById("edit_staff").value = appointment.doctor.id;
+  
+  // Date handling (Extracts YYYY-MM-DD)
+  if(appointment.appointment_at) {
+      document.getElementById("edit_appointment_at").value = appointment.appointment_at.split('T')[0];
+  }
 
-  // Inputs
-  document.getElementById("note").value = appointment.notes
-    ? appointment.notes
-    : "";
+  // Time handling (Extracts HH:mm)
+  if(appointment.start_time) {
+      document.getElementById("edit_start_time").value = appointment.start_time.substring(0, 5);
+  }
+  if(appointment.end_time) {
+      document.getElementById("edit_end_time").value = appointment.end_time.substring(0, 5);
+  }
 
-  // Store appointment id for submit
-  document.querySelector("#edit_modal form").dataset.appointmentId =
-    appointment.id;
+  // Enums and Text
+  document.getElementById("edit_preferred_mode").value = appointment.preffered_mode || "in_person";
+  document.getElementById("edit_status").value = appointment.status || "pending";
+  document.getElementById("edit_note").value = appointment.notes || "";
+  document.getElementById("edit_mode_of_payment").value = appointment.mode_of_payment || "cash";
+
+  // Financial & Lab Summaries (Read Only badges)
+  const invBadge = document.getElementById("badge_invoice_status");
+  const labBadge = document.getElementById("badge_lab_status");
+  const balanceText = document.getElementById("text_balance");
+  const paymentContainer = document.getElementById("payment_action_container");
+  const markPaidBtn = document.getElementById("btn_mark_as_paid");
+
+
+  if (appointment.invoice) {
+    console.log("^^^^", appointment.invoice.status.toUpperCase())
+    invBadge.textContent = appointment.invoice.status.toUpperCase();
+    invBadge.className = `badge ${appointment.invoice.status === 'paid' ? 'bg-success' : 'bg-warning text-dark'}`;
+    balanceText.textContent = `Bal: GHS ${parseFloat(appointment.invoice.balance).toFixed(2)}`;
+  }
+
+  if (appointment.lab_order) {
+    labBadge.textContent = appointment.lab_order.status.replace('_', ' ').toUpperCase();
+  }
+
+
+
+  if (appointment.invoice) {
+    const isPaid = appointment.invoice.status === 'paid';
+    
+    // Update Badge
+    invBadge.textContent = appointment.invoice.status.toUpperCase();
+    invBadge.className = `badge ${isPaid ? 'bg-success' : 'bg-warning text-dark'}`;
+    
+    // Update Balance Text
+    balanceText.textContent = `Bal: GHS ${parseFloat(appointment.invoice.balance).toFixed(2)}`;
+
+    // Toggle Payment Button: Hide if already paid
+    if (isPaid) {
+      paymentContainer.classList.add('d-none');
+    } else {
+      paymentContainer.classList.remove('d-none');
+      // Store invoice info on the button for the click event
+      markPaidBtn.dataset.invoiceId = appointment.invoice.id;
+      markPaidBtn.dataset.total = appointment.invoice.total_amount;
+    }
+  } else {
+    paymentContainer.classList.add('d-none');
+  }
+
+  document.querySelector("#edit_modal form").dataset.appointmentId = appointment.id;
+
+
+  // Store appointment id
+  document.querySelector("#edit_modal form").dataset.appointmentId = appointment.id;
+
+  currentSelectedTests = appointment.tests.map(t => ({
+        id: t.id,
+        name: t.name,
+        price: t.price_ghs
+    }));
+    
+    renderSelectedTests();
 }
+
+// updating billing status
+document.getElementById("btn_mark_as_paid").addEventListener("click", async (e) => {
+  console.log(document.getElementById("btn_mark_as_paid"), "html obj")
+    const btn = e.currentTarget;
+    const invoiceId = btn.dataset.invoiceId;
+    const totalAmount = btn.dataset.total;
+
+    if (!confirm("Confirm that full payment has been received?")) return;
+
+    try {
+        const res = await fetch(`/api/v1/billing/invoices/${invoiceId}/pay`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                amount: totalAmount,
+                payment_method: document.getElementById("edit_mode_of_payment").value
+            })
+        });
+
+        if (res.ok) {
+            alert("Payment recorded successfully!");
+            // Refresh the modal data or close it
+            location.reload(); 
+        } else {
+            const error = await res.json();
+            alert(`Error: ${error.detail}`);
+        }
+    } catch (err) {
+      alert(err)
+        console.error("Payment Error:", err);
+    }
+});
+
+
+
 
 function add(acc, cur) {
   return acc + cur;
@@ -1083,3 +1219,115 @@ function formatTime(timeStr) {
 
 
 //  <td>15 Jan 2025, 05:30 PM to 06:30 PM</td>
+
+
+
+let currentSelectedTests = []; // Array of {id, name, price}
+
+// 1. Function to refresh the "Selected" UI
+function renderSelectedTests() {
+    const container = document.getElementById("selected_tests_container");
+    const noTestsMsg = document.getElementById("no_tests_msg");
+    const previewTotalEl = document.getElementById("preview_total_price");
+    
+    container.innerHTML = "";
+    let runningTotal = 0;
+
+    if (currentSelectedTests.length === 0) {
+        noTestsMsg.classList.remove("d-none");
+    } else {
+        noTestsMsg.classList.add("d-none");
+        
+        currentSelectedTests.forEach(test => {
+            // Add to running total (ensure it's a number)
+            runningTotal += parseFloat(test.price) || 0;
+
+            const badge = document.createElement("div");
+            badge.className = "badge bg-info-lite text-info d-flex align-items-center gap-2 p-2 mb-1";
+            badge.style.fontSize = "0.85rem";
+            badge.innerHTML = `
+                <span class="fw-medium">${test.name}</span>
+                <i class="ti ti-circle-x-filled cursor-pointer text-danger" onclick="removeTest(${test.id})"></i>
+            `;
+            container.appendChild(badge);
+        });
+    }
+
+    // Update the visual preview
+    previewTotalEl.textContent = runningTotal.toFixed(2);
+}
+
+
+// 2. Remove test function
+window.removeTest = function(testId) {
+    currentSelectedTests = currentSelectedTests.filter(t => t.id !== testId);
+    renderSelectedTests();
+};
+
+// 3. Search logic (Debounced)
+let searchTimer;
+
+document.getElementById("test_search_input").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    const query = e.target.value;
+    const categoryId = document.getElementById("test_category_filter").value;
+
+    // Only search if user typed at least 2 characters
+    if (query.length < 2) {
+        document.getElementById("search_results_area").classList.add("d-none");
+        return;
+    }
+
+    searchTimer = setTimeout(async () => {
+        try {
+            // Updated to match your specific API structure
+            const url = `/api/v1/test-categories/?test_category_type=${categoryId}&name=${query}`;
+            const res = await fetch(url);
+            
+            if (!res.ok) throw new Error("Search failed");
+            
+            const tests = await res.json();
+            
+            const resultsArea = document.getElementById("test_search_results");
+            const resultsWrapper = document.getElementById("search_results_area");
+            
+            resultsArea.innerHTML = "";
+            
+            if (tests.length === 0) {
+                resultsArea.innerHTML = '<div class="list-group-item small text-muted">No tests found</div>';
+            } else {
+                tests.forEach(test => {
+                    const item = document.createElement("button");
+                    item.type = "button";
+                    item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
+                    item.innerHTML = `
+                        <div>
+                            <h6 class="mb-0">${test.name}</h6>
+                            <small class="text-muted">GHS ${parseFloat(test.price_ghs).toFixed(2)}</small>
+                        </div>
+                        <i class="ti ti-plus text-success"></i>
+                    `;
+                    
+                    item.onclick = () => {
+                        // Avoid adding duplicates to the list
+                        if (!currentSelectedTests.find(t => t.id === test.id)) {
+                            currentSelectedTests.push({
+                                id: test.id, 
+                                name: test.name, 
+                                price: test.price_ghs
+                            });
+                            renderSelectedTests();
+                        }
+                        // Clear search after selection
+                        document.getElementById("test_search_input").value = "";
+                        resultsWrapper.classList.add("d-none");
+                    };
+                    resultsArea.appendChild(item);
+                });
+            }
+            resultsWrapper.classList.remove("d-none");
+        } catch (err) {
+            console.error("Search Error:", err);
+        }
+    }, 400); // 400ms debounce to prevent hammering the server
+});

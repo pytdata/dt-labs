@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     DEFAULT_ADMIN_PASSWORD: str = "ChangeMe123!"
 
     # DB
-    DB_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/dt_labs_new"
+    DBURL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/dt_lab_fix"
 
     # Integration
     INGEST_TOKEN: str = "dev-ingest-token"

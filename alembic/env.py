@@ -24,7 +24,7 @@ target_metadata = Base.metadata
 
 def get_url():
     # alembic wants sync driver; use psycopg2 style url for migrations
-    url = settings.DB_URL
+    url = settings.DBURL
     print(url)
     return url.replace("postgresql+asyncpg", "postgresql")
 

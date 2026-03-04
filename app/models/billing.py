@@ -6,6 +6,9 @@ from sqlalchemy.sql import func
 
 from app.db.base import Base
 
+# from app.models.lab import Appointment
+# from app.models.users import User
+
 
 class Invoice(Base):
     """Invoices are created at booking time.
@@ -17,6 +20,10 @@ class Invoice(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     invoice_no: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+
+    appointment_id: Mapped[int] = mapped_column(
+        ForeignKey("appointments.id"), index=True
+    )
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
     order_id: Mapped[int | None] = mapped_column(
         ForeignKey("lab_orders.id"), nullable=True, index=True
@@ -52,6 +59,8 @@ class Invoice(Base):
         back_populates="invoice",
         cascade="all, delete-orphan",
     )
+    appointment: Mapped["Appointment"] = relationship(back_populates="invoice")
+    payments: Mapped[list["Payment"]] = relationship(back_populates="invoice")
 
 
 class InvoiceItem(Base):
@@ -94,9 +103,8 @@ class Payment(Base):
     received_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    # invoice = relationship("Invoice", backref="payments")
-    verified_by = relationship("User")
-
+    # This identifies the staff member who confirmed the cash was in hand or Momo was received
+    verified_by: Mapped["User"] = relationship(back_populates="verified_payments")
     invoice: Mapped["Invoice"] = relationship(
         "Invoice",
         back_populates="payments",

@@ -2,7 +2,9 @@ from enum import Enum
 from sqlalchemy import String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
-from app.models.lab import LabResult
+
+# from app.models.billing import Payment
+from app.models.lab import Appointment, LabResult
 from app.schemas.staff import Gender, StaffRole
 
 
@@ -28,6 +30,15 @@ class User(Base):
         "LabResult",
         foreign_keys="LabResult.verified_by_user_id",
         back_populates="verified_by_user",
+    )
+    # We use explicit foreign_keys because User links to many things
+    appointments_booked: Mapped[list["Appointment"]] = relationship(
+        "Appointment",
+        foreign_keys="[Appointment.created_by_user_id]",
+        back_populates="created_by_user",
+    )
+    verified_payments: Mapped[list["Payment"]] = relationship(
+        "Payment", back_populates="verified_by"
     )
 
     # relationships

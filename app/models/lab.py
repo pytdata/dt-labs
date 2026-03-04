@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from decimal import Decimal
 from sqlalchemy import (
     Numeric,
@@ -10,6 +12,7 @@ from sqlalchemy import (
     Time,
 )
 from sqlalchemy import Enum as SAEnum
+from app.models.billing import Invoice
 from app.models.enums import LabStage
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -112,10 +115,6 @@ class Appointment(Base):
     total_price: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), default=0.0, nullable=True
     )
-    # test_id: Mapped[int] = mapped_column(
-    #     ForeignKey("tests.id"), index=True, nullable=True
-    # )
-    # department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), index=True)
     appointment_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), index=True, default=func.now()
     )
@@ -125,29 +124,26 @@ class Appointment(Base):
     # reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(
-        String(20), default=AppointmentStatus.upcoming
+        String(20), default=AppointmentStatus.pending
     )  # scheduled|completed|cancelled
     mode_of_payment: Mapped[str] = mapped_column(default=PaymentMode.cash)
     created_by_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )
-    # visit_id: Mapped[int | None] = mapped_column(ForeignKey("visits.id"), nullable=True)
-
     # relationship
     doctor = relationship("User", foreign_keys=[doctor_id])
     tests = relationship(
         "Test", secondary=association.appointment_tests, back_populates="appointments"
     )
-    # department = relationship("Department")
     created_by_user = relationship("User", foreign_keys=[created_by_user_id])
-    lab_orders = relationship(
-        "LabOrder",
-        back_populates="appointment",
-        cascade="all, delete-orphan",
-    )
     patient: Mapped["Patient"] = relationship(back_populates="appointments")
-
-    # visit = relationship("Visit")
+    # Financials & Clinicals
+    invoice: Mapped["Invoice"] = relationship(
+        "Invoice", back_populates="appointment", uselist=False
+    )
+    lab_order: Mapped["LabOrder"] = relationship(
+        "LabOrder", back_populates="appointment", uselist=False
+    )
 
 
 class LabOrder(Base):
@@ -176,7 +172,7 @@ class LabOrder(Base):
 
     patient = relationship("Patient", back_populates="lab_orders")
     collected_by = relationship("User", foreign_keys=[collected_by_user_id])
-    appointment = relationship("Appointment", back_populates="lab_orders")
+    appointment = relationship("Appointment", back_populates="lab_order")
     items = relationship(
         "LabOrderItem",
         back_populates="order",
@@ -311,7 +307,7 @@ class LabResult(Base):
     order_item_id: Mapped[int] = mapped_column(
         ForeignKey("lab_order_items.id"), index=True
     )
-    test_no: Mapped[str | None] = mapped_column(unique=True, nullable=True)
+    test_no: Mapped[str | None] = mapped_column(nullable=True)
     analyzer_id: Mapped[int | None] = mapped_column(
         ForeignKey("analyzers.id"), nullable=True, index=True
     )

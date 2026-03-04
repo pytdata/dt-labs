@@ -15,10 +15,8 @@ class PrefferedModeOfAppointment(str, Enum):
 
 
 class AppointmentStatus(str, Enum):
-    cancelled = "cancelled"
     completed = "completed"
-    upcoming = "upcoming"
-    in_progress = "in_progress"
+    pending = "pending"
 
 
 class UserResponse(BaseModel):
@@ -53,6 +51,18 @@ class AppointmentUpdate(BaseModel):
     mode_of_payment: Optional[str] = None
     total_price: Optional[Decimal] = None
     test_ids: Optional[List[int]] = None
+
+
+class AppointmentPatchUpdate(BaseModel):
+    patient_id: Optional[int] = None
+    doctor_id: Optional[int] = None
+    appointment_at: Optional[datetime] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    notes: Optional[str] = None
+    status: Optional[str] = None
+    mode_of_payment: Optional[str] = None
+    test_ids: Optional[List[int]] = None  # If they want to change the tests
 
 
 class TestResponse(BaseModel):
@@ -93,17 +103,48 @@ class AppointmentResponse(BaseModel):
     id: int
     patient: PatientOut
     doctor: UserResponse
-    # created_at: datetime | None
+    # Add this to track which staff member handled the booking
+    # created_by_user: UserResponse | None = None
+
     appointment_at: datetime
     start_time: time
-    end_time: time | None
-    preffered_mode: PrefferedModeOfAppointment | None
-    notes: str | None
-    status: str | None
-    total_price: Decimal | None
+    end_time: time | None = None
+
+    preffered_mode: PrefferedModeOfAppointment | None = None
+    notes: str | None = None
+    status: str | None = "pending"
+
+    # Use Decimal for money to match your DB Numeric(12,2)
+    total_price: Decimal = Decimal("0.00")
     mode_of_payment: PaymentMode
+
+    # This matches the Relationship in your Appointment model
     tests: List[TestResponse] = []
-    # created_at: datetime | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Summary schemas to keep the response clean
+class InvoiceSummary(BaseModel):
+    id: int
+    invoice_no: str
+    status: str  # paid, unpaid, partial
+    total_amount: Decimal
+    balance: Decimal
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LabOrderSummary(BaseModel):
+    id: int
+    status: str  # pending, in_progress, completed
+    # You could even add a count of items
+    model_config = ConfigDict(from_attributes=True)
+
+
+# The Main Response
+class AppointmentDetailResponse(AppointmentResponse):
+    invoice: Optional[InvoiceSummary] = None
+    lab_order: Optional[LabOrderSummary] = None
 
     model_config = ConfigDict(from_attributes=True)
 
