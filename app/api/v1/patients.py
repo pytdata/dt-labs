@@ -1,3 +1,5 @@
+from datetime import date, datetime, time
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,6 +7,7 @@ from sqlalchemy import select, func
 from app.db.session import get_db
 from app.models import Patient
 from app.models.lab import LabOrder, LabOrderItem, LabResult, Visit
+from app.models.users import User
 from app.schemas import PatientCreate, PatientOut
 from sqlalchemy import or_
 from sqlalchemy import func, select
@@ -18,6 +21,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.lab_results import LabResultResponse
+from app.web.dependency import get_current_user
 
 router = APIRouter()
 
@@ -39,9 +43,16 @@ class FilterParams(BaseModel):
     sex: list[str] | None = None
     search: str | None = None
 
+    start_date: date | None = None
+    end_date: date | None = None
+
 
 @router.post("/", response_model=PatientOut)
-async def create_patient(payload: PatientCreate, db: AsyncSession = Depends(get_db)):
+async def create_patient(
+    payload: PatientCreate,
+    db: AsyncSession = Depends(get_db),
+    # current_user: User = Depends(get_current_user),
+):
     patient_no = await _next_patient_no(db)
     patient = Patient(patient_no=patient_no, **payload.model_dump())
     db.add(patient)
@@ -77,13 +88,13 @@ async def list_patients(
         like = f"%{filter_query.surname.strip()}%"
         stmt = stmt.where(Patient.surname.ilike(like))
 
-    # Apply limit and offset
-    stmt = stmt.limit(limit=filter_query.limit).offset(offset=filter_query.offset)
-
     if filter_query.sort_by == "oldest":
         stmt = stmt.order_by(Patient.id.asc())
     else:
         stmt = stmt.order_by(Patient.id.desc())
+
+    # Apply limit and offset
+    stmt = stmt.limit(limit=filter_query.limit).offset(offset=filter_query.offset)
 
     if filter_query.sex:
         sexes = [s.capitalize() for s in filter_query.sex]
@@ -97,6 +108,16 @@ async def list_patients(
                 Patient.other_names.ilike(f"%{filter_query.search}%"),
             )
         )
+
+    if filter_query.start_date:
+        stmt = stmt.where(
+            Patient.created_at >= datetime.combine(filter_query.start_date, time.min)
+        )
+
+    if filter_query.end_date:
+        stmt = stmt.where(
+            Patient.created_at <= datetime.combine(filter_query.end_date, time.max)
+        )
     result = await db.execute(stmt)
 
     patients = []
@@ -107,6 +128,36 @@ async def list_patients(
     return patients
 
     # return (await db.execute(stmt)).scalars().all()
+
+
+@router.get("/search")
+async def search_patients(
+    q: str,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(Patient)
+        .where(
+            or_(
+                Patient.first_name.ilike(f"%{q}%"),
+                Patient.surname.ilike(f"%{q}%"),
+            )
+        )
+        .limit(5)
+    )
+
+    result = await db.execute(stmt)
+    patients = result.scalars().all()
+
+    return [
+        {
+            "id": p.id,
+            "full_name": f"{p.first_name} {p.surname}",
+            "phone": p.phone,
+            "dob": p.date_of_birth,
+        }
+        for p in patients
+    ]
 
 
 @router.get("/{id}/", response_model=PatientOut)

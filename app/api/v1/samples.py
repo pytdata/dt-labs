@@ -51,7 +51,7 @@ async def create_sample(
 
     # create a laborderItem
     lab_order_items = []
-    for test_id in payload.test_requested:
+    for test_id in payload.test_ids:
         test_exisit = await db.get(Test, test_id)
         if not test_exisit:
             raise HTTPException(detail="Test not found", status_code=404)
@@ -67,12 +67,12 @@ async def create_sample(
         sample_type=payload.sample_type,
         appointment_id=payload.appointment_id,
         patient_id=payload.patient_id,
-        test_requested=payload.test_requested,
+        test_requested=payload.test_ids,
         priority=payload.priority,
         storage_location=payload.storage_location,
         # collector_id=payload.collector_id,
         collection_site=payload.collection_site,
-        sample_condition=payload.sample_condition,
+        # sample_condition=payload.sample_condition,
         status=payload.status,
     )
 
@@ -134,3 +134,36 @@ async def create_sample_category(
     await db.refresh(category)
 
     return category
+
+
+@router.get(
+    "/sample-categories",
+    response_model=list[SampleCategoryResponse],
+    status_code=status.HTTP_200_OK,
+)
+async def get_all_sample_category(
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(SampleCategory)
+    existing = await db.scalars(stmt)
+
+    return existing
+
+
+@router.delete("/{id}", status_code=204)
+async def delete_sample(
+    id: int,
+    db: AsyncSession = Depends(get_db),
+):
+
+    result = await db.execute(select(Sample).where(Sample.id == id))
+
+    sample = result.scalar_one_or_none()
+
+    if not sample:
+        raise HTTPException(status_code=404, detail="Sample not found")
+
+    await db.delete(sample)
+    await db.commit()
+
+    return None

@@ -27,15 +27,23 @@
     <!-- Tabler Icon CSS -->
     <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
 
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href="/static/plugins/select2/css/select2.min.css">
+
+    <!-- Choices CSS -->
+    <link rel="stylesheet" href="/static/plugins/choices.js/public//static/styles/choices.min.css">
+
     <!-- Datatable CSS -->
     <link rel="stylesheet" href="/static/plugins/datatables/css/dataTables.bootstrap5.min.css">
+
+    <!-- Daterangepikcer CSS -->
+	<link rel="stylesheet" href="/static/plugins/daterangepicker/daterangepicker.css">
 
     <!-- Simplebar CSS -->
     <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
-
 </head>
 
 <body>
@@ -66,25 +74,23 @@
                     <!-- Sidebar Mobile Button -->
                     <a id="mobile_btn" class="mobile-btn" href="#sidebar">
                         <i class="ti ti-menu-deep fs-24"></i>
-                    </a>
+                 </a>
 
                     <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn2">
                         <i class="ti ti-arrow-bar-to-right"></i>
-                    </button>
+                 </button>
 
                     <!-- Search -->
                     <div class="me-auto d-flex align-items-center header-search d-lg-flex d-none">
                         <!-- Search -->
-                        <form method="get" action="{{ request.url_for('patients') }}" class="d-inline">
-<div class="input-icon position-relative me-2">
-                           <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search Keyword">
+                        <div class="input-icon position-relative me-2">
+                           <input type="text" class="form-control" placeholder="Search Keyword">
                            <span class="input-icon-addon d-inline-flex p-0 header-search-icon"><i class="ti ti-command"></i></span>
-                        </div>
-</form>
+                     </div>
                         <!-- /Search -->
-                    </div>
+                 </div>
 
-                </div>
+             </div>
 
                 <div class="d-flex align-items-center">
 
@@ -92,8 +98,8 @@
                     <div class="header-item d-flex d-lg-none me-2">
                         <button class="topbar-link btn" data-bs-toggle="modal" data-bs-target="#searchModal" type="button">
                             <i class="ti ti-search fs-16"></i>
-                        </button>
-                    </div>
+                     </button>
+                 </div>
 
                     <!-- pages -->
                     <div class="header-item">
@@ -108,32 +114,32 @@
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
                                             <span class="fs-13">View All the Appointments</span>
-                                        </div>
+                                     </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a>
+                                 </div>
+                             </a>
 
                                 <!-- Item-->
-                                <!-- <a href="all-doctors.html" class="dropdown-item">
+                                <a href="all-doctors.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
-                                            <span class="d-flex mb-1 fw-semibold text-dark">Lab Technicians</span>
+                                            <span class="d-flex mb-1 fw-semibold text-dark">Doctors</span>
                                             <span class="fs-13">View All the Doctors</span>
-                                        </div>
+                                     </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a> -->
+                                 </div>
+                             </a>
 
                                 <!-- Item-->
-                                <a href="{{ request.url_for('patient_add') }}" class="dropdown-item">
+                                <a href="add-patient.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
                                             <span class="fs-13">Add New Patient</span>
-                                        </div>
+                                     </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a>
+                                 </div>
+                             </a>
 
                                 <!-- Item-->
                                 <a href="pharmacy.html" class="dropdown-item">
@@ -141,22 +147,22 @@
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
                                             <span class="fs-13">View All the Medicines</span>
-                                        </div>
+                                     </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a>
+                                 </div>
+                             </a>
 
-                            </div>
+                         </div>
 
-                        </div>
-                    </div>
+                     </div>
+                 </div>
 
                     <!-- Minimize -->
                     <div class="header-item">
                         <div class="dropdown me-2">
                             <a href="javascript:void(0);" class="btn topbar-link btnFullscreen"><i class="ti ti-minimize"></i></a>
-                        </div>
-                    </div>
+                     </div>
+                 </div>
                     <!-- Minimize -->
 
                     <!-- Language Dropdown -->
@@ -164,7 +170,7 @@
 						<div class="dropdown me-2">
                             <button class="topbar-link btn" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
                                 <img src="/static/img/flags/us.svg" alt="Language" height="16">
-                            </button>
+                         </button>
 
 							<div class="dropdown-menu dropdown-menu-end p-2">
                                 <!-- item-->
@@ -189,7 +195,7 @@
 
 							</div>
 						</div>
-                    </div>
+                 </div>
 
 					<!-- Notification Dropdown -->
                     <div class="header-item">
@@ -326,15 +332,15 @@
                     <div class="header-item d-none d-sm-flex me-2">
                         <button class="topbar-link btn topbar-link" id="light-dark-mode" type="button">
                             <i class="ti ti-moon fs-16"></i>
-                        </button>
-                    </div>
+                     </button>
+                 </div>
 
 					<!-- User Dropdown -->
 					<div class="dropdown profile-dropdown d-flex align-items-center justify-content-center">
                         <a href="javascript:void(0);" class="topbar-link dropdown-toggle drop-arrow-none position-relative" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false">
                             <img src="/static/img/users/avatar-5.jpg" width="32" class="rounded-2 d-flex" alt="user-image">
                             <span class="online text-success"><i class="ti ti-circle-filled d-flex bg-white rounded-circle border border-1 border-white"></i></span>
-                        </a>
+                     </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
 
                             <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
@@ -342,46 +348,46 @@
                                 <div class="ms-2">
                                     <p class="fw-medium text-dark mb-0">Jimmy Anderson</p>
                                     <span class="d-block fs-13">Administrator</span>
-                                </div>
-                            </div>
+                             </div>
+                         </div>
 
                             <!-- Item-->
                             <a href="general-settings.html" class="dropdown-item">
                                 <i class="ti ti-user-circle me-1 align-middle"></i>
                                 <span class="align-middle">Profile Settings</span>
-                            </a>
+                         </a>
 
                             <!-- item -->
                             <div class="form-check form-switch form-check-reverse d-flex align-items-center justify-content-between dropdown-item mb-0">
-                                <label class="form-check-label" for="notify"><i class="ti ti-bell"></i>Notifications</label>
+                                <label class="form-check-label" for="notify"><i class="ti ti-bell"></i>Notifications111111</label>
                                 <input class="form-check-input me-0" type="checkbox" role="switch" id="notify">
-                            </div>
+                         </div>
 
                             <!-- Item-->
                             <a href="javascript:void(0);" class="dropdown-item">
                                 <i class="ti ti-help-circle me-1 align-middle"></i>
                                 <span class="align-middle">Help & Support</span>
-                            </a>
+                         </a>
 
                             <!-- Item-->
                             <a href="general-settings.html" class="dropdown-item">
                                 <i class="ti ti-settings me-1 align-middle"></i>
                                 <span class="align-middle">Settings</span>
-                            </a>
+                         </a>
 
                             <!-- Item-->
                             <div class="pt-2 mt-2 border-top">
                                 <a href="login.html" class="dropdown-item text-danger">
                                     <i class="ti ti-logout me-1 fs-17 align-middle"></i>
                                     <span class="align-middle">Sign Out</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                             </a>
+                         </div>
+                     </div>
+                 </div>
 
-                </div>
-            </div>
-        </header>
+             </div>
+         </div>
+     </header>
         <!-- Topbar End -->
 
         <!-- Search Modal -->
@@ -393,14 +399,14 @@
                             <i class="ti ti-search fs-22"></i>
                             <input type="search" class="form-control border-0" placeholder="Search">
                             <button type="button" class="btn p-0" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-x fs-22"></i></button>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
         <!-- Sidenav Menu Start -->
-    {% include "partials/sidebar.html" %}
+        {% include "partials/sidebar.html" %}
         <!-- Sidenav Menu End -->
 
         <!-- ========================
@@ -420,18 +426,16 @@
                             <ol class="breadcrumb m-0 py-0">
                                 <li class="breadcrumb-item"><a href="index.html">Home</a></li>
                                 <li class="breadcrumb-item active">Patients</li>
-                            </ol>
-                        </div>
-                    </div>
+                         </ol>
+                     </div>
+                 </div>
                     <div class="gap-2 d-flex align-items-center flex-wrap">
-                        <a href="all-patients.html" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Grid" data-bs-original-title="Grid View"><i class="ti ti-layout-grid"></i></a>
-                        <a href="all-patients-list.html" class="btn btn-icon btn-outline-light active" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="List" data-bs-original-title="List View"><i class="ti ti-layout-list"></i></a>
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh" data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Print" data-bs-original-title="Print"><i class="ti ti-printer"></i></a>
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Download" data-bs-original-title="Download"><i class="ti ti-cloud-download"></i></a>
-                        <a href="{{ request.url_for('patient_add') }}" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-1"></i>Add New Patient</a>
-                    </div>
-                </div>
+                        <a href="{{ request.url_for('patient_add') }}" class="btn btn-primary"><i class="ti ti-square-rounded-plus me-1"></i>New Patient</a>
+                 </div>
+             </div>
 				<!-- End Page Header -->
 
                 <!-- card start -->
@@ -444,231 +448,181 @@
                                 <div class="table-search d-flex align-items-center mb-0">
                                     <div class="search-input">
                                         <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
 
                     <!-- table header -->
                     <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
                         <div class="d-flex align-items-center flex-wrap gap-2">
 
-                            <!-- patient dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-users me-1"></i>Patient
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2 search__results">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md search__input" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                   
-                                    <!-- <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> John
-                                            
-                                        </label>
-                                    </li> -->
-                                  
-                                </ul>
+                            <!-- date picker -->
+                            <div id="reportrange" class="reportrange-picker d-flex align-items-center">
+                                <i class="ti ti-calendar text-body fs-14 me-1"></i><span class="reportrange-picker-field">21 May 25 - 21 May 25</span>
                             </div>
 
-                            <!-- gender dropdown -->
-                             <div class="dropdown gender__dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-user-cog me-1"></i>Gender
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-sm p-2">
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2 gender__filter" type="checkbox" data-gender="male">
-                                            Male
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2 gender__filter" type="checkbox" data-gender="female">
-                                            Female
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- department dropdown -->
+                            <!-- test name dropdown -->
                              <div class="dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-user-shield me-1"></i>Test
-                                </a>
+                                  <i class="ti ti-test-pipe-2 me-1"></i>Gender
+                             </a>
                                 <ul class="dropdown-menu dropdown-menu-md p-2">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
-                                                </span>
+                                             </span>
                                                 <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    
-                                   
+                                         </div>
+                                     </div>
+                                 </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            test.name
-                                        </label>
-                                    </li>
+                                            Blood Test
+                                     </label>
+                                 </li>
                                   
-                                    
-                                </ul>
-                            </div>
+                             </ul>
+                         </div>
 
-                            <!-- doctor dropdown -->
-                            <div class="dropdown">
+                            <!-- Staff dropdown -->
+                             <div class="dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-stethoscope me-1"></i>Staff
-                                </a>
+                                  <i class="ti ti-user-shield me-1"></i>Staff
+                             </a>
                                 <ul class="dropdown-menu dropdown-menu-md p-2">
                                     <li>
                                         <div class="mb-2">
                                             <div class="input-icon-start input-icon position-relative">
                                                 <span class="input-icon-addon">
                                                     <i class="ti ti-search"></i>
-                                                </span>
+                                             </span>
                                                 <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    
+                                         </div>
+                                     </div>
+                                 </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Prince
-                                        </label>
-                                    </li>
-                                   
-                                </ul>
-                            </div>
+                                            BACTERIOLOGY (CULTURES)
+                                     </label>
+                                 </li>
+                                    <li>
+                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                                            <input class="form-check-input m-0 me-2" type="checkbox">
+                                            ULTRASOUND SCAN
+                                     </label>
+                                 </li>
+                             </ul>
+                         </div>
 
                             <!-- status dropdown -->
-                             <div class="dropdown">
+                            <div class="dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-shield-half me-1"></i>Status
-                                </a>
+                             </a>
                                 <ul class="dropdown-menu dropdown-menu-sm p-2">
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Out Patient
-                                        </label>
-                                    </li>
+                                            Active
+                                     </label>
+                                 </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2" type="checkbox">
-                                            In Patient
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
+                                            Inactive
+                                     </label>
+                                 </li>
+                             </ul>
+                         </div>
 
-                        </div>
+                     </div>
 
                         <!-- sort by -->
                         <div class="dropdown">
                             <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By : </span>  Newest
-                            </a>
+                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By :</span>  Newest
+                         </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-2">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1 sort-option" data-value="newest">Newest</a>
-                                </li>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
+                             </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1 sort-option" data-value="oldest">Oldest</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
+                             </li>
+                         </ul>
+                     </div>
+                 </div>
                     <!-- table header -->
 
                     <div class="card-body">
                        <!-- table start -->
-                        <div class="table-responsive table-nowrap" style="overflow-x:unset;">
+                        <div class="table-responsive table-nowrap">
                             <table class="table mb-0 datatable">
                                 <thead>
                                     <tr>
                                         <th class="no-sort">
                                             <div class="form-check form-check-md">
                                                 <input class="form-check-input" type="checkbox" id="select-all">
-                                            </div>
-                                        </th>
+                                         </div>
+                                     </th>
                                         <th>Patient ID</th>
                                         <th>Patient Name</th>
-                                        <th class="no-sort">Gender</th>
-                                        <th class="no-sort">Phone</th>
+                                        <th>Gender</th>
+                                        <th>Phone</th>
                                         <th>Patient Type</th>
-                                        <th>Last Visit</th>
+                                        <!-- <th class="no-sort">Department</th> -->
+                                        <th class="no-sort">Last Visit</th>
                                         <th class="no-sort">Status</th>
                                         <th class="no-sort"></th>
-                                    </tr>
-                                </thead>
+                                 </tr>
+                             </thead>
                                 <tbody class="list__patients">
-  <!-- {% for p in patients %}
-  <tr>
-    <td class="no-sort">
-      <div class="form-check form-check-md">
-        <input class="form-check-input" type="checkbox">
-      </div>
-    </td>
-    <td>{{ p.patient_no }}</td>
-    <td>
-      <div class="d-flex align-items-center">
-        <div class="ms-0">
-          <h6 class="mb-0">{{ p.full_name }}</h6>
-          {% if p.email %}<small class="text-muted">{{ p.email }}</small>{% endif %}
-        </div>
-      </div>
-    </td>
-    <td class="no-sort">{{ p.sex or "-" }}</td>
-    <td>{{ p.phone or "-" }}</td>
-    <td class="no-sort">{{ p.patient_type }}</td>
-    <td>{{ p.created_at.strftime("%Y-%m-%d") if p.created_at else "-" }}</td>
-    <td class="no-sort">
-      <span class="badge bg-success">Active</span>
-    </td>
-    <td class="no-sort text-end">
-      <div class="dropdown">
-        <a class="btn btn-sm btn-outline-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Actions
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="{{ request.url_for('patient_detail', patient_id=p.id) }}">View Patient</a></li>
-          <li><a class="dropdown-item" href="{{ request.url_for('patient_book_lab', patient_id=p.id) }}">Book Lab Test</a></li>
-          <li><a class="dropdown-item" href="{{ request.url_for('patient_new_visit', patient_id=p.id) }}">Register Visit</a></li>
-          <li><a class="dropdown-item" href="{{ request.url_for('appointment_add', patient_id=p.id) }}">Create Appointment</a></li>
-        </ul>
-      </div>
-    </td>
-  </tr>
-  {% endfor %} -->
-</tbody>
-                            </table>
-                        </div>
+                                    <tr>
+                                        <td>
+                                            <div class="form-check form-check-md">
+                                                <input class="form-check-input" type="checkbox">
+                                         </div>
+                                     </td>
+                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TE0025</a></td>
+                                         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#PTSETD</a></td>
+                                        <td>Blood Test</td>
+                                        <td>20 days</td>
+                                        <td>17 Jun 2025</td>
+                                        <!-- <td>Anaesthesiology</td> -->
+                                        <td>$500</td>
+                                        <td><span class="badge badge-md badge-soft-success border border-success text-success">Active</span></td>
+                                        <td class="text-end">
+                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                                            <ul class="dropdown-menu p-2">
+                                                <li>
+                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
+                                             </li>
+                                                <li>
+                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_modal"><i class="ti ti-edit me-1"></i>Edit</a>
+                                             </li>
+                                                <li>
+                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
+                                             </li>
+                                         </ul>
+                                     </td>
+                                 </tr>
+                                    
+                             </tbody>
+                         </table>
+                     </div>
                         <!-- table start -->
                     </div>
 
-                </div>
+             </div>
                 <!-- card start -->
 
-            </div>
+         </div>
             <!-- End Content -->
 
             <!-- Start Footer -->
@@ -677,34 +631,317 @@
                     <script data-cfasync="false" src="/static/cdn-cgi/scripts/email-decode.min.js"></script>
                     <script type="b21c265bdeecc6d171de6766-text/javascript">document.write(new Date().getFullYear())</script>
                     &copy; <a href="mailto:info@dataglow.tech" class="link-primary">DataGlow</a> All Rights Reserved
-                </p>
+             </p>
                 <p class="mb-0 text-dark">Design & Developed by DataGlow Technologies</p>
-            </footer>
+         </footer>
             <!-- End Footer -->
 
-        </div>
+     </div>
 
         <!-- ========================
 			End Page Content
 		========================= -->
 
-    </div>
+ </div>
     <!-- End Wrapper -->
 
 
-    <!-- Start Delete Modal  -->
-    <div class="modal fade" id="delete_modal">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
+    <!-- Start add Modal -->
+    <div id="add_test_modal" class="modal fade">
+        <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">
-                <div class="modal-body text-center position-relative">
-                    <div class="mb-3 position-relative z-1">
-                        <span class="avatar avatar-xl badge-soft-danger text-danger rounded-circle"><i class="ti ti-trash fs-24"></i></span>
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate">Add New Patient</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+                </div>
+                <form action="#" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label"> Test Name</label>
+                                    <select class="select2 form-control select2-multiple" data-toggle="select2" multiple="multiple">
+                                        <option value="">Select</option>
+
+                                        <optgroup label="BACTERIOLOGY - (CULTURES)">
+                                            <option value="FASTING BLOOD SUGAR">FASTING BLOOD SUGAR</option>
+                                            <option value="HAEMOGLOBIN ESTIMATION">HAEMOGLOBIN ESTIMATION</option>
+                                            <option value="LIVER FUNCTION TEST">LIVER FUNCTION TEST</option>
+                                            <option value="LIPID PROFILE">LIPID PROFILE</option>
+                                            <option value="KIDNEY FUNCTION TEST">KIDNEY FUNCTION TEST</option>
+                                            <option value="FULL BLOOD COUNT">FULL BLOOD COUNT</option>
+                                            <option value="CHOLESTEROL TEST">CHOLESTEROL TEST</option>
+                                            <option value="BLOOD GROUPING">BLOOD GROUPING</option>
+                                            <option value="MALARIA BF">MALARIA BF</option>
+                                            <option value="MALARIA RDT">MALARIA RDT</option>
+                                            <option value="WIDAL TEST">WIDAL TEST</option>
+                                            <option value="SICKLING TEST">SICKLING TEST</option>
+                                            <option value="GLUCOSE 6 PHOSPHATE DEHYDROGENASE DEFICIENCY">GLUCOSE 6 PHOSPHATE DEHYDROGENASE DEFICIENCY</option>
+                                            <option value="STOOL R/E">STOOL R/E</option>
+                                            <option value="URINE R/E">URINE R/E</option>
+                                            <option value="SERUM PREGNANCY TEST">SERUM PREGNANCY TEST</option>
+                                            <option value="URINE PREGNANCY TEST">URINE PREGNANCY TEST</option>
+                                            <option value="GONORRHOEA">GONORRHOEA</option>
+                                            <option value="H. PYLORI-BLOOD">H. PYLORI-BLOOD</option>
+                                            <option value="H. PYLORI-STOOL">H. PYLORI-STOOL</option>
+                                            <option value="HEPATITIS B SURFACE ANTIGEN">HEPATITIS B SURFACE ANTIGEN</option>
+                                            <option value="HIV (FIRST RESPONSE)">HIV (FIRST RESPONSE)</option>
+                                            <option value="SYPHILIS">SYPHILIS</option>
+                                            <option value="SYPHILIS RPR">SYPHILIS RPR</option>
+                                            <option value="S TYPHI IgG, IgM">S TYPHI IgG, IgM</option>
+                                            <option value="HEPATITIS B PROFILE">HEPATITIS B PROFILE</option>
+                                            <option value="HAEMOGLOBIN GENOTYPE">HAEMOGLOBIN GENOTYPE</option>
+                                            <option value="COVID-19">COVID-19</option>
+                                            <option value="HAEMOGLOBIN A1C">HAEMOGLOBIN A1C</option>
+                                            <option value="ANTENATAL CARE">ANTENATAL CARE</option>
+                                            <option value="ELECTROLYTES">ELECTROLYTES</option>
+                                            <option value="BILIRUBIN TEST">BILIRUBIN TEST</option>
+                                            <option value="ERYTHROCYTE SEDIMENTATION RATE">ERYTHROCYTE SEDIMENTATION RATE</option>
+                                            <option value="PROLACTIN">PROLACTIN</option>
+                                            <option value="PROGESTERONE TEST">PROGESTERONE TEST</option>
+                                            <option value="LUTEINIZING HORMONE">LUTEINIZING HORMONE</option>
+                                            <option value="FOLLICLE STIMULATING HORMONE">FOLLICLE STIMULATING HORMONE</option>
+                                            <option value="ESTROGEN">ESTROGEN</option>
+                                            <option value="TESTOSTERONE TEST">TESTOSTERONE TEST</option>
+                                            <option value="PROSTATE SPECIFIC ANTIGEN">PROSTATE SPECIFIC ANTIGEN</option>
+                                            <option value="THYROID STIMULATING HORMONE">THYROID STIMULATING HORMONE</option>
+                                            <option value="TRIIODOTHYRONINE">TRIIODOTHYRONINE</option>
+                                            <option value="THYROXINE">THYROXINE</option>
+                                            <option value="BLOOD CULTURE">BLOOD CULTURE</option>
+                                            <option value="URINE CULTURE">URINE CULTURE</option>
+                                            <option value="WOUND CULTURE">WOUND CULTURE</option>
+                                            <option value="STOOL CULTURE">STOOL CULTURE</option>
+                                            <option value="EAR SWAB CULTURE">EAR SWAB CULTURE</option>
+                                            <option value="HVS SWAB">HVS SWAB</option>
+                                        </optgroup>
+
+                                        <optgroup label="ULTRASOUND SCAN">
+                                            <option value="OB SCAN (PREGNANCY)">OB SCAN (PREGNANCY)</option>
+                                            <option value="PELVIC SCAN (GYNAECOLOGICAL)">PELVIC SCAN (GYNAECOLOGICAL)</option>
+                                            <option value="UROLOGY">UROLOGY</option>
+                                            <option value="ABDOMINAL SCAN">ABDOMINAL SCAN</option>
+                                            <option value="USMALL PARTS SCAN (SUPERFICIAL) Breast, Testicles, Neck, Thyroid">USMALL PARTS SCAN (SUPERFICIAL) Breast, Testicles, Neck, Thyroid</option>
+                                            <option value="ANY INDICATED PARTS OF THE BODY Lipoma, Buttocks, Neonatal Skull">ANY INDICATED PARTS OF THE BODY Lipoma, Buttocks, Neonatal Skull</option>
+                                            <option value="ABDOMINOPELVIC SCAN">ABDOMINOPELVIC SCAN</option>
+                                            <option value="DOPPLER (DVT)">DOPPLER (DVT)</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label"> Department</label>
+                                    <select class="select">
+                                        <option>Select</option>
+                                        <option value="BACTERIOLOGY - CULTURES">BACTERIOLOGY (CULTURES)</option>
+                                        <option value="ULTRASOUND SCAN">ULTRASOUND SCAN</option>
+                                        <!--
+                                        <option>Dermatology</option>
+                                        <option>ENT Surgery</option>
+                                        <option>General Medicine</option>
+                                        <option>Ophthalmology</option>
+                                        <option>Orthopaedics</option>
+                                        <option>Paediatrics</option>
+                                        <option>Radiology</option>
+                                        <option>Cardiology</option>-->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Select Patient</label>
+                                    <select class="select">
+                                        <option>Select</option>
+                                        <option>James Carter</option>
+                                        <option>Emily Davis</option>
+                                        <option>Michael Johnson</option>
+                                        <option>Olivia Miller</option>
+                                        <option>David Smith</option>
+                                        <option>Sophia Wilson</option>
+                                        <option>Daniel Williams</option>
+                                        <option>Isabella Anderson</option>
+                                        <option>William Brown</option>
+                                        <option>Charlotte Taylor</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label"> Chief Incharge</label>
+                                    <select class="select">
+                                        <option>Select</option>
+                                        <option>David</option>
+                                        <option>Sara</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Staffs</label>
+                                    <select class="select">
+                                        <option>Select</option>
+                                        <option>Lance</option>
+                                        <option>Robinson</option>
+                                        <option>Jenifer</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Price</label>
+                                    <input type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Timing for Result</label>
+                                    <input type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-0">
+                                    <label class="form-label">Quick Notes</label>
+                                    <textarea rows="3" class="form-control" placeholder="Extra Info"></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h5 class="mb-1">Delete Confirmation</h5>
-                    <p class="mb-3">Are you sure you want to delete?</p>
-                    <div class="d-flex justify-content-center">
-                        <a href="javascript:void(0);" class="btn btn-light position-relative z-1 me-2" data-bs-dismiss="modal">Cancel</a>
-                        <a href="patient-details.html" class="btn btn-danger position-relative z-1" data-bs-dismiss="modal">Yes, Delete</a>
+                    <div class="modal-footer d-flex align-items-center gap-1">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Test</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End add Modal -->
+
+    <!-- Start edit Modal -->
+    <div id="edit_modal" class="modal fade">
+        <div class="modal-dialog .modal-dialog-scrollable modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate">Edit Test</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+             </div>
+                <form id="test__result__form">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label"> Test Name</label>
+                                    <input type="text" class="form-control test__name" name="test_name"  disabled>
+                                </div>
+                            </div>
+
+                            <div id="template-fields">
+
+                            </div>
+                             <!-- <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Result</label>
+                                    <textarea rows="3" class="form-control result__data" name="result" placeholder="Extra Info"></textarea>
+                                </div>
+                            </div> -->
+                            
+                            <!-- <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Unit</label>
+                                    <input type="text" class="form-control data__unit" name="unit">
+                             </div>
+                            </div> -->
+                           <!-- <input type="hidden" id="test__no" name="test__no"> -->
+
+                         <!-- <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Range</label>
+                                    <input type="text" class="form-control data__range" name="range">
+                             </div>
+                         </div>
+
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Comment</label>
+                                    <textarea rows="3" class="form-control data__comment" name="comment" placeholder="Extra Info"></textarea>
+                                </div>
+                            </div> -->
+                            
+                     </div>
+                 </div>
+                    <div class="modal-footer d-flex align-items-center gap-1">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                 </div>
+             </form>
+         </div>
+     </div>
+    </div>
+    <!-- End edit Modal -->
+
+    <!-- Start view Modal -->
+    <div id="view_modal" class="modal fade">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <h4 class="text-dark modal-title fw-bold text-truncate d-flex align-items-center">Blood Test</h4>
+                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row row-gap-2 mb-4">
+                        <div class="col-6 col-md-4">
+                            <h6 class="fs-14 fw-semibold mb-1 text-truncate">Price</h6>
+                            <p class="fs-13 mb-0 text-truncate">$500</p>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <h6 class="fs-14 fw-semibold mb-1 text-truncate">Department</h6>
+                            <p class="fs-13 mb-0 text-truncate">Dermitologist</p>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <h6 class="fs-14 fw-semibold mb-1">Result In</h6>
+                            <p class="fs-13 mb-0 text-truncate">10 Days</p>
+                        </div>
+                    </div>
+                    <div class="row row-gap-2 mb-4">
+                        <div class="col-6 col-md-4">
+                            <h6 class="fs-14 fw-semibold mb-2">Cheif Incharge</h6>
+                            <span class="avatar"><img src="/static/img/users/user-09.jpg" alt="img" class="rounded-circle"></span>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <h6 class="fs-14 fw-semibold mb-2">Staffs</h6>
+                            <div class="avatar-list-stacked">
+                                <span class="avatar avatar-rounded">
+                                    <img class="border border-white" src="/static/img/profiles/avatar-01.jpg" alt="img">
+                            </span>
+                                <span class="avatar avatar-rounded">
+                                    <img class="border border-white" src="/static/img/profiles/avatar-02.jpg" alt="img">
+                            </span>
+                                <span class="avatar avatar-rounded">
+                                    <img class="border border-white" src="/static/img/users/user-25.jpg" alt="img">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                    <h6 class="fw-semibold mb-2">Notes</h6>
+                    <p class="mb-0">Provide detailed instructions on how to use prescribed medications. Include dosage, frequency, and any specific application guidelines.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End view Modal -->
+
+    <!-- Start Delete Modal  -->
+        <div class="modal fade" id="delete_modal">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                    <div class="modal-body text-center position-relative">
+                        <div class="mb-3 position-relative z-1">
+                            <span class="avatar avatar-xl badge-soft-danger text-danger rounded-circle"><i class="ti ti-trash fs-24"></i></span>
+                    </div>
+                        <h5 class="mb-1">Delete Confirmation</h5>
+                        <p class="mb-3">Are you sure you want to delete?</p>
+                        <div class="d-flex justify-content-center">
+                            <a href="javascript:void(0);" class="btn btn-light position-relative z-1 me-2" data-bs-dismiss="modal">Cancel</a>
+                            <a href="patient-details.html" class="btn btn-danger position-relative z-1" data-bs-dismiss="modal">Yes, Delete</a>
                     </div>
                 </div>
             </div>
@@ -712,26 +949,33 @@
     </div>
     <!-- End Delete Modal  -->
 
-    <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+
+<!-- jQuery -->
+    <script src="/static/js/jquery-3.7.1.min.js"></script>
 
     <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
-
-	<!-- Simplebar JS -->
-	<script src="/static/plugins/simplebar/simplebar.min.js" type="b5a45e34473a3c2b13d0fd90-text/javascript"></script>
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <!-- Daterangepikcer JS -->
+	<script src="/static/js/moment.min.js"></script>
+	<script src="/static/plugins/daterangepicker/daterangepicker.js"></script>
 
     <!-- Datatable JS -->
-    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js" type="b5a45e34473a3c2b13d0fd90-text/javascript"></script>
-    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js" type="b5a45e34473a3c2b13d0fd90-text/javascript"></script>
+    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
+
+	<!-- Simplebar JS -->
+	<script src="/static/plugins/simplebar/simplebar.min.js"></script>
+
+    <!-- Choices Js -->
+    <script src="/static/plugins/choices.js/public/static/scripts/choices.min.js"></script>
+
+    <!-- Select2 Js -->
+    <script src="/static/plugins/select2/js/select2.min.js"></script>
 
     <!-- Main JS -->
-    <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/script.js"></script>
 
-<script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
-<script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-
-<!-- CUSTOM JS SCRIPT -->
+    <!-- CUSTOM JS SCRIPT -->
 <script>
     // This urls are generated by jinja2 template engine.
     // This urls are used in htmls that are later rendered using ajax
@@ -742,6 +986,55 @@
     const appointmentAddBaseUrl = "{{ request.url_for('appointment_add', patient_id='__ID__') }}";
  </script>
 
-<script src="{{ url_for('static', path='js/utils/all-patients-list.js') }}"></script>
+ <script src="{{ url_for('static', path='js/utils/all-patients-list.js') }}"></script>
+
+
+ <script>
+   $('#reportrange').on('apply.daterangepicker', async function(ev, picker) {
+    const start = picker.startDate.format('YYYY-MM-DD');
+    const end   = picker.endDate.format('YYYY-MM-DD');
+
+    console.log(start, end);
+
+    async function getRemoteData() {
+        try {
+            const response = await fetch(`/api/v1/patients?start_date=${start}&end_date=${end}`);
+            
+            if (!response.ok) throw new Error("Failed to fetch data");
+
+            const data = await response.json();
+            render(data)
+
+        } catch (error) {
+            alert(error)
+        }
+    }
+
+    await getRemoteData();
+
+});
+</script>
+
+
+    <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
+    <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+    <script>
+        $(document).on('select2:open', function(e) {
+            document.querySelector('.select2-search__field').focus();
+        });
+        $(document).ready(function() {
+            // Fix Bootstrap modal input blocking
+            $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+
+            // Proper Select2 initialization with dropdownParent
+            $('.select2').select2({
+                dropdownParent: $('#add_test_modal'),
+                width: '100%' // optional but recommended
+            });
+        });
+
+    <script>
+
 </body>
+
 </html>

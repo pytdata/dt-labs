@@ -58,12 +58,14 @@ catSelectEl.addEventListener("input", (e) => {
 
   testTableVisibilityEl.style.display = "block";
 
-  if (catName.toLowerCase() === "bacteriology") {
+  console.log(id, catName);
+
+  if (catName.toLowerCase() === "radiology") {
     bacterialTestDivEl.classList.remove("bac__hidden");
     bacterialTestDivEl.classList.add("bac__visible");
   }
 
-  if (catName.toLowerCase() === "ultra-scan") {
+  if (catName.toLowerCase() === "laboratory investigations") {
     chemistryTestDivEl.classList.remove("chem__hidden");
     chemistryTestDivEl.classList.add("chem__visible");
   }
@@ -164,7 +166,11 @@ appointmentForm.addEventListener("submit", async (e) => {
     console.log(res.statusText)
 
     const data = await res.json();
+    // TODO: Add notification 
+    alert("Appointment successfully created")
+    location.reload()
   } catch (error) {
+    alert("Appointment creation failed")
     console.log(error);
   }
 
@@ -172,7 +178,7 @@ appointmentForm.addEventListener("submit", async (e) => {
   selectedTests["bacteriology"] = []
   selectedTests["chemistry"] = []
   totalSelectedPrice = 0;
-  appointmentForm.reset();
+  // appointmentForm.reset();
 });
 
 // show appointment details

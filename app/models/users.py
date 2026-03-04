@@ -33,6 +33,9 @@ class User(Base):
     # relationships
     visits = relationship("Visit", back_populates="doctor")
 
+    def __repr__(self) -> str:
+        return f"{self.email!r} {self.full_name!r} {self.gender!r}"
+
 
 class Department(Base):
     __tablename__ = "departments"

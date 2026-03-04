@@ -1,662 +1,967 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
-
-<head>
-
-	<!-- Meta Tags -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>DT-Labs | Patients | Modern Integrated Laboratory Information System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Modern Integrated Laboratory Information System">
-    <meta name="keywords" content="dt-labs, laboratory, laboratory information system, web app, desktop app">
-    <meta name="author" content="DataGlow">
+  <head>
+    <!-- Meta Tags -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>
+      DT-Labs | Patients | Modern Integrated Laboratory Information System
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Modern Integrated Laboratory Information System"
+    />
+    <meta
+      name="keywords"
+      content="dt-labs, laboratory, laboratory information system, web app, desktop app"
+    />
+    <meta name="author" content="DataGlow" />
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="/static/img/favicon.png">
+    <link rel="shortcut icon" href="/static/img/favicon.png" />
 
     <!-- Apple Icon -->
-    <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
+    <link rel="apple-touch-icon" href="/static/img/apple-icon.png" />
 
     <!-- Theme Config Js -->
-    <script src="/static/js/theme-script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script
+      src="/static/js/theme-script.js"
+      type="09e0d2b48ab211936e55812e-text/javascript"
+    ></script>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
 
     <!-- Tabler Icon CSS -->
-    <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
+    <link
+      rel="stylesheet"
+      href="/static/plugins/tabler-icons/tabler-icons.min.css"
+    />
 
     <!-- Choices CSS -->
-    <link rel="stylesheet" href="/static/plugins/choices.js/public//static/styles/choices.min.css">
+    <link
+      rel="stylesheet"
+      href="/static/plugins/choices.js/public//static/styles/choices.min.css"
+    />
 
     <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="/static/plugins/flatpickr/flatpickr.min.css">
+    <link rel="stylesheet" href="/static/plugins/flatpickr/flatpickr.min.css" />
 
     <!-- Select2 CSS -->
-    <link rel="stylesheet" href="/static/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="/static/plugins/select2/css/select2.min.css" />
 
     <!-- Simplebar CSS -->
-    <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
+    <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css" />
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+    <link rel="stylesheet" href="/static/css/style.css" id="app-style" />
+  </head>
 
-</head>
-
-<body>
-
+  <body>
     <!-- Begin Wrapper -->
     <div class="main-wrapper">
+      <!-- Topbar Start -->
+      <header class="navbar-header">
+        <div class="page-container topbar-menu">
+          <div class="d-flex align-items-center gap-2">
+            <!-- Logo -->
+            <a href="index.html" class="logo">
+              <!-- Logo Normal -->
+              <span class="logo-light">
+                <span class="logo-lg"
+                  ><img src="/static/img/logo.svg" alt="logo"
+                /></span>
+                <span class="logo-sm"
+                  ><img src="/static/img/logo-small.svg" alt="small logo"
+                /></span>
+              </span>
 
-        <!-- Topbar Start -->
-        <header class="navbar-header">
-            <div class="page-container topbar-menu">
-                <div class="d-flex align-items-center gap-2">
+              <!-- Logo Dark -->
+              <span class="logo-dark">
+                <span class="logo-lg"
+                  ><img src="/static/img/logo-white.svg" alt="dark logo"
+                /></span>
+              </span>
+            </a>
 
-                    <!-- Logo -->
-                    <a href="index.html" class="logo">
+            <!-- Sidebar Mobile Button -->
+            <a id="mobile_btn" class="mobile-btn" href="#sidebar">
+              <i class="ti ti-menu-deep fs-24"></i>
+            </a>
 
-                        <!-- Logo Normal -->
-                        <span class="logo-light">
-                            <span class="logo-lg"><img src="/static/img/logo.svg" alt="logo"></span>
-                            <span class="logo-sm"><img src="/static/img/logo-small.svg" alt="small logo"></span>
-                        </span>
+            <button
+              class="sidenav-toggle-btn btn border-0 p-0 active"
+              id="toggle_btn2"
+            >
+              <i class="ti ti-arrow-bar-to-right"></i>
+            </button>
 
-                        <!-- Logo Dark -->
-                        <span class="logo-dark">
-                            <span class="logo-lg"><img src="/static/img/logo-white.svg" alt="dark logo"></span>
-                        </span>
-                    </a>
-
-                    <!-- Sidebar Mobile Button -->
-                    <a id="mobile_btn" class="mobile-btn" href="#sidebar">
-                        <i class="ti ti-menu-deep fs-24"></i>
-                    </a>
-
-                    <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn2">
-                        <i class="ti ti-arrow-bar-to-right"></i>
-                    </button>
-
-                    <!-- Search -->
-                    <div class="me-auto d-flex align-items-center header-search d-lg-flex d-none">
-                        <!-- Search -->
-                        <div class="input-icon position-relative me-2">
-                           <input type="text" class="form-control" placeholder="Search Keyword">
-                           <span class="input-icon-addon d-inline-flex p-0 header-search-icon"><i class="ti ti-command"></i></span>
-                        </div>
-                        <!-- /Search -->
-                    </div>
-
-                </div>
-
-                <div class="d-flex align-items-center">
-
-                    <!-- Search for Mobile -->
-                    <div class="header-item d-flex d-lg-none me-2">
-                        <button class="topbar-link btn" data-bs-toggle="modal" data-bs-target="#searchModal" type="button">
-                            <i class="ti ti-search fs-16"></i>
-                        </button>
-                    </div>
-
-                    <!-- pages -->
-                    <div class="header-item">
-                        <div class="dropdown me-2">
-                            <a href="javascript:void(0);" class="btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false"><i class="ti ti-list-details"></i></a>
-
-                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
-
-                                <!-- Item-->
-                                <a href="all-appointments.html" class="dropdown-item">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
-                                            <span class="fs-13">View All the Appointments</span>
-                                        </div>
-                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a>
-
-                                <!-- Item-->
-                                <a href="all-doctors.html" class="dropdown-item">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <span class="d-flex mb-1 fw-semibold text-dark">Lab Technicians</span>
-                                            <span class="fs-13">View All the Doctors</span>
-                                        </div>
-                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a>
-
-                                <!-- Item-->
-                                <a href="add-patient.html" class="dropdown-item">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
-                                            <span class="fs-13">Add New Patient</span>
-                                        </div>
-                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a>
-
-                                <!-- Item-->
-                                <a href="pharmacy.html" class="dropdown-item">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
-                                            <span class="fs-13">View All the Medicines</span>
-                                        </div>
-                                        <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                    </div>
-                                </a>
-
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Minimize -->
-                    <div class="header-item">
-                        <div class="dropdown me-2">
-                            <a href="javascript:void(0);" class="btn topbar-link btnFullscreen"><i class="ti ti-minimize"></i></a>
-                        </div>
-                    </div>
-                    <!-- Minimize -->
-
-                    <!-- Language Dropdown -->
-					<div class="header-item">
-						<div class="dropdown me-2">
-                            <button class="topbar-link btn" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-                                <img src="/static/img/flags/us.svg" alt="Language" height="16">
-                            </button>
-
-							<div class="dropdown-menu dropdown-menu-end p-2">
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/us.svg" alt="" class="me-1" height="16"> <span class="align-middle">English</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/de.svg" alt="" class="me-1" height="16"> <span class="align-middle">German</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/fr.svg" alt="" class="me-1" height="16"> <span class="align-middle">French</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/ae.svg" alt="" class="me-1" height="16"> <span class="align-middle">Arabic</span>
-								</a>
-
-							</div>
-						</div>
-                    </div>
-
-					<!-- Notification Dropdown -->
-                    <div class="header-item">
-						<div class="dropdown me-2">
-
-							<button class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-								<i class="ti ti-bell-check fs-16 animate-ring"></i>
-								<span class="notification-badge"></span>
-							</button>
-
-							<div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg" style="min-height: 300px;">
-
-								<div class="p-2 border-bottom">
-									<div class="row align-items-center">
-										<div class="col">
-											<h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
-										</div>
-									</div>
-								</div>
-
-								<!-- Notification Body -->
-								<div class="notification-body position-relative z-2 rounded-0" data-simplebar="">
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-1">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-01.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">John Doe</p>
-												<p class="mb-1 text-wrap">
-													added new  patient <span class="fw-medium text-dark">appointment booking.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>4 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-1">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-2">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Thomas William</p>
-												<p class="mb-1 text-wrap">
-                                                    booked a new appointment
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>8 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-2">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-3">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Sarah Anderson</p>
-												<p class="mb-1 text-wrap">
-                                                    has been successfully booked for <span class="fw-medium text-dark">April 5 at 10:00 AM.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>15 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-3">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap" id="notification-4">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-08.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Ann McClure</p>
-												<p class="mb-1 text-wrap">
-                                                    cancelled her appointment scheduled for <span class="fw-medium text-dark">February 5, 2024</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>20 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-4">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-								</div>
-
-								<!-- View All-->
-								<div class="p-2 rounded-bottom border-top text-center">
-									<a href="notifications.html" class="text-center text-decoration-underline fs-14 mb-0">
-										View All Notifications
-									</a>
-								</div>
-
-							</div>
-						</div>
-					</div>
-
-                    <!-- Light/Dark Mode Button -->
-                    <div class="header-item d-none d-sm-flex me-2">
-                        <button class="topbar-link btn topbar-link" id="light-dark-mode" type="button">
-                            <i class="ti ti-moon fs-16"></i>
-                        </button>
-                    </div>
-
-					<!-- User Dropdown -->
-					<div class="dropdown profile-dropdown d-flex align-items-center justify-content-center">
-                        <a href="javascript:void(0);" class="topbar-link dropdown-toggle drop-arrow-none position-relative" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false">
-                            <img src="/static/img/users/avatar-5.jpg" width="32" class="rounded-2 d-flex" alt="user-image">
-                            <span class="online text-success"><i class="ti ti-circle-filled d-flex bg-white rounded-circle border border-1 border-white"></i></span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
-
-                            <div class="d-flex align-items-center bg-light rounded-3 p-2 mb-2">
-                                <img src="/static/img/users/avatar-5.jpg" class="rounded-circle" width="42" height="42" alt="">
-                                <div class="ms-2">
-                                    <p class="fw-medium text-dark mb-0">Jimmy Anderson</p>
-                                    <span class="d-block fs-13">Administrator</span>
-                                </div>
-                            </div>
-
-                            <!-- Item-->
-                            <a href="general-settings.html" class="dropdown-item">
-                                <i class="ti ti-user-circle me-1 align-middle"></i>
-                                <span class="align-middle">Profile Settings</span>
-                            </a>
-
-                            <!-- item -->
-                            <div class="form-check form-switch form-check-reverse d-flex align-items-center justify-content-between dropdown-item mb-0">
-                                <label class="form-check-label" for="notify"><i class="ti ti-bell"></i>Notifications</label>
-                                <input class="form-check-input me-0" type="checkbox" role="switch" id="notify">
-                            </div>
-
-                            <!-- Item-->
-                            <a href="javascript:void(0);" class="dropdown-item">
-                                <i class="ti ti-help-circle me-1 align-middle"></i>
-                                <span class="align-middle">Help & Support</span>
-                            </a>
-
-                            <!-- Item-->
-                            <a href="general-settings.html" class="dropdown-item">
-                                <i class="ti ti-settings me-1 align-middle"></i>
-                                <span class="align-middle">Settings</span>
-                            </a>
-
-                            <!-- Item-->
-                            <div class="pt-2 mt-2 border-top">
-                                <a href="login.html" class="dropdown-item text-danger">
-                                    <i class="ti ti-logout me-1 fs-17 align-middle"></i>
-                                    <span class="align-middle">Sign Out</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+            <!-- Search -->
+            <div
+              class="me-auto d-flex align-items-center header-search d-lg-flex d-none"
+            >
+              <!-- Search -->
+              <div class="input-icon position-relative me-2">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search Keyword"
+                />
+                <span
+                  class="input-icon-addon d-inline-flex p-0 header-search-icon"
+                  ><i class="ti ti-command"></i
+                ></span>
+              </div>
+              <!-- /Search -->
             </div>
-        </header>
-        <!-- Topbar End -->
+          </div>
 
-        <!-- Search Modal -->
-        <div class="modal fade" id="searchModal">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content bg-transparent">
-                    <div class="card shadow-none mb-0">
-                        <div class="px-3 py-2 d-flex flex-row align-items-center" id="search-top">
-                            <i class="ti ti-search fs-22"></i>
-                            <input type="search" class="form-control border-0" placeholder="Search">
-                            <button type="button" class="btn p-0" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-x fs-22"></i></button>
-                        </div>
-                    </div>
-                </div>
+          <div class="d-flex align-items-center">
+            <!-- Search for Mobile -->
+            <div class="header-item d-flex d-lg-none me-2">
+              <button
+                class="topbar-link btn"
+                data-bs-toggle="modal"
+                data-bs-target="#searchModal"
+                type="button"
+              >
+                <i class="ti ti-search fs-16"></i>
+              </button>
             </div>
+
+            <!-- pages -->
+            <div class="header-item">
+              <div class="dropdown me-2">
+                <a
+                  href="javascript:void(0);"
+                  class="btn topbar-link dropdown-toggle drop-arrow-none"
+                  data-bs-toggle="dropdown"
+                  data-bs-offset="0,22"
+                  aria-haspopup="false"
+                  aria-expanded="false"
+                  ><i class="ti ti-list-details"></i
+                ></a>
+
+                <div
+                  class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2"
+                >
+                  <!-- Item-->
+                  <a href="all-appointments.html" class="dropdown-item">
+                    <div
+                      class="d-flex align-items-center justify-content-between"
+                    >
+                      <div>
+                        <span class="d-flex mb-1 fw-semibold text-dark"
+                          >Appointments</span
+                        >
+                        <span class="fs-13">View All the Appointments</span>
+                      </div>
+                      <i class="ti ti-chevron-right-pipe text-dark"></i>
+                    </div>
+                  </a>
+
+                  <!-- Item-->
+                  <a href="all-doctors.html" class="dropdown-item">
+                    <div
+                      class="d-flex align-items-center justify-content-between"
+                    >
+                      <div>
+                        <span class="d-flex mb-1 fw-semibold text-dark"
+                          >Lab Technicians</span
+                        >
+                        <span class="fs-13">View All the Doctors</span>
+                      </div>
+                      <i class="ti ti-chevron-right-pipe text-dark"></i>
+                    </div>
+                  </a>
+
+                  <!-- Item-->
+                  <a href="add-patient.html" class="dropdown-item">
+                    <div
+                      class="d-flex align-items-center justify-content-between"
+                    >
+                      <div>
+                        <span class="d-flex mb-1 fw-semibold text-dark"
+                          >New Patient</span
+                        >
+                        <span class="fs-13">Add New Patient</span>
+                      </div>
+                      <i class="ti ti-chevron-right-pipe text-dark"></i>
+                    </div>
+                  </a>
+
+                  <!-- Item-->
+                  <a href="pharmacy.html" class="dropdown-item">
+                    <div
+                      class="d-flex align-items-center justify-content-between"
+                    >
+                      <div>
+                        <span class="d-flex mb-1 fw-semibold text-dark"
+                          >Pharmacy</span
+                        >
+                        <span class="fs-13">View All the Medicines</span>
+                      </div>
+                      <i class="ti ti-chevron-right-pipe text-dark"></i>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Minimize -->
+            <div class="header-item">
+              <div class="dropdown me-2">
+                <a
+                  href="javascript:void(0);"
+                  class="btn topbar-link btnFullscreen"
+                  ><i class="ti ti-minimize"></i
+                ></a>
+              </div>
+            </div>
+            <!-- Minimize -->
+
+            <!-- Language Dropdown -->
+            <div class="header-item">
+              <div class="dropdown me-2">
+                <button
+                  class="topbar-link btn"
+                  data-bs-toggle="dropdown"
+                  data-bs-offset="0,24"
+                  type="button"
+                  aria-haspopup="false"
+                  aria-expanded="false"
+                >
+                  <img
+                    src="/static/img/flags/us.svg"
+                    alt="Language"
+                    height="16"
+                  />
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end p-2">
+                  <!-- item-->
+                  <a href="javascript:void(0);" class="dropdown-item">
+                    <img
+                      src="/static/img/flags/us.svg"
+                      alt=""
+                      class="me-1"
+                      height="16"
+                    />
+                    <span class="align-middle">English</span>
+                  </a>
+
+                  <!-- item-->
+                  <a href="javascript:void(0);" class="dropdown-item">
+                    <img
+                      src="/static/img/flags/de.svg"
+                      alt=""
+                      class="me-1"
+                      height="16"
+                    />
+                    <span class="align-middle">German</span>
+                  </a>
+
+                  <!-- item-->
+                  <a href="javascript:void(0);" class="dropdown-item">
+                    <img
+                      src="/static/img/flags/fr.svg"
+                      alt=""
+                      class="me-1"
+                      height="16"
+                    />
+                    <span class="align-middle">French</span>
+                  </a>
+
+                  <!-- item-->
+                  <a href="javascript:void(0);" class="dropdown-item">
+                    <img
+                      src="/static/img/flags/ae.svg"
+                      alt=""
+                      class="me-1"
+                      height="16"
+                    />
+                    <span class="align-middle">Arabic</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notification Dropdown -->
+            <div class="header-item">
+              <div class="dropdown me-2">
+                <button
+                  class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none"
+                  data-bs-toggle="dropdown"
+                  data-bs-offset="0,24"
+                  type="button"
+                  aria-haspopup="false"
+                  aria-expanded="false"
+                >
+                  <i class="ti ti-bell-check fs-16 animate-ring"></i>
+                  <span class="notification-badge"></span>
+                </button>
+
+                <div
+                  class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg"
+                  style="min-height: 300px"
+                >
+                  <div class="p-2 border-bottom">
+                    <div class="row align-items-center">
+                      <div class="col">
+                        <h6 class="m-0 fs-16 fw-semibold">Notifications</h6>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Notification Body -->
+                  <div
+                    class="notification-body position-relative z-2 rounded-0"
+                    data-simplebar=""
+                  >
+                    <!-- Item-->
+                    <div
+                      class="dropdown-item notification-item py-3 text-wrap border-bottom"
+                      id="notification-1"
+                    >
+                      <div class="d-flex">
+                        <div class="me-2 position-relative flex-shrink-0">
+                          <img
+                            src="/static/img/users/user-01.jpg"
+                            class="avatar-md rounded-circle"
+                            alt=""
+                          />
+                        </div>
+                        <div class="flex-grow-1">
+                          <p class="mb-0 fw-medium text-dark">John Doe</p>
+                          <p class="mb-1 text-wrap">
+                            added new patient
+                            <span class="fw-medium text-dark"
+                              >appointment booking.</span
+                            >
+                          </p>
+                          <div
+                            class="d-flex justify-content-between align-items-center"
+                          >
+                            <span class="fs-12"
+                              ><i class="ti ti-clock me-1"></i>4 min ago</span
+                            >
+                            <div
+                              class="notification-action d-flex align-items-center float-end gap-2"
+                            >
+                              <a
+                                href="javascript:void(0);"
+                                class="notification-read rounded-circle bg-danger"
+                                data-bs-toggle="tooltip"
+                                title=""
+                                data-bs-original-title="Make as Read"
+                                aria-label="Make as Read"
+                              ></a>
+                              <button
+                                class="btn rounded-circle p-0"
+                                data-dismissible="#notification-1"
+                              >
+                                <i class="ti ti-x"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Item-->
+                    <div
+                      class="dropdown-item notification-item py-3 text-wrap border-bottom"
+                      id="notification-2"
+                    >
+                      <div class="d-flex">
+                        <div class="me-2 position-relative flex-shrink-0">
+                          <img
+                            src="/static/img/users/user-12.jpg"
+                            class="avatar-md rounded-circle"
+                            alt=""
+                          />
+                        </div>
+                        <div class="flex-grow-1">
+                          <p class="mb-0 fw-medium text-dark">Thomas William</p>
+                          <p class="mb-1 text-wrap">booked a new appointment</p>
+                          <div
+                            class="d-flex justify-content-between align-items-center"
+                          >
+                            <span class="fs-12"
+                              ><i class="ti ti-clock me-1"></i>8 min ago</span
+                            >
+                            <div
+                              class="notification-action d-flex align-items-center float-end gap-2"
+                            >
+                              <a
+                                href="javascript:void(0);"
+                                class="notification-read rounded-circle bg-danger"
+                                data-bs-toggle="tooltip"
+                                title=""
+                                data-bs-original-title="Make as Read"
+                                aria-label="Make as Read"
+                              ></a>
+                              <button
+                                class="btn rounded-circle p-0"
+                                data-dismissible="#notification-2"
+                              >
+                                <i class="ti ti-x"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Item-->
+                    <div
+                      class="dropdown-item notification-item py-3 text-wrap border-bottom"
+                      id="notification-3"
+                    >
+                      <div class="d-flex">
+                        <div class="me-2 position-relative flex-shrink-0">
+                          <img
+                            src="/static/img/profiles/avatar-12.jpg"
+                            class="avatar-md rounded-circle"
+                            alt=""
+                          />
+                        </div>
+                        <div class="flex-grow-1">
+                          <p class="mb-0 fw-medium text-dark">Sarah Anderson</p>
+                          <p class="mb-1 text-wrap">
+                            has been successfully booked for
+                            <span class="fw-medium text-dark"
+                              >April 5 at 10:00 AM.</span
+                            >
+                          </p>
+                          <div
+                            class="d-flex justify-content-between align-items-center"
+                          >
+                            <span class="fs-12"
+                              ><i class="ti ti-clock me-1"></i>15 min ago</span
+                            >
+                            <div
+                              class="notification-action d-flex align-items-center float-end gap-2"
+                            >
+                              <a
+                                href="javascript:void(0);"
+                                class="notification-read rounded-circle bg-danger"
+                                data-bs-toggle="tooltip"
+                                title=""
+                                data-bs-original-title="Make as Read"
+                                aria-label="Make as Read"
+                              ></a>
+                              <button
+                                class="btn rounded-circle p-0"
+                                data-dismissible="#notification-3"
+                              >
+                                <i class="ti ti-x"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Item-->
+                    <div
+                      class="dropdown-item notification-item py-3 text-wrap"
+                      id="notification-4"
+                    >
+                      <div class="d-flex">
+                        <div class="me-2 position-relative flex-shrink-0">
+                          <img
+                            src="/static/img/profiles/avatar-08.jpg"
+                            class="avatar-md rounded-circle"
+                            alt=""
+                          />
+                        </div>
+                        <div class="flex-grow-1">
+                          <p class="mb-0 fw-medium text-dark">Ann McClure</p>
+                          <p class="mb-1 text-wrap">
+                            cancelled her appointment scheduled for
+                            <span class="fw-medium text-dark"
+                              >February 5, 2024</span
+                            >
+                          </p>
+                          <div
+                            class="d-flex justify-content-between align-items-center"
+                          >
+                            <span class="fs-12"
+                              ><i class="ti ti-clock me-1"></i>20 min ago</span
+                            >
+                            <div
+                              class="notification-action d-flex align-items-center float-end gap-2"
+                            >
+                              <a
+                                href="javascript:void(0);"
+                                class="notification-read rounded-circle bg-danger"
+                                data-bs-toggle="tooltip"
+                                title=""
+                                data-bs-original-title="Make as Read"
+                                aria-label="Make as Read"
+                              ></a>
+                              <button
+                                class="btn rounded-circle p-0"
+                                data-dismissible="#notification-4"
+                              >
+                                <i class="ti ti-x"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- View All-->
+                  <div class="p-2 rounded-bottom border-top text-center">
+                    <a
+                      href="notifications.html"
+                      class="text-center text-decoration-underline fs-14 mb-0"
+                    >
+                      View All Notifications
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Light/Dark Mode Button -->
+            <div class="header-item d-none d-sm-flex me-2">
+              <button
+                class="topbar-link btn topbar-link"
+                id="light-dark-mode"
+                type="button"
+              >
+                <i class="ti ti-moon fs-16"></i>
+              </button>
+            </div>
+
+            <!-- User Dropdown -->
+            <div
+              class="dropdown profile-dropdown d-flex align-items-center justify-content-center"
+            >
+              <a
+                href="javascript:void(0);"
+                class="topbar-link dropdown-toggle drop-arrow-none position-relative"
+                data-bs-toggle="dropdown"
+                data-bs-offset="0,22"
+                aria-haspopup="false"
+                aria-expanded="false"
+              >
+                <img
+                  src="/static/img/users/avatar-5.jpg"
+                  width="32"
+                  class="rounded-2 d-flex"
+                  alt="user-image"
+                />
+                <span class="online text-success"
+                  ><i
+                    class="ti ti-circle-filled d-flex bg-white rounded-circle border border-1 border-white"
+                  ></i
+                ></span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
+                <div
+                  class="d-flex align-items-center bg-light rounded-3 p-2 mb-2"
+                >
+                  <img
+                    src="/static/img/users/avatar-5.jpg"
+                    class="rounded-circle"
+                    width="42"
+                    height="42"
+                    alt=""
+                  />
+                  <div class="ms-2">
+                    <p class="fw-medium text-dark mb-0">Jimmy Anderson</p>
+                    <span class="d-block fs-13">Administrator</span>
+                  </div>
+                </div>
+
+                <!-- Item-->
+                <a href="general-settings.html" class="dropdown-item">
+                  <i class="ti ti-user-circle me-1 align-middle"></i>
+                  <span class="align-middle">Profile Settings</span>
+                </a>
+
+                <!-- item -->
+                <div
+                  class="form-check form-switch form-check-reverse d-flex align-items-center justify-content-between dropdown-item mb-0"
+                >
+                  <label class="form-check-label" for="notify"
+                    ><i class="ti ti-bell"></i>Notifications</label
+                  >
+                  <input
+                    class="form-check-input me-0"
+                    type="checkbox"
+                    role="switch"
+                    id="notify"
+                  />
+                </div>
+
+                <!-- Item-->
+                <a href="javascript:void(0);" class="dropdown-item">
+                  <i class="ti ti-help-circle me-1 align-middle"></i>
+                  <span class="align-middle">Help & Support</span>
+                </a>
+
+                <!-- Item-->
+                <a href="general-settings.html" class="dropdown-item">
+                  <i class="ti ti-settings me-1 align-middle"></i>
+                  <span class="align-middle">Settings</span>
+                </a>
+
+                <!-- Item-->
+                <div class="pt-2 mt-2 border-top">
+                  <a href="login.html" class="dropdown-item text-danger">
+                    <i class="ti ti-logout me-1 fs-17 align-middle"></i>
+                    <span class="align-middle">Sign Out</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </header>
+      <!-- Topbar End -->
 
-        <!-- Sidenav Menu Start -->
-        {% include "partials/sidebar.html" %}
-        <!-- Sidenav Menu End -->
+      <!-- Search Modal -->
+      <div class="modal fade" id="searchModal">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content bg-transparent">
+            <div class="card shadow-none mb-0">
+              <div
+                class="px-3 py-2 d-flex flex-row align-items-center"
+                id="search-top"
+              >
+                <i class="ti ti-search fs-22"></i>
+                <input
+                  type="search"
+                  class="form-control border-0"
+                  placeholder="Search"
+                />
+                <button
+                  type="button"
+                  class="btn p-0"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <i class="ti ti-x fs-22"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <!-- ========================
+      <!-- Sidenav Menu Start -->
+      {% include "partials/sidebar.html" %}
+      <!-- Sidenav Menu End -->
+
+      <!-- ========================
 			Start Page Content
 		========================= -->
 
-        <div class="page-wrapper">
+      <div class="page-wrapper">
+        <!-- Start Content -->
+        <div class="content">
+          <!-- Page Header -->
+          <div
+            class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap"
+          >
+            <div class="breadcrumb-arrow">
+              <h4 class="mb-1">Patients</h4>
+              <div class="text-end">
+                <ol class="breadcrumb m-0 py-0">
+                  <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                  <li class="breadcrumb-item active">Add Patient</li>
+                </ol>
+              </div>
+            </div>
+            <a
+              href="{{ request.url_for('patients') }}"
+              class="fw-medium d-flex align-items-center"
+              ><i class="ti ti-arrow-left me-1"></i>Back to Patient</a
+            >
+          </div>
+          <!-- End Page Header -->
 
-            <!-- Start Content -->
-            <div class="content">
-
-                <!-- Page Header -->
-                <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
-                    <div class="breadcrumb-arrow">
-                        <h4 class="mb-1">Patients</h4>
-                        <div class="text-end">
-                            <ol class="breadcrumb m-0 py-0">
-                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                                <li class="breadcrumb-item active">Add Patient</li>
-                            </ol>
-                        </div>
-                    </div>
-                    <a href="{{ request.url_for('patients') }}" class="fw-medium d-flex align-items-center"><i class="ti ti-arrow-left me-1"></i>Back to Patient</a>
-                </div>
-				<!-- End Page Header -->
-
-                <!-- row start -->
-                <div class="row patient-add">
-                    <!-- <div class="col-xl-3 col-lg-4">
+          <!-- row start -->
+          <div class="row patient-add">
+            <!-- <div class="col-xl-3 col-lg-4">
                         <div class="nav flex-column nav-pills" id="v-pills-tab"> -->
-                            <!-- <button class="nav-link active fw-medium d-flex align-items-center rounded" id="v-pills-info-tab"><span></span><i class="ti ti-info-circle fs-16"></i>Basic Information</button> -->
-                            <!-- <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-vituals-tab"><span></span><i class="ti ti-vector-spline fs-16"></i>Vitals</button>
+            <!-- <button class="nav-link active fw-medium d-flex align-items-center rounded" id="v-pills-info-tab"><span></span><i class="ti ti-info-circle fs-16"></i>Basic Information</button> -->
+            <!-- <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-vituals-tab"><span></span><i class="ti ti-vector-spline fs-16"></i>Vitals</button>
                             <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-medical-history-tab"><span></span><i class="ti ti-files fs-16"></i>Medical HIstory</button>
                             <button class="nav-link fw-medium d-flex align-items-center rounded" id="v-pills-complaints-tab"><span></span><i class="ti ti-vaccine fs-16"></i>Complaints</button> -->
-                        <!-- </div>
+            <!-- </div>
                     </div> -->
-                    <div class="col-xl-9 col-lg-8 ms-5">
-                        <div class="patient-form-wizard flex-fill" id="v-pills-tabContent">
+            <div class="col-xl-9 col-lg-8 ms-5">
+              <div
+                class="patient-form-wizard flex-fill"
+                id="v-pills-tabContent"
+              >
+                <!-- basic information -->
+                <div class="form-wizard-content active" id="v-pills-info">
+                  <form id="add_new_patient">
+                    <div class="card">
+                      <div class="card-header">
+                        <h5 class="mb-0">Basic Information</h5>
+                      </div>
+                      <div class="card-body">
+                        <div class="row">
+                          <div class="col-md-4 mb-3 position-relative">
+                          <label class="form-label">
+                            First Name <span class="text-danger">*</span>
+                          </label>
+                          <input
+                            id="first_name"
+                            name="first_name"
+                            type="text"
+                            class="form-control"
+                            autocomplete="off"
+                            required
+                          />
+                          <div id="nameSuggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index:1000;"></div>
+                        </div>
+                          <div class="col-md-4 mb-3">
+                            <label class="form-label"
+                              >Surname <span class="text-danger">*</span></label
+                            >
+                            <input
+                              name="surname"
+                              type="text"
+                              class="form-control"
+                              required
+                            />
+                          </div>
+                          <div class="col-md-4 mb-3">
+                            <label class="form-label">Other Names</label>
+                            <input
+                              name="other_names"
+                              type="text"
+                              class="form-control"
+                            />
+                          </div>
 
-                            <!-- basic information -->
-                            <div class="form-wizard-content active" id="v-pills-info">
-                                <form action="{{ request.url_for('patient_add_post') }}" method="post">
-  <!-- Stepper -->
-  <!-- <ul class="nav nav-pills mb-3" id="patientWizardTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" type="button" data-step="0">1. Basic</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" type="button" data-step="1">2. Contact & Billing</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" type="button" data-step="2">3. Guardian (Optional)</button>
-    </li>
-  </ul> -->
+                          <div class="col-md-4 mb-3">
+                            <label class="form-label"
+                              >Gender <span class="text-danger">*</span></label
+                            >
+                            <select name="sex" class="form-select">
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
 
-  <div class="card">
-    <div class="card-header"><h5 class="mb-0">Basic Information</h5></div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <label class="form-label">First Name <span class="text-danger">*</span></label>
-          <input name="first_name" type="text" class="form-control" required>
-        </div>
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Surname <span class="text-danger">*</span></label>
-          <input name="surname" type="text" class="form-control" required>
-        </div>
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Other Names</label>
-          <input name="other_names" type="text" class="form-control">
-        </div>
+                          <div class="col-md-4 mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input
+                              id="dob"
+                              name="date_of_birth"
+                              type="date"
+                              class="form-control"
+                            />
+                          </div>
 
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Gender</label>
-          <select name="sex" class="form-select">
-            <option value="">Select</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+                          <div class="col-md-4 mb-3">
+                            <label class="form-label"
+                              >Age <span class="text-danger">*</span></label
+                            >
+                            <input
+                              id="age"
+                              type="text"
+                              name="age"
+                              class="form-control"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Date of Birth</label>
-          <input id="dob" name="date_of_birth" type="date" class="form-control">
-        </div>
+                    <div class="card">
+                      <div class="card-header">
+                        <h5 class="mb-0">Contact & Billing</h5>
+                      </div>
+                      <div class="card-body">
+                        <div class="row">
+                          <div class="col-md-6 mb-3">
+                            <label class="form-label"
+                              >Phone <span class="text-danger">*</span></label
+                            >
+                            <input
+                              id="phone"
+                              name="phone"
+                              type="tel"
+                              class="form-control"
+                              required
+                            />
+                          </div>
 
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Age</label>
-          <input id="age" type="text" class="form-control" readonly>
-        </div>
-      </div>
-    </div>
-  </div>
+                          <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input
+                              name="email"
+                              type="email"
+                              class="form-control"
+                            />
+                          </div>
 
-  <div class="card">
-    <div class="card-header"><h5 class="mb-0">Contact & Billing</h5></div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Phone</label>
-          <input id="phone" name="phone" type="tel" class="form-control">
-        </div>
+                          <div class="col-md-12 mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea
+                              name="address"
+                              class="form-control"
+                              rows="2"
+                            ></textarea>
+                          </div>
 
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Email</label>
-          <input name="email" type="email" class="form-control">
-        </div>
+                          <div class="col-md-4 mb-3">
+                            <label class="form-label">Patient Type</label>
+                            <select
+                              id="patient_type"
+                              name="patient_type"
+                              class="form-select"
+                            >
+                              <option value="cash" selected>Cash</option>
+                              <option value="insurance">Insurance</option>
+                            </select>
+                          </div>
 
-        <div class="col-md-12 mb-3">
-          <label class="form-label">Address</label>
-          <textarea name="address" class="form-control" rows="2"></textarea>
-        </div>
+                          <div class="col-md-4 mb-3">
+                            <label class="form-label">Insurance Company</label>
+                            <select
+                              id="insurance_company_id"
+                              name="insurance_company_id"
+                              class="form-select"
+                              disabled
+                            >
+                              <option value="">Select</option>
+                              {% for ins in insurance_companies %}
+                              <option value="{{ ins.id }}">
+                                {{ ins.name }} ({{ ins.type }})
+                              </option>
+                              {% endfor %}
+                            </select>
+                          </div>
 
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Patient Type</label>
-          <select id="patient_type" name="patient_type" class="form-select">
-            <option value="cash" selected>Cash</option>
-            <option value="insurance">Insurance</option>
-          </select>
-        </div>
+                          
+                      </div>
+                    </div>
 
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Insurance Company</label>
-          <select id="insurance_company_id" name="insurance_company_id" class="form-select" disabled>
-            <option value="">Select</option>
-            {% for ins in insurance_companies %}
-              <option value="{{ ins.id }}">{{ ins.name }} ({{ ins.type }})</option>
-            {% endfor %}
-          </select>
-        </div>
+                    <div class="d-flex gap-2 justify-content-end mt-3">
+                      <button
+                        type="button"
+                        class="btn btn-light"
+                        id="btnPrev"
+                        
+                      >
+                        Cancel
+                      </button>
+                      <!-- <button type="button" class="btn btn-primary" id="btnNext">Next</button> -->
+                      <button type="submit" class="btn btn-primary">
+                        Save Patient
+                      </button>
+                    </div>
+                  </form>
 
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Membership ID</label>
-          <input id="insurance_member_id" name="insurance_member_id" type="text" class="form-control" disabled>
-        </div>
-      </div>
-    </div>
-  </div>
+                  <!-- intl-tel-input -->
+                  <link
+                    rel="stylesheet"
+                    href="/static/plugins/intltelinput/css/intlTelInput.css"
+                  />
+                  <script src="/static/plugins/intltelinput/js/intlTelInput.js"></script>
 
-  <div class="card d-none">
-    <div class="card-header"><h5 class="mb-0">Guardian / Next of Kin (Optional)</h5></div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-5 mb-3">
-          <label class="form-label">Guardian Name</label>
-          <input name="guardian_name" type="text" class="form-control">
-        </div>
-        <div class="col-md-4 mb-3">
-          <label class="form-label">Guardian Phone</label>
-          <input name="guardian_phone" type="text" class="form-control">
-        </div>
-        <div class="col-md-3 mb-3">
-          <label class="form-label">Relationship</label>
-          <input name="guardian_relation" type="text" class="form-control" placeholder="e.g., Parent, Spouse">
-        </div>
-      </div>
+                  <script>
+                    (function () {
+                      // DOB -> Age automation
+                      const dob = document.getElementById("dob");
+                      const age = document.getElementById("age");
+                      function calcAge(d) {
+                        if (!d) return "";
+                        const today = new Date();
+                        const birth = new Date(d);
+                        if (String(birth) === "Invalid Date") return "";
+                        let a = today.getFullYear() - birth.getFullYear();
+                        const m = today.getMonth() - birth.getMonth();
+                        if (
+                          m < 0 ||
+                          (m === 0 && today.getDate() < birth.getDate())
+                        )
+                          a--;
+                        return a >= 0 ? String(a) : "";
+                      }
+                      dob &&
+                        dob.addEventListener(
+                          "change",
+                          () => (age.value = calcAge(dob.value)),
+                        );
+                      if (dob && dob.value) age.value = calcAge(dob.value);
 
-      <div class="d-flex gap-2 justify-content-end">
-        <a class="btn btn-light" href="{{ request.url_for('patients') }}">Cancel</a>
-        <button type="submit" class="btn btn-primary">Save Patient</button>
-      </div>
-    </div>
-  </div>
+                      // Patient type toggles insurance fields
+                      const pt = document.getElementById("patient_type");
+                      const insSel = document.getElementById(
+                        "insurance_company_id",
+                      );
+                      const insMem = document.getElementById(
+                        "insurance_member_id",
+                      );
+                      function toggleInsurance() {
+                        const isInsurance = pt && pt.value === "insurance";
+                        if (insSel) insSel.disabled = !isInsurance;
+                        if (insMem) insMem.disabled = !isInsurance;
+                        if (!isInsurance) {
+                          if (insSel) insSel.value = "";
+                          if (insMem) insMem.value = "";
+                        }
+                      }
+                      pt && pt.addEventListener("change", toggleInsurance);
+                      toggleInsurance();
 
-  <div class="d-flex gap-2 justify-content-end mt-3">
-    <button type="button" class="btn btn-light" id="btnPrev" disabled>Back</button>
-    <!-- <button type="button" class="btn btn-primary" id="btnNext">Next</button> -->
-     <button type="submit" class="btn btn-primary">Save Patient</button>
-  </div>
-</form>
+                      // intl phone input (for future SMS)
+                      const phoneInput = document.getElementById("phone");
+                      if (phoneInput && window.intlTelInput) {
+                        window.intlTelInput(phoneInput, {
+                          initialCountry: "gh",
+                          separateDialCode: true,
+                          utilsScript: "", // optional: add utils script later if needed
+                        });
+                      }
 
-<!-- intl-tel-input -->
-<link rel="stylesheet" href="/static/plugins/intltelinput/css/intlTelInput.css">
-<script src="/static/plugins/intltelinput/js/intlTelInput.js"></script>
+                      // Progressive wizard
+                      //   const steps = Array.from(document.querySelectorAll('.patient-step'));
+                      //   const tabs = Array.from(document.querySelectorAll('#patientWizardTabs [data-step]'));
+                      //   let current = 0;
 
-<script>
-(function(){
-  // DOB -> Age automation
-  const dob = document.getElementById('dob');
-  const age = document.getElementById('age');
-  function calcAge(d){
-    if(!d) return '';
-    const today = new Date();
-    const birth = new Date(d);
-    if(String(birth) === 'Invalid Date') return '';
-    let a = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) a--;
-    return a >= 0 ? String(a) : '';
-  }
-  dob && dob.addEventListener('change', () => age.value = calcAge(dob.value));
-  if (dob && dob.value) age.value = calcAge(dob.value);
+                      //   function showStep(i){
+                      //     current = Math.max(0, Math.min(steps.length-1, i));
+                      //     steps.forEach((el, idx) => el.classList.toggle('d-none', idx !== current));
+                      //     tabs.forEach((t, idx) => {
+                      //       t.classList.toggle('active', idx === current);
+                      //       t.classList.toggle('disabled', idx > current);
+                      //     });
+                      //     document.getElementById('btnPrev').disabled = current === 0;
+                      //     const isLast = current === steps.length - 1;
+                      //     document.getElementById('btnNext').classList.toggle('d-none', isLast);
+                      //   }
 
-  // Patient type toggles insurance fields
-  const pt = document.getElementById('patient_type');
-  const insSel = document.getElementById('insurance_company_id');
-  const insMem = document.getElementById('insurance_member_id');
-  function toggleInsurance(){
-    const isInsurance = pt && pt.value === 'insurance';
-    if (insSel) insSel.disabled = !isInsurance;
-    if (insMem) insMem.disabled = !isInsurance;
-    if (!isInsurance){
-      if (insSel) insSel.value = '';
-      if (insMem) insMem.value = '';
-    }
-  }
-  pt && pt.addEventListener('change', toggleInsurance);
-  toggleInsurance();
+                      //   tabs.forEach(t => t.addEventListener('click', () => {
+                      //     const idx = parseInt(t.dataset.step || "0", 10);
+                      //     if (idx <= current) showStep(idx);
+                      //   }));
+                      //   document.getElementById('btnPrev').addEventListener('click', () => showStep(current-1));
+                      //   document.getElementById('btnNext').addEventListener('click', () => showStep(current+1));
 
-  // intl phone input (for future SMS)
-  const phoneInput = document.getElementById('phone');
-  if (phoneInput && window.intlTelInput){
-    window.intlTelInput(phoneInput, {
-      initialCountry: "gh",
-      separateDialCode: true,
-      utilsScript: "" // optional: add utils script later if needed
-    });
-  }
+                      //   showStep(0);
+                    })();
+                  </script>
+                </div>
 
-  // Progressive wizard
-//   const steps = Array.from(document.querySelectorAll('.patient-step'));
-//   const tabs = Array.from(document.querySelectorAll('#patientWizardTabs [data-step]'));
-//   let current = 0;
-
-//   function showStep(i){
-//     current = Math.max(0, Math.min(steps.length-1, i));
-//     steps.forEach((el, idx) => el.classList.toggle('d-none', idx !== current));
-//     tabs.forEach((t, idx) => {
-//       t.classList.toggle('active', idx === current);
-//       t.classList.toggle('disabled', idx > current);
-//     });
-//     document.getElementById('btnPrev').disabled = current === 0;
-//     const isLast = current === steps.length - 1;
-//     document.getElementById('btnNext').classList.toggle('d-none', isLast);
-//   }
-
-//   tabs.forEach(t => t.addEventListener('click', () => {
-//     const idx = parseInt(t.dataset.step || "0", 10);
-//     if (idx <= current) showStep(idx);
-//   }));
-//   document.getElementById('btnPrev').addEventListener('click', () => showStep(current-1));
-//   document.getElementById('btnNext').addEventListener('click', () => showStep(current+1));
-
-//   showStep(0);
-})();
-</script>
-
-                            </div>
-
-                            <!-- vituals -->
-                            <!-- <div class="form-wizard-content" id="v-pills-vituals">
+                <!-- vituals -->
+                <!-- <div class="form-wizard-content" id="v-pills-vituals">
                                 <form action="add-patient.html">
                                     <div class="card pb-0">
                                         <div class="card-header">
@@ -761,8 +1066,8 @@
                                 </form>
                             </div> -->
 
-                            <!-- medical history -->
-                            <!-- <div class="form-wizard-content" id="v-pills-medical-history">
+                <!-- medical history -->
+                <!-- <div class="form-wizard-content" id="v-pills-medical-history">
                                 <form action="add-patient.html">
                                     <div class="card">
                                         <div class="card-header">
@@ -926,8 +1231,8 @@
                                 </form>
                             </div> -->
 
-                            <!-- complaints -->
-                            <!-- <div class="form-wizard-content" id="v-pills-complaints">
+                <!-- complaints -->
+                <!-- <div class="form-wizard-content" id="v-pills-complaints">
                                 <form>
                                     <div class="card pb-0">
                                         <div class="card-header">
@@ -976,74 +1281,216 @@
                                     </div>
                                 </form>
                             </div> -->
-
-                        </div>
-                    </div>
-                </div>
-                <!-- row end -->
-
+              </div>
             </div>
-            <!-- End Content -->
-
-            <!-- Start Footer -->
-            <footer class="footer d-block d-md-flex justify-content-between text-md-start text-center">
-               <p class="mb-0 text-dark"><script type="d49e9f9556b31bc84573b757-text/javascript">document.write(new Date().getFullYear())</script> &copy; <a href="javascript:void(0);" class="link-primary">DreamsEMR</a> All Rights Reserved</p>
-               <p class="mb-0 text-dark">Design & Developed by Dreams Technologies</p>
-            </footer>
-            <!-- End Footer -->
-
+          </div>
+          <!-- row end -->
         </div>
+        <!-- End Content -->
 
-        <!-- ========================
+        <!-- Start Footer -->
+        <footer
+          class="footer d-block d-md-flex justify-content-between text-md-start text-center"
+        >
+          <p class="mb-0 text-dark">
+            <script type="d49e9f9556b31bc84573b757-text/javascript">
+              document.write(new Date().getFullYear())
+            </script>
+            &copy;
+            <a href="javascript:void(0);" class="link-primary">DreamsEMR</a> All
+            Rights Reserved
+          </p>
+          <p class="mb-0 text-dark">
+            Design & Developed by Dreams Technologies
+          </p>
+        </footer>
+        <!-- End Footer -->
+      </div>
+
+      <!-- ========================
 			End Page Content
 		========================= -->
-
     </div>
     <!-- End Wrapper -->
 
     <!-- success modal -->
     <div class="modal fade" id="success_modal">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-body text-center position-relative">
-                    <div class="mb-3 position-relative z-1">
-                        <span class="avatar avatar-xl badge-soft-success text-success rounded-circle"><i class="ti ti-calendar-check fs-24"></i></span>
-                    </div>
-                    <h5 class="mb-1">Added Successfully</h5>
-                    <p class="mb-3">Patient “Hendrita Merkel” has been added to the Patient List</p>
-                    <div class="d-flex justify-content-center">
-                        <a href="{{ request.url_for('patients') }}" class="btn btn-light position-relative z-1 me-2">Back To List</a>
-                        <a href="patient-details.html" class="btn btn-primary position-relative z-1">View Details</a>
-                    </div>
-                </div>
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-body text-center position-relative">
+            <div class="mb-3 position-relative z-1">
+              <span
+                class="avatar avatar-xl badge-soft-success text-success rounded-circle"
+                ><i class="ti ti-calendar-check fs-24"></i
+              ></span>
             </div>
+            <h5 class="mb-1">Added Successfully</h5>
+            <p class="mb-3">
+              Patient “Hendrita Merkel” has been added to the Patient List
+            </p>
+            <div class="d-flex justify-content-center">
+              <a
+                href="{{ request.url_for('patients') }}"
+                class="btn btn-light position-relative z-1 me-2"
+                >Back To List</a
+              >
+              <a
+                href="patient-details.html"
+                class="btn btn-primary position-relative z-1"
+                >View Details</a
+              >
+            </div>
+          </div>
         </div>
+      </div>
     </div>
     <!-- success modal -->
 
     <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script
+      src="/static/js/jquery-3.7.1.min.js"
+      type="09e0d2b48ab211936e55812e-text/javascript"
+    ></script>
 
     <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script
+      src="/static/js/bootstrap.bundle.min.js"
+      type="09e0d2b48ab211936e55812e-text/javascript"
+    ></script>
 
-	<!-- Simplebar JS -->
-	<script src="/static/plugins/simplebar/simplebar.min.js" type="d49e9f9556b31bc84573b757-text/javascript"></script>
+    <!-- Simplebar JS -->
+    <script
+      src="/static/plugins/simplebar/simplebar.min.js"
+      type="d49e9f9556b31bc84573b757-text/javascript"
+    ></script>
 
     <!-- Select2 JS -->
-    <script src="/static/plugins/select2/js/select2.min.js" type="d49e9f9556b31bc84573b757-text/javascript"></script>
+    <script
+      src="/static/plugins/select2/js/select2.min.js"
+      type="d49e9f9556b31bc84573b757-text/javascript"
+    ></script>
 
     <!-- Choices Js -->
-    <script src="/static/plugins/choices.js/public//static/scripts/choices.min.js" type="d49e9f9556b31bc84573b757-text/javascript"></script>
+    <script
+      src="/static/plugins/choices.js/public/static/scripts/choices.min.js"
+      type="d49e9f9556b31bc84573b757-text/javascript"
+    ></script>
 
     <!-- Flatpickr JS -->
-    <script src="/static/plugins/flatpickr/flatpickr.min.js" type="d49e9f9556b31bc84573b757-text/javascript"></script>
+    <script
+      src="/static/plugins/flatpickr/flatpickr.min.js"
+      type="d49e9f9556b31bc84573b757-text/javascript"
+    ></script>
 
     <!-- Main JS -->
-    <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script
+      src="/static/js/script.js"
+      type="09e0d2b48ab211936e55812e-text/javascript"
+    ></script>
 
-<script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
-<script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-</body>
+    <script
+      src="/static/cdn-cgi/scripts/rocket-loader.min.js"
+      data-cf-settings="09e0d2b48ab211936e55812e-|49"
+      defer=""
+    ></script>
+    <script
+      defer=""
+      src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"
+      integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ=="
+      data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}'
+      crossorigin="anonymous"
+    ></script>
+    <script src="{{ url_for('static', path='js/utils/add_patient.js') }}"></script>
 
+
+    <script>
+    const firstNameInput = document.getElementById("first_name");
+    const surnameInput = document.querySelector("input[name='surname']");
+    const suggestionBox = document.getElementById("nameSuggestions");
+
+    let debounceTimer;
+
+    function searchPatients(query) {
+        if (query.length < 2) {
+            suggestionBox.classList.add("d-none");
+            suggestionBox.innerHTML = "";
+            return;
+        }
+
+        fetch(`/api/v1/patients/search?q=${query}`)
+            .then(res => res.json())
+            .then(data => {
+                suggestionBox.innerHTML = "";
+
+                if (data.length === 0) {
+                    suggestionBox.innerHTML =
+                        `<div class="list-group-item text-muted">
+                            No existing patient found
+                        </div>`;
+                } else {
+                    data.forEach(patient => {
+                        suggestionBox.innerHTML += `
+                            <a href="/patients/${patient.id}" class="list-group-item list-group-item-action">
+                                <strong>${patient.full_name}</strong><br>
+                                <small>Phone: ${patient.phone ?? 'N/A'}</small>
+                            </a>
+                        `;
+                    });
+                }
+
+                suggestionBox.classList.remove("d-none");
+            });
+    }
+
+    function handleTyping() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const query =
+                firstNameInput.value + " " + surnameInput.value;
+            searchPatients(query.trim());
+        }, 400);
+    }
+
+    firstNameInput.addEventListener("input", handleTyping);
+    surnameInput.addEventListener("input", handleTyping);
+
+    // Hide dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+        if (!suggestionBox.contains(e.target) &&
+            e.target !== firstNameInput &&
+            e.target !== surnameInput) {
+            suggestionBox.classList.add("d-none");
+        }
+    });
+</script>
+
+<!-- CALCULATE THE DATE OF BIRTH IF EMPTY -->
+<script>
+const ageInput = document.getElementById("age");
+const dobInput = document.getElementById("dob");
+
+ageInput.addEventListener("input", function () {
+    const age = parseInt(ageInput.value);
+
+    // Only calculate if:
+    // 1. Age is valid
+    // 2. DOB is empty
+    if (!isNaN(age) && age > 0 && !dobInput.value) {
+
+        const today = new Date();
+
+        const birthYear = today.getFullYear() - age;
+        const birthMonth = today.getMonth(); // 0-based
+        const birthDay = today.getDate();
+
+        const birthDate = new Date(birthYear, birthMonth, birthDay);
+
+        // Format to YYYY-MM-DD
+        const formattedDOB = birthDate.toISOString().split("T")[0];
+
+        dobInput.value = formattedDOB;
+    }
+});
+</script>
+  </body>
 </html>

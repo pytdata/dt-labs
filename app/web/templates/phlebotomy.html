@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -421,11 +421,11 @@
                 <!-- Page Header -->
                 <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
                     <div class="breadcrumb-arrow">
-                        <h4 class="mb-1">Laboratory</h4>
+                        <h4 class="mb-1">Phlebotomy</h4>
                         <div class="text-end">
                             <ol class="breadcrumb m-0 py-0">
                                 <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                                <li class="breadcrumb-item active">Laboratory</li>
+                                <li class="breadcrumb-item active">Phlebotomy</li>
                          </ol>
                      </div>
                  </div>
@@ -442,7 +442,7 @@
                 <div class="card mb-0">
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                        <h6 class="d-inline-flex align-items-center mb-0">Total Tests <span class="badge bg-danger ms-2" id="total__test__count">0</span></h6>
+                        <h6 class="d-inline-flex align-items-center mb-0">Total Phlebotomy <span class="badge bg-danger ms-2" id="total__test__count">{{phlebotomy|length}}</span></h6>
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
@@ -624,18 +624,18 @@
                                                 <input class="form-check-input" type="checkbox" id="select-all">
                                          </div>
                                      </th>
-                                        <th>Test ID</th>
                                         <th>Patient ID</th>
-                                        <th>Test Name</th>
-                                        <th>Result</th>
+                                        <!-- <th>Test ID</th> -->
+                                        <th>Patient Name</th>
+                                        <!-- <th>Result</th> -->
                                         <th>Created Date</th>
-                                        <!-- <th class="no-sort">Department</th> -->
-                                        <th class="no-sort">Amount</th>
+                                        <th class="no-sort">Collection Site</th>
+                                        <!-- <th class="no-sort">Amount</th> -->
                                         <th class="no-sort">Status</th>
                                         <th class="no-sort"></th>
                                  </tr>
                              </thead>
-                                <tbody class="labtest__container">
+                                <tbody class="phlebotomy__container">
                                     <tr>
                                         <td>
                                             <div class="form-check form-check-md">
@@ -643,12 +643,12 @@
                                          </div>
                                      </td>
                                         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TE0025</a></td>
-                                         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#PTSETD</a></td>
+                                         <!-- <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#PTSETD</a></td> -->
                                         <td>Blood Test</td>
-                                        <td>20 days</td>
+                                        <!-- <td>20 days</td> -->
                                         <td>17 Jun 2025</td>
                                         <!-- <td>Anaesthesiology</td> -->
-                                        <td>$500</td>
+                                        <!-- <td>$500</td> -->
                                         <td><span class="badge badge-md badge-soft-success border border-success text-success">Active</span></td>
                                         <td class="text-end">
                                             <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
@@ -932,54 +932,36 @@
     <!-- End edit Modal -->
 
     <!-- Start view Modal -->
-    <div id="view_modal" class="modal fade">
-        <div class="modal-dialog modal-dialog-centered modal-md">
+    <div id="viewSamplesModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header justify-content-between">
-                    <h4 class="text-dark modal-title fw-bold text-truncate d-flex align-items-center">Blood Test</h4>
-                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">
+                Phlebotomy Samples
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="samplesContainer">
+
+                <!-- Dynamically inserted table -->
+
+                <div class="text-center py-4">
+                    <span class="text-muted">Loading samples...</span>
                 </div>
-                <div class="modal-body">
-                    <div class="row row-gap-2 mb-4">
-                        <div class="col-6 col-md-4">
-                            <h6 class="fs-14 fw-semibold mb-1 text-truncate">Price</h6>
-                            <p class="fs-13 mb-0 text-truncate">$500</p>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <h6 class="fs-14 fw-semibold mb-1 text-truncate">Department</h6>
-                            <p class="fs-13 mb-0 text-truncate">Dermitologist</p>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <h6 class="fs-14 fw-semibold mb-1">Result In</h6>
-                            <p class="fs-13 mb-0 text-truncate">10 Days</p>
-                        </div>
-                    </div>
-                    <div class="row row-gap-2 mb-4">
-                        <div class="col-6 col-md-4">
-                            <h6 class="fs-14 fw-semibold mb-2">Cheif Incharge</h6>
-                            <span class="avatar"><img src="/static/img/users/user-09.jpg" alt="img" class="rounded-circle"></span>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <h6 class="fs-14 fw-semibold mb-2">Staffs</h6>
-                            <div class="avatar-list-stacked">
-                                <span class="avatar avatar-rounded">
-                                    <img class="border border-white" src="/static/img/profiles/avatar-01.jpg" alt="img">
-                            </span>
-                                <span class="avatar avatar-rounded">
-                                    <img class="border border-white" src="/static/img/profiles/avatar-02.jpg" alt="img">
-                            </span>
-                                <span class="avatar avatar-rounded">
-                                    <img class="border border-white" src="/static/img/users/user-25.jpg" alt="img">
-                            </span>
-                        </div>
-                    </div>
+
                 </div>
-                    <h6 class="fw-semibold mb-2">Notes</h6>
-                    <p class="mb-0">Provide detailed instructions on how to use prescribed medications. Include dosage, frequency, and any specific application guidelines.</p>
-                </div>
+
+            </div>
+
             </div>
         </div>
-    </div>
+</div>
     <!-- End view Modal -->
 
     <!-- Start Delete Modal  -->
@@ -1001,6 +983,158 @@
         </div>
     </div>
     <!-- End Delete Modal  -->
+
+
+    <!-- Modal -->
+<div class="modal fade"
+     id="addSamplesModal"
+     tabindex="-1"
+     aria-labelledby="addSamplesModalLabel"
+     aria-hidden="true">
+
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="addSamplesModalLabel">
+          Add Sample
+        </h5>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <form id="sampleForm">
+
+          <!-- Hidden Phlebotomy ID -->
+          <input type="hidden" id="phlebotomy_id" name="phlebotomy_id">
+
+        <!-- Sample Type -->
+            <div class="mb-3">
+            <label for="sample_type" class="form-label">
+                Sample Type
+            </label>
+            <select class="form-select"
+                    id="sample_type"
+                    name="sample_type"
+                    required>
+                <option value="">Loading sample types...</option>
+            </select>
+            </div>
+
+          <!-- Tests (Multiple Select) -->
+          <div class="mb-3">
+            <label for="test_ids" class="form-label">
+              Tests for this Sample
+            </label>
+            <select class="form-select"
+                    id="test_ids"
+                    name="test_ids"
+                    multiple
+                    required>
+              <!-- Populate dynamically from pending tests -->
+              <option value="1">Complete Blood Count</option>
+              <option value="2">ESR</option>
+              <option value="3">Liver Function Test</option>
+            </select>
+            <div class="form-text">
+              Hold Ctrl (Windows) or Cmd (Mac) to select multiple tests.
+            </div>
+          </div>
+
+          <!-- Priority -->
+          <div class="mb-3">
+            <label for="priority" class="form-label">
+              Priority
+            </label>
+            <select class="form-select"
+                    id="priority"
+                    name="priority">
+              <option value="routine">Routine</option>
+              <option value="urgent">Urgent</option>
+              <option value="stat">STAT</option>
+            </select>
+          </div>
+
+          <!-- Collection Site -->
+          <div class="mb-3">
+            <label for="collection_site" class="form-label">
+              Collection Site
+            </label>
+
+            <select class="form-select"
+                    id="collection_site"
+                    name="collection_site">
+              <option value="hospital">Hospital</option>
+              <option value="clinic">Clinic</option>
+              <option value="ward">Ward</option>
+              <option value="home_service">Home Service</option>
+            </select>
+          </div>
+
+          <!-- Storage Location -->
+          <div class="mb-3">
+            <label for="storage_location" class="form-label">
+              Storage Location
+            </label>
+
+            <select class="form-select"
+                    id="storage_location"
+                    name="storage_location">
+              <option value="fridge">Fridge</option>
+              <option value="freezer">Freezer</option>
+              <option value="ambient">Ambient</option>
+            </select>
+          
+          </div>
+
+
+          <!-- Sample Condition -->
+          <div class="mb-3">
+            <label for="sample_condition" class="form-label">
+             Sample Condition
+            </label>
+
+            <select class="form-select"
+                    id="sample_condition"
+                    name="sample_condition">
+               <option value="fasting">Fasting</option>
+              <option value="non_fasting">Non-Fasting</option>
+              <option value="hemolyzed">Hemolyzed</option>
+              <option value="clotted">Clotted</option>
+            </select>
+          
+          </div>
+
+          
+        </form>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+          Close
+        </button>
+
+        <button type="submit"
+                class="btn btn-primary"
+                id="addSampleForm">
+          Save Sample here
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+</div>
+
 
 
 <!-- jQuery -->
@@ -1029,8 +1163,162 @@
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
 
 
-    <script src="{{ url_for('static', path='js/utils/laboratory.js') }}" defer></script>
-    <script src="{{ url_for('static', path='js/utils/render_result.js') }}" defer></script>
+    <script src="{{ url_for('static', path='js/utils/phlebotomy.js') }}" defer></script>
+
+    <script>
+    async function openSampleModal(phlebotomyId, appointmentId, patientId) {
+
+        // Set hidden phlebotomy ID
+        document.getElementById("phlebotomy_id").value = phlebotomyId;
+
+        // set appointment id and the patient id as datasets
+        document.querySelector("#sampleForm").dataset.appointmentId =appointmentId;
+        document.querySelector("#sampleForm").dataset.patientId = patientId;
+
+
+        // Load sample types first
+        await loadSampleTypes();
+
+        const select = document.getElementById("test_ids");
+
+        // Clear old options
+        select.innerHTML = "";
+
+        try {
+            const response = await fetch(
+                `/api/v1/appointments/appointments/${appointmentId}/pending-tests`
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch tests");
+            }
+
+            const tests = await response.json();
+
+            if (tests.length === 0) {
+                const option = document.createElement("option");
+                option.textContent = "No pending tests";
+                option.disabled = true;
+                select.appendChild(option);
+            } else {
+                tests.forEach(test => {
+                    const option = document.createElement("option");
+                    option.value = test.id;
+                    option.textContent = test.name;
+                    select.appendChild(option);
+                });
+            }
+
+            // Open Bootstrap Modal
+            const modal = new bootstrap.Modal(
+                document.getElementById("addSamplesModal")
+            );
+            modal.show();
+
+        } catch (error) {
+            console.error(error);
+            alert("Error loading pending tests.");
+        }
+    }
+    </script>
+
+    
+
+<script>
+    document.getElementById("addSampleForm").addEventListener("click", function() {
+    document.getElementById("sampleForm").requestSubmit();
+});
+
+    document.getElementById("sampleForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+
+const payload = {
+    phlebotomy_id: parseInt(document.getElementById("phlebotomy_id").value),
+    sample_type: parseInt(document.getElementById("sample_type").value),
+    test_ids: Array.from(document.getElementById("test_ids").selectedOptions)
+                         .map(opt => parseInt(opt.value)),
+    priority: document.getElementById("priority").value,
+    collection_site: document.getElementById("collection_site").value,
+    storage_location: document.getElementById("storage_location").value,
+    sample_condition: document.getElementById("sample_condition").value,
+    appointment_id: parseInt(document.getElementById("sampleForm").dataset.appointmentId),
+    patient_id: parseInt(document.getElementById("sampleForm").dataset.patientId),
+};
+
+console.log(payload, "this is ht payloads ==================")
+
+    try {
+        const response = await fetch("/api/v1/phlebotomy/add-sample", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            console.error(err);
+            alert("Failed to submit sample");
+            return;
+        }
+
+        const data = await response.json();
+        alert("Sample submitted successfully!");
+        document.getElementById("sampleForm").reset();
+
+        // const modalEl = document.getElementById("addSamplesModal");
+        // const modal = bootstrap.Modal.getInstance(modalEl);
+        // modal.hide();
+
+        console.log(payload ,"=====================")
+
+    } catch (error) {
+        console.error(error);
+        alert("Something went wrong.");
+    }
+});
+</script>
+
+<script>
+async function loadSampleTypes() {
+
+    const select = document.getElementById("sample_type");
+
+    // Clear existing options
+    select.innerHTML = "";
+
+    try {
+        const response = await fetch(
+            "/api/v1/samples/sample-categories"
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch sample types");
+        }
+
+        const sampleTypes = await response.json();
+
+        // Default option
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "Select sample type";
+        select.appendChild(defaultOption);
+
+        sampleTypes.forEach(type => {
+            const option = document.createElement("option");
+            option.value = type.id;
+            option.textContent = type.category_name;
+            select.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error(error);
+        select.innerHTML =
+            "<option value=''>Error loading sample types</option>";
+    }
+}
+</script>
+
 
     <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
     <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>

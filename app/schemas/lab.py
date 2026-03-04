@@ -12,6 +12,7 @@ class PatientCreate(BaseModel):
     phone: str | None = None
     email: EmailStr | None = None
     address: str | None = None
+    age: int
 
     patient_type: str = Field(default="cash", pattern="^(cash|insurance)$")
     insurance_company_id: int | None = None

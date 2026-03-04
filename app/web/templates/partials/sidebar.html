@@ -44,6 +44,8 @@
                     </ul>
                 </li>
 
+                
+
                 <li class="menu-title"><span>HEALTH CARE</span></li>
                 <li>
                     <ul>
@@ -65,6 +67,14 @@
                             </a>
                         </li>
 
+                        <li class="{% if active_page == 'phlebotomy' %}active{% endif %}">
+                                    <a href="{{ request.url_for('phlebotomy') }}">Phlebotomy</a>
+                                </li>
+
+                                <li class="{% if active_page == 'radiology' %}active{% endif %}">
+                                    <a href="{{ request.url_for('radiology') }}">Radiology</a>
+                        </li>
+
                         <li class="submenu {% if active_group == 'lab' %}active{% endif %}">
                             <a href="javascript:void(0);">
                                 <i class="ti ti-test-pipe"></i><span>Laboratory</span><span class="menu-arrow"></span>
@@ -76,8 +86,11 @@
                                 <li class="{% if active_page == 'lab_results' %}active{% endif %}">
                                     <a href="{{ request.url_for('lab_results') }}">Lab Results</a>
                                 </li>
+                                
                             </ul>
                         </li>
+
+                        
                     </ul>
                 </li>
 

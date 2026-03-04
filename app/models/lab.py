@@ -39,6 +39,7 @@ class Patient(Base):
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    age: Mapped[int] = mapped_column()
 
     # Billing / insurance
     patient_type: Mapped[str] = mapped_column(
@@ -67,11 +68,15 @@ class Patient(Base):
     visits = relationship(
         "Visit", back_populates="patient", cascade="all, delete-orphan"
     )
+    appointments: Mapped[list["Appointment"]] = relationship(back_populates="patient")
 
     @property
     def full_name(self) -> str:
         parts = [self.first_name, self.other_names or "", self.surname]
         return " ".join([p for p in parts if p]).strip()
+
+    def __repr__(self) -> str:
+        return f"{self.full_name!r} {self.age!r} {self.email}"
 
 
 class Visit(Base):
@@ -129,7 +134,6 @@ class Appointment(Base):
     # visit_id: Mapped[int | None] = mapped_column(ForeignKey("visits.id"), nullable=True)
 
     # relationship
-    patient = relationship("Patient")
     doctor = relationship("User", foreign_keys=[doctor_id])
     tests = relationship(
         "Test", secondary=association.appointment_tests, back_populates="appointments"
@@ -141,6 +145,7 @@ class Appointment(Base):
         back_populates="appointment",
         cascade="all, delete-orphan",
     )
+    patient: Mapped["Patient"] = relationship(back_populates="appointments")
 
     # visit = relationship("Visit")
 

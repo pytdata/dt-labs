@@ -140,3 +140,6 @@ class ManualTestResult(BaseModel):
     # ref_range: str
     # comment: str | None
     model_config = ConfigDict(from_attributes=True)
+
+
+# http://localhost:8000/api/v1/appointments/appointments/4/pending-tests

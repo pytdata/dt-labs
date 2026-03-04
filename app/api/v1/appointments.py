@@ -16,7 +16,7 @@ from sqlalchemy import or_
 from app.db.session import get_db
 from app.models import Patient, association
 from app.models.billing import Invoice, InvoiceItem, Payment
-from app.models.catalog import Test
+from app.models.catalog import Phlebotomy, Priority, Sample, SampleStatus, Test
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
 from app.models.users import User
 from app.schemas.appointment import (
@@ -24,7 +24,9 @@ from app.schemas.appointment import (
     AppointmentResponse,
     AppointmentStatus,
     AppointmentUpdate,
+    TestResponse,
 )
+from app.schemas.lab_results import LabResultStatus
 
 
 router = APIRouter()
@@ -67,6 +69,7 @@ async def create_appointment(
                 raise HTTPException(status_code=400, detail="No valid tests selected")
 
             total_amount = sum(t.price_ghs for t in tests)
+            requires_phlebotomy = any(t.requires_phlebotomy for t in tests)
 
             # Appointment
             appointment = Appointment(
@@ -105,6 +108,17 @@ async def create_appointment(
             )
             db.add(order)
             await db.flush()
+
+            phlebotomy = None
+
+            if requires_phlebotomy:
+                phlebotomy = Phlebotomy(
+                    patient_id=appointment.patient_id,
+                    appointment_id=appointment.id,
+                    notes="Auto-created from appointment",
+                )
+                db.add(phlebotomy)
+                await db.flush()
 
             # Invoice
             invoice = Invoice(
@@ -151,9 +165,23 @@ async def create_appointment(
                 test_no = await _next_test_no(db)
                 db.add(
                     LabResult(
-                        order_item_id=order_item.id, status="received", test_no=test_no
+                        order_item_id=order_item.id,
+                        status=LabResultStatus.pending,
+                        test_no=test_no,
                     )
                 )
+
+                # if requires_phlebotomy and test.requires_phlebotomy:
+                #     db.add(
+                #         Sample(
+                #             phlebotomy_id=phlebotomy.id,
+                #             sample_type=test.sample_category_id,  # You may determine this from test
+                #             appointment_id=appointment.id,
+                #             test_requested=[test.id],
+                #             priority=Priority.routine,
+                #             status=SampleStatus.pending,
+                #         )
+                #     )
 
             if data.total_price > 0:
                 payment = Payment(
@@ -235,6 +263,27 @@ async def get_all_appointments(
     appointment = result.scalars().all()
 
     return appointment
+
+
+@router.get(
+    "/appointments/{appointment_id}/pending-tests",
+    response_model=list[TestResponse],
+)
+async def get_pending_tests(
+    appointment_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(Test)
+        .join(Appointment.tests)
+        .where(
+            Appointment.id == appointment_id,
+            Test.requires_phlebotomy == True,  # noqa: E712
+        )
+    )
+
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 
 @router.put(

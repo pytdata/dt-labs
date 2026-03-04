@@ -21,6 +21,7 @@ from app.api.v1 import (
     transactions,
     tests,
     test_templates,
+    phlebotomy,
 )
 # >>>>>>> origin/codex/implement-astm-parsing-and-auto-merge-reports
 
@@ -48,3 +49,4 @@ router.include_router(tests.router, prefix="/tests", tags=["tests"])
 router.include_router(
     test_templates.router, prefix="/tests-templates", tags=["tests-templates"]
 )
+router.include_router(phlebotomy.router, prefix="/phlebotomy", tags=["phlebotomy"])

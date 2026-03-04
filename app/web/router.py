@@ -168,7 +168,8 @@ async def patient_add_post(
     other_names: str | None = Form(None),
     sex: str | None = Form(None),
     date_of_birth: date | None = Form(None),
-    phone: str | None = Form(None),
+    phone: str = Form(...),
+    age: str = Form(...),
     email: str | None = Form(None),
     address: str | None = Form(None),
     patient_type: str = Form("cash"),
@@ -193,6 +194,7 @@ async def patient_add_post(
         other_names=(other_names.strip() if other_names else None),
         sex=sex,
         date_of_birth=date_of_birth,
+        age=age,
         phone=phone,
         email=email,
         address=address,
@@ -203,6 +205,7 @@ async def patient_add_post(
         guardian_phone=guardian_phone,
         guardian_relation=guardian_relation,
     )
+    print(patient)
     db.add(patient)
     await db.commit()
 
@@ -215,7 +218,6 @@ async def patient_add_post(
 async def patient_detail(
     request: Request, patient_id: int, db: AsyncSession = Depends(get_db)
 ):
-    print("-========= came here ==========")
     patient = (
         await db.execute(select(Patient).where(Patient.id == patient_id))
     ).scalar_one_or_none()
@@ -677,6 +679,30 @@ async def lab_results(request: Request):
         else "laboratory.html"
     )
     return _render(request, tpl, active_page="lab_results", active_group="lab")
+
+
+@router.get("/phlebotomy", response_class=HTMLResponse, name="phlebotomy")
+async def phlebotomy(request: Request, db: AsyncSession = Depends(get_db)):
+    tpl = (
+        "phlebotomy.html"
+        if (settings.TEMPLATES_PATH / "phlebotomy.html").exists()
+        else "phlebotomy.html"
+    )
+    phlebotomy = await db.execute(select(User))
+    results = phlebotomy.scalars().all()
+    return _render(request, tpl, phlebotomy=results, active_page="phlebotomy")
+
+
+@router.get("/radiology", response_class=HTMLResponse, name="radiology")
+async def radiology(request: Request, db: AsyncSession = Depends(get_db)):
+    tpl = (
+        "radiology.html"
+        if (settings.TEMPLATES_PATH / "radiology.html").exists()
+        else "radiology.html"
+    )
+    # phlebotomy = await db.execute(select(User))
+    # results = phlebotomy.scalars().all()
+    return _render(request, tpl, active_page="radiology")
 
 
 @router.get("/reports", response_class=HTMLResponse, name="reports")

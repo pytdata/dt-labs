@@ -14,6 +14,8 @@ from sqlalchemy import DateTime, func, Time
 from datetime import datetime, time
 
 from app.db.base import Base
+from app.models.enums import PhlebotomyStatus
+from app.models.lab import Appointment
 from app.schemas.sample import SampleCondition
 from app.schemas.tests import TestStatus
 from . import association
@@ -98,6 +100,9 @@ class Test(Base):
     test_category_id: Mapped[int] = mapped_column(
         ForeignKey("test_categories.id"), index=True
     )
+    sample_category_id = mapped_column(
+        ForeignKey("sample_categories.id"), nullable=True
+    )
     # test_no: Mapped[str | None] = mapped_column(nullable=)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     department: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -111,6 +116,7 @@ class Test(Base):
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    requires_phlebotomy: Mapped[bool] = mapped_column(default=True)
 
     default_analyzer = relationship("Analyzer")
     analyzer_mappings = relationship(
@@ -124,6 +130,7 @@ class Test(Base):
         viewonly=True,  # ← prevents warning
     )
     templates = relationship("TestTemplate", back_populates="test")
+    sample_links: Mapped[list["SampleTest"]] = relationship(back_populates="test")
 
 
 class TestParameter(Base):
@@ -165,11 +172,26 @@ class SampleStatus(str, Enum):
     received = "received"
     processed = "processed"
     reported = "reported"
+    pending = "pending"
+
+
+# association
+class SampleTest(Base):
+    __tablename__ = "sample_tests"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    sample_id: Mapped[int] = mapped_column(ForeignKey("samples.id", ondelete="CASCADE"))
+
+    test_id: Mapped[int] = mapped_column(ForeignKey("tests.id", ondelete="CASCADE"))
+
+    sample: Mapped["Sample"] = relationship(back_populates="tests")
+    test: Mapped["Test"] = relationship(back_populates="sample_links")
 
 
 class SampleCategory(Base):
     """
-    model to crete and track new sample category or type.
+    model to create and track new sample category or type.
     """
 
     __tablename__ = "sample_categories"
@@ -179,33 +201,77 @@ class SampleCategory(Base):
 
 
 class Sample(Base):
-    """
-    Table for saving sample data from the client.
-    """
-
     __tablename__ = "samples"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+
     sample_type: Mapped[int] = mapped_column(ForeignKey("sample_categories.id"))
+
     appointment_id: Mapped[int] = mapped_column(
         ForeignKey("appointments.id"), index=True
     )
+
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
-    test_requested: Mapped[list[int]] = mapped_column(JSON, default=list)
-    priority: Mapped[str] = mapped_column(default=Priority.routine, nullable=True)
+
+    # test_requested: Mapped[list[int]] = mapped_column(JSON, default=list)
+
+    priority: Mapped[str] = mapped_column(default=Priority.routine)
+
     storage_location: Mapped[str] = mapped_column(default=StorageLocation.fridge)
+
     collection_date: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+    phlebotomy_id: Mapped[int | None] = mapped_column(
+        ForeignKey("phlebotomies.id"), nullable=True
     )
     collector_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), index=True, nullable=True
     )
-    collection_site: Mapped[str] = mapped_column(default=CollectionSite.hospital)
-    sample_condition: Mapped[str] = mapped_column(
-        nullable=True, default=SampleCondition.fasting
-    )
-    status: Mapped[str] = mapped_column(default=SampleStatus.collected, nullable=True)
 
-    # relationship
+    collection_site: Mapped[str] = mapped_column(default=CollectionSite.hospital)
+
+    status: Mapped[str] = mapped_column(default=SampleStatus.collected)
+
+    # Relationships
     sample_category = relationship("SampleCategory")
     collector = relationship("User")
+    phlebotomy = relationship("Phlebotomy", back_populates="samples")
+    tests: Mapped[list["SampleTest"]] = relationship(
+        back_populates="sample", cascade="all, delete-orphan"
+    )
+
+
+class Phlebotomy(Base):
+    __tablename__ = "phlebotomies"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+
+    appointment_id: Mapped[int] = mapped_column(
+        ForeignKey("appointments.id"), index=True
+    )
+
+    collected_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+
+    collection_site: Mapped[CollectionSite] = mapped_column(
+        default=CollectionSite.hospital
+    )
+
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    status: Mapped[str] = mapped_column(default=PhlebotomyStatus.pending)
+    notes: Mapped[str | None] = mapped_column(nullable=True)
+
+    # Relationships
+    samples = relationship(
+        "Sample", back_populates="phlebotomy", cascade="all, delete-orphan"
+    )
+
+    patient = relationship("Patient")
+    collector = relationship("User")
+    appointment: Mapped["Appointment"] = relationship()
