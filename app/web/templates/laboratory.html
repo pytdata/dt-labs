@@ -617,24 +617,23 @@
                        <!-- table start -->
                         <div class="table-responsive table-nowrap">
                             <table class="table mb-0 datatable">
+                               
                                 <thead>
                                     <tr>
                                         <th class="no-sort">
                                             <div class="form-check form-check-md">
                                                 <input class="form-check-input" type="checkbox" id="select-all">
-                                         </div>
-                                     </th>
-                                        <th>Test ID</th>
-                                        <th>Patient ID</th>
-                                        <th>Test Name</th>
-                                        <th>Result</th>
-                                        <th>Created Date</th>
-                                        <!-- <th class="no-sort">Department</th> -->
-                                        <th class="no-sort">Amount</th>
-                                        <th class="no-sort">Status</th>
-                                        <th class="no-sort"></th>
-                                 </tr>
-                             </thead>
+                                            </div>
+                                        </th>
+                                        <th>Order ID</th>
+                                        <th>Patient</th>
+                                        <th>Investigation (Test)</th>
+                                        <th>Category</th> <th>Ordered Date</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+
                                 <tbody class="labtest__container">
                                     <tr>
                                         <td>
@@ -1001,6 +1000,37 @@
         </div>
     </div>
     <!-- End Delete Modal  -->
+
+    <!-- radiology report modal -->
+    <div class="modal fade" id="radiologyResultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="ti ti-file-report me-2"></i>Radiology Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rad_order_item_id">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Test: <span id="rad_test_name_display" class="text-primary"></span></label>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-uppercase fw-bold">Clinical Findings</label>
+                    <textarea id="rad_findings" class="form-control" rows="8" placeholder="Type detailed observation here..."></textarea>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label small text-uppercase fw-bold">Final Impression</label>
+                    <input type="text" id="rad_conclusion" class="form-control" placeholder="Summary conclusion">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveRadiologyResult()">Save & Complete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <!-- jQuery -->

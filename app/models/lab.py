@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import Optional
 from sqlalchemy import (
     Numeric,
     String,
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db.base import Base
-from datetime import time
+from datetime import datetime, time
 
 from app.schemas.appointment import AppointmentStatus
 from app.schemas.lab_results import LabResultStatus
@@ -215,7 +216,16 @@ class LabOrderItem(Base):
 
     assigned_to = relationship("User", foreign_keys=[assigned_to_user_id])
     entered_by = relationship("User", foreign_keys=[entered_by_user_id])
-    result = relationship(
+    # 1. Specific relationship for Radiology
+    radiology_result: Mapped[Optional["RadiologyLabResult"]] = relationship(
+        "RadiologyLabResult",
+        uselist=False,
+        back_populates="order_item",
+        cascade="all, delete-orphan",
+    )
+
+    # 2. Specific relationship for Laboratory/Pathology
+    lab_result: Mapped[Optional["LabResult"]] = relationship(
         "LabResult",
         uselist=False,
         back_populates="order_item",
@@ -350,7 +360,7 @@ class LabResult(Base):
     )
 
     # Relationship
-    order_item = relationship("LabOrderItem", back_populates="result")
+    order_item = relationship("LabOrderItem", back_populates="lab_result")
     analyzer = relationship("Analyzer", back_populates="results")
     analyzer_message = relationship("AnalyzerMessage", back_populates="results")
 
@@ -362,6 +372,32 @@ class LabResult(Base):
 
     def __repr__(self) -> str:
         return f"{self.test_no} {self.results}"
+
+
+class RadiologyLabResult(Base):
+    __tablename__ = "radiology_lab_results"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    order_item_id: Mapped[int] = mapped_column(
+        ForeignKey("lab_order_items.id", ondelete="CASCADE"), unique=True, index=True
+    )
+
+    # Store the long-form report text
+    result_value: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # Store the brief conclusion/impression
+    comments: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    status: Mapped[str] = mapped_column(String(30), default="verified")
+
+    entered_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    entered_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+
+    # Relationships
+    order_item: Mapped["LabOrderItem"] = relationship(
+        "LabOrderItem", back_populates="radiology_result"
+    )
+    entered_by: Mapped["User"] = relationship("User")
 
 
 class TestTemplate(Base):

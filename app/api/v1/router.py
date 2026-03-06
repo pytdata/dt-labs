@@ -24,6 +24,7 @@ from app.api.v1 import (
     phlebotomy,
     billing,
     lab,
+    radiology,
 )
 # >>>>>>> origin/codex/implement-astm-parsing-and-auto-merge-reports
 
@@ -54,3 +55,4 @@ router.include_router(
 router.include_router(phlebotomy.router, prefix="/phlebotomy", tags=["phlebotomy"])
 router.include_router(billing.router, prefix="/billing", tags=["billings"])
 router.include_router(lab.router, prefix="/lab", tags=["labs"])
+router.include_router(radiology.router, prefix="/radiology", tags=["radiology"])

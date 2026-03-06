@@ -17,6 +17,7 @@ from app.db.session import get_db
 from app.models import Patient, association
 from app.models.billing import Invoice, InvoiceItem, Payment
 from app.models.catalog import Phlebotomy, Priority, Sample, SampleStatus, Test
+from app.models.enums import LabStage
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
 from app.models.users import User
 from app.schemas.appointment import (
@@ -66,14 +67,11 @@ async def create_appointment(
             stmt = select(Test).where(Test.id.in_(data.test_ids))
             result = await db.execute(stmt)
             tests = result.scalars().all()
-            print(f"DEBUG: Found tests: {tests}")
 
             if not tests:
                 raise HTTPException(status_code=400, detail="No valid tests selected")
 
             total_amount = sum(t.price_ghs for t in tests)
-            # Check if any test in this booking needs a needle
-            requires_phlebotomy = any(t.requires_phlebotomy for t in tests)
 
             # 2. Create Appointment
             appointment = Appointment(
@@ -82,11 +80,11 @@ async def create_appointment(
                 notes=data.notes,
                 mode_of_payment=data.mode_of_payment,
                 total_price=total_amount,
-                # ADD THIS LINE HERE:
-                tests=tests,
+                # Link tests to the appointment if your model supports the relationship
+                # tests=tests,
             )
             db.add(appointment)
-            await db.flush()
+            await db.flush()  # Gets appointment.id
 
             # 3. Create Lab Order (The Clinical "Folder")
             order = LabOrder(
@@ -95,7 +93,7 @@ async def create_appointment(
                 status="pending",
             )
             db.add(order)
-            await db.flush()
+            await db.flush()  # Gets order.id
 
             # 4. Create Invoice (The Financial "Folder")
             invoice = Invoice(
@@ -105,17 +103,15 @@ async def create_appointment(
                 total_amount=total_amount,
                 amount_paid=data.total_price,
                 balance=total_amount - data.total_price,
-                # status="paid" if (total_amount - data.total_price) <= 0 else "unpaid",
-                status="unpaid",
+                status="unpaid",  # Or logic based on balance
                 payment_mode=data.mode_of_payment,
             )
             db.add(invoice)
-
             await db.flush()
 
-            # 5. Process Tests into Items
+            # 5. Process Tests into Lab Order Items
             for test in tests:
-                # Invoice Item (For billing)
+                # A. Create Invoice Item (Billing)
                 db.add(
                     InvoiceItem(
                         invoice_id=invoice.id,
@@ -127,32 +123,37 @@ async def create_appointment(
                     )
                 )
 
-                # Lab Order Item (The actual "Task")
-                # Logic: If it's Radiology/Direct, it skips Phlebotomy status
-                item_status = (
-                    "awaiting_sample"
-                    if test.requires_phlebotomy
-                    else "awaiting_results"
-                )
+                # B. Determine initial Status and Stage
+                # If it's a blood/specimen test, it needs 'sampling'
+                if test.requires_phlebotomy:
+                    item_status = "awaiting_sample"
+                    item_stage = LabStage.SAMPLING
+                else:
+                    # If it's Radiology (X-Ray, Scan), skip sampling and go to queue
+                    item_status = "awaiting_results"
+                    item_stage = LabStage.RUNNING
 
+                # C. Create the Task
                 order_item = LabOrderItem(
-                    order_id=order.id, test_id=test.id, status=item_status
+                    order_id=order.id,
+                    test_id=test.id,
+                    status=item_status,
+                    stage=item_stage,  # <--- Explicitly setting the workflow stage
                 )
                 db.add(order_item)
-                await db.flush()
 
-            # 6. Payment Confirmation (Manual Momo/Cash)
+            # 6. Record Initial Payment
             if data.total_price > 0:
                 db.add(
                     Payment(
                         invoice_id=invoice.id,
                         amount=data.total_price,
                         method=data.mode_of_payment,
-                        # verified_by_user_id=current_user.id,
                         description="Initial booking payment",
                     )
                 )
 
+        # Transaction auto-commits here due to 'async with db.begin()'
         return {
             "status": "success",
             "appointment_id": appointment.id,
@@ -160,8 +161,8 @@ async def create_appointment(
         }
 
     except Exception as e:
-        print(e)
-        await db.rollback()
+        # rollback is handled automatically by the 'async with db.begin()' context on error
+        print(f"ERROR creating appointment: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
