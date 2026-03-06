@@ -33,48 +33,48 @@ async def get_all_tests(
     return selected_test_result
 
 
-@router.get("/active-appointments/", response_model=list[dict])
-async def get_tests_for_active_appointments(db: AsyncSession = Depends(get_db)):
-    """
-    Returns all tests related to active appointments.
-    Active appointments are those with status 'upcoming' or 'in_progress'.
-    """
-    # Query active appointments
-    stmt = (
-        select(Appointment)
-        .where(Appointment.status.in_(["upcoming", "in_progress"]))
-        .options(selectinload(Appointment.tests))
-        .options(selectinload(Appointment.patient))
-        .options(
-            selectinload(Appointment.lab_orders)
-            .selectinload(LabOrder.items)
-            .selectinload(LabOrderItem.result)
-        )
-    )
-    result = await db.execute(stmt)
-    appointments = result.scalars().unique().all()  # unique() avoids duplicates
+# @router.get("/active-appointments/", response_model=list[dict])
+# async def get_tests_for_active_appointments(db: AsyncSession = Depends(get_db)):
+#     """
+#     Returns all tests related to active appointments.
+#     Active appointments are those with status 'upcoming' or 'in_progress'.
+#     """
+#     # Query active appointments
+#     stmt = (
+#         select(Appointment)
+#         .where(Appointment.status.in_(["upcoming", "in_progress"]))
+#         .options(selectinload(Appointment.tests))
+#         .options(selectinload(Appointment.patient))
+#         .options(
+#             selectinload(Appointment.lab_order)
+#             .selectinload(LabOrder.items)
+#             .selectinload(LabOrderItem.result)
+#         )
+#     )
+#     result = await db.execute(stmt)
+#     appointments = result.scalars().unique().all()  # unique() avoids duplicates
 
-    tests_data = []
-    for appointment in appointments:
-        for order in appointment.lab_orders:
-            for item in order.items:
-                tests_data.append(
-                    {
-                        "appointment_id": appointment.id,
-                        "created_at": appointment.appointment_at,
-                        "amount": appointment.total_price,
-                        "patient_no": appointment.patient.patient_no,
-                        "test_duration": item.test.test_duration,
-                        "test_id": item.test_id,
-                        "test_name": item.test.name,
-                        "test_no": item.result.test_no if item.result else None,
-                        "result_status": item.result.status if item.result else None,
-                        "lab_result_id": item.result.id if item.result else None,
-                        "order_item_status": item.status,
-                    }
-                )
+#     tests_data = []
+#     for appointment in appointments:
+#         for order in appointment.lab_order:
+#             for item in order.items:
+#                 tests_data.append(
+#                     {
+#                         "appointment_id": appointment.id,
+#                         "created_at": appointment.appointment_at,
+#                         "amount": appointment.total_price,
+#                         "patient_no": appointment.patient.patient_no,
+#                         "test_duration": item.test.test_duration,
+#                         "test_id": item.test_id,
+#                         "test_name": item.test.name,
+#                         "test_no": item.result.test_no if item.result else None,
+#                         "result_status": item.result.status if item.result else None,
+#                         "lab_result_id": item.result.id if item.result else None,
+#                         "order_item_status": item.status,
+#                     }
+#                 )
 
-    return tests_data
+#     return tests_data
 
 
 @router.patch("/{id}/", response_model=LabResultResponse)

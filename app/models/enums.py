@@ -25,6 +25,6 @@ class LabStage(str, Enum):
 
 
 class PhlebotomyStatus(str, Enum):
-    pending = "pending"
+    pending = "in_progress"
     collected = "collected"
     completed = "completed"

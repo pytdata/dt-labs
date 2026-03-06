@@ -1,6 +1,9 @@
+from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
+
+from app.schemas.appointment import TestResponse
 
 
 class SampleCondition(str, Enum):
@@ -37,6 +40,24 @@ class SampleCreate(BaseModel):
     status: Optional[str] = None
 
 
+# from pydantic import BaseModel
+# from typing import List
+class SampleCreateRequest(BaseModel):
+    patient_id: int
+    appointment_id: int
+    phlebotomy_id: int | None  # Added to link to the Phlebotomy session
+    sample_category_id: int
+
+    # Using Field with defaults to match your DB defaults
+    priority: str = Field(default="routine")
+    collection_site: str = Field(default="clinic")
+    storage_location: str = Field(default="ambient")
+    sample_condition: str = Field(default="good")
+
+    # The IDs of the LabOrderItems (tests) this tube fulfills
+    test_item_ids: List[int] = Field(..., min_items=1)
+
+
 class SampleTestMiniResponse(BaseModel):
     sample_test_id: int  # association ID
     test_id: int
@@ -70,5 +91,26 @@ class SampleCategoryResponse(BaseModel):
     id: int
     category_name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SampleItemResponse(BaseModel):
+    id: int
+    # Ensure TestResponse exists and has 'name'
+    test: TestResponse
+    status: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SampleDetailResponse(BaseModel):
+    id: int
+    status: str
+    collection_date: datetime
+    # Add this line here
+    phlebotomy_id: Optional[int] = None
+
+    category: Optional[SampleCategoryResponse] = None
+    items: List[SampleItemResponse]
+
+    model_config = ConfigDict(from_attributes=True)

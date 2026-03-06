@@ -44,6 +44,18 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+
+    <style>
+                #modalStatusSummary .badge {
+            font-size: 0.85rem;
+            padding: 0.5em 0.8em;
+        }
+
+        #modalStatusSummary .alert {
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 
 <body>
@@ -612,65 +624,48 @@
                      </div>
                  </div>
                     <!-- table header -->
+                 
 
-                    <div class="card-body">
-                       <!-- table start -->
-                        <div class="table-responsive table-nowrap">
-                            <table class="table mb-0 datatable">
-                                <thead>
-                                    <tr>
-                                        <th class="no-sort">
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox" id="select-all">
-                                         </div>
-                                     </th>
-                                        <th>Patient ID</th>
-                                        <!-- <th>Test ID</th> -->
-                                        <th>Patient Name</th>
-                                        <!-- <th>Result</th> -->
-                                        <th>Created Date</th>
-                                        <th class="no-sort">Collection Site</th>
-                                        <!-- <th class="no-sort">Amount</th> -->
-                                        <th class="no-sort">Status</th>
-                                        <th class="no-sort"></th>
-                                 </tr>
-                             </thead>
-                                <tbody class="phlebotomy__container">
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                         </div>
-                                     </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TE0025</a></td>
-                                         <!-- <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#PTSETD</a></td> -->
-                                        <td>Blood Test</td>
-                                        <!-- <td>20 days</td> -->
-                                        <td>17 Jun 2025</td>
-                                        <!-- <td>Anaesthesiology</td> -->
-                                        <!-- <td>$500</td> -->
-                                        <td><span class="badge badge-md badge-soft-success border border-success text-success">Active</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                             </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_modal"><i class="ti ti-edit me-1"></i>Edit</a>
-                                             </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                             </li>
-                                         </ul>
-                                     </td>
-                                 </tr>
-                                    
-                             </tbody>
-                         </table>
-                     </div>
-                        <!-- table start -->
-                    </div>
+                    <div class="col-12">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title mb-0 fw-bold">Phlebotomy Collection Queue</h5>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
+                        <i class="ti ti-refresh me-1"></i> Refresh Queue
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-nowrap mb-0 datatable">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 40px;">
+                            <div class="form-check form-check-md">
+                                <input class="form-check-input" type="checkbox" id="select-all">
+                            </div>
+                        </th>
+                        <th>Patient ID</th>
+                        <th>Patient Name</th>
+                        <th>Investigation (Sample)</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="phlebotomy__container">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+
+
 
              </div>
                 <!-- card start -->
@@ -984,154 +979,156 @@
     </div>
     <!-- End Delete Modal  -->
 
+    <!-- Add sample collection modal -->
 
-    <!-- Modal -->
-<div class="modal fade"
-     id="addSamplesModal"
-     tabindex="-1"
-     aria-labelledby="addSamplesModalLabel"
-     aria-hidden="true">
-
-  <div class="modal-dialog modal-dialog-scrollable modal-lg">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="addSamplesModalLabel">
-          Add Sample
-        </h5>
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-
-        <form id="sampleForm">
-
-          <!-- Hidden Phlebotomy ID -->
-          <input type="hidden" id="phlebotomy_id" name="phlebotomy_id">
-
-        <!-- Sample Type -->
-            <div class="mb-3">
-            <label for="sample_type" class="form-label">
-                Sample Type
-            </label>
-            <select class="form-select"
-                    id="sample_type"
-                    name="sample_type"
-                    required>
-                <option value="">Loading sample types...</option>
-            </select>
+    <div class="modal fade" id="addSamplesModal" tabindex="-1" aria-labelledby="addSamplesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addSamplesModalLabel">
+                    <i class="ti ti-flask me-2"></i>Record New Specimen
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-          <!-- Tests (Multiple Select) -->
-          <div class="mb-3">
-            <label for="test_ids" class="form-label">
-              Tests for this Sample
-            </label>
-            <select class="form-select"
-                    id="test_ids"
-                    name="test_ids"
-                    multiple
-                    required>
-              <!-- Populate dynamically from pending tests -->
-              <option value="1">Complete Blood Count</option>
-              <option value="2">ESR</option>
-              <option value="3">Liver Function Test</option>
-            </select>
-            <div class="form-text">
-              Hold Ctrl (Windows) or Cmd (Mac) to select multiple tests.
+            <div class="modal-body bg-light-subtle">
+                <div class="alert alert-info border-0 shadow-sm d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <small class="text-uppercase fw-bold opacity-75 d-block">Patient Name</small>
+                        <span id="modal_patient_name" class="h6 mb-0 fw-bold text-dark">Select a patient</span>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-uppercase fw-bold opacity-75 d-block">Appointment ID</small>
+                        <span id="modal_appointment_id" class="h6 mb-0 fw-bold text-dark">#---</span>
+                    </div>
+                </div>
+
+                <form id="sampleForm">
+                    <input type="hidden" id="target_appointment_id" name="appointment_id">
+                    <input type="hidden" id="target_patient_id" name="patient_id">
+                    <input type="hidden" id="target_phlebotomy_id" name="phlebotomy_id">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="sample_type" class="form-label fw-bold">Sample Category</label>
+                            <select class="form-select border-2" id="sample_type" name="sample_category_id" required>
+                                <option value="">Loading categories...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label fw-bold">Priority</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="routine">Routine</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="stat">STAT (Immediate)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="card border-primary-subtle shadow-sm">
+                                <div class="card-header bg-primary-subtle py-2">
+                                    <label class="form-label mb-0 fw-bold text-primary">Assign Investigations to this Specimen</label>
+                                </div>
+                                <div class="card-body p-0">
+                                    <select class="form-select border-0 rounded-0" id="test_ids" name="test_item_ids" multiple style="height: 160px;" required>
+                                        <option>Loading available tests...</option>
+                                    </select>
+                                </div>
+                                <div class="card-footer py-2 bg-white border-top">
+                                    <div class="d-flex align-items-center text-muted">
+                                        <i class="ti ti-info-circle-filled me-2 text-primary"></i>
+                                        <small>Multi-select: Hold <b>Ctrl (Win)</b> or <b>Cmd (Mac)</b> to group multiple tests into this specific tube.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="collection_site" class="form-label small fw-bold text-secondary text-uppercase">Collection Site</label>
+                            <select class="form-select form-select-sm" id="collection_site" name="collection_site">
+                                <option value="hospital">Hospital</option>
+                                <option value="clinic" selected>Clinic</option>
+                                <option value="ward">Ward / In-patient</option>
+                                <option value="home_service">Home Service</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="storage_location" class="form-label small fw-bold text-secondary text-uppercase">Storage Temp</label>
+                            <select class="form-select form-select-sm" id="storage_location" name="storage_location">
+                                <option value="ambient" selected>Ambient (20-25°C)</option>
+                                <option value="fridge">Refrigerated (2-8°C)</option>
+                                <option value="freezer">Frozen (-20°C)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="sample_condition" class="form-label small fw-bold text-secondary text-uppercase">Specimen State</label>
+                            <select class="form-select form-select-sm" id="sample_condition" name="sample_condition">
+                                <option value="non_fasting" selected>Non-Fasting</option>
+                                <option value="fasting">Fasting</option>
+                                <option value="hemolyzed">Hemolyzed</option>
+                                <option value="lipemic">Lipemic</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
             </div>
-          </div>
 
-          <!-- Priority -->
-          <div class="mb-3">
-            <label for="priority" class="form-label">
-              Priority
-            </label>
-            <select class="form-select"
-                    id="priority"
-                    name="priority">
-              <option value="routine">Routine</option>
-              <option value="urgent">Urgent</option>
-              <option value="stat">STAT</option>
-            </select>
-          </div>
-
-          <!-- Collection Site -->
-          <div class="mb-3">
-            <label for="collection_site" class="form-label">
-              Collection Site
-            </label>
-
-            <select class="form-select"
-                    id="collection_site"
-                    name="collection_site">
-              <option value="hospital">Hospital</option>
-              <option value="clinic">Clinic</option>
-              <option value="ward">Ward</option>
-              <option value="home_service">Home Service</option>
-            </select>
-          </div>
-
-          <!-- Storage Location -->
-          <div class="mb-3">
-            <label for="storage_location" class="form-label">
-              Storage Location
-            </label>
-
-            <select class="form-select"
-                    id="storage_location"
-                    name="storage_location">
-              <option value="fridge">Fridge</option>
-              <option value="freezer">Freezer</option>
-              <option value="ambient">Ambient</option>
-            </select>
-          
-          </div>
-
-
-          <!-- Sample Condition -->
-          <div class="mb-3">
-            <label for="sample_condition" class="form-label">
-             Sample Condition
-            </label>
-
-            <select class="form-select"
-                    id="sample_condition"
-                    name="sample_condition">
-               <option value="fasting">Fasting</option>
-              <option value="non_fasting">Non-Fasting</option>
-              <option value="hemolyzed">Hemolyzed</option>
-              <option value="clotted">Clotted</option>
-            </select>
-          
-          </div>
-
-          
-        </form>
-
-      </div>
-
-      <div class="modal-footer">
-        <button type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-          Close
-        </button>
-
-        <button type="submit"
-                class="btn btn-primary"
-                id="addSampleForm">
-          Save Sample here
-        </button>
-      </div>
-
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="sampleForm" class="btn btn-primary px-5 shadow-sm" id="saveSampleBtn">
+                    <i class="ti ti-check me-1"></i> Confirm & Save
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
+<!-- manage samples -->
+<div class="modal fade" id="manageSamplesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg border-0 modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold"><i class="ti ti-list-check me-2"></i>Manage Test Specimens</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <div id="modalStatusSummary" class="p-3 border-bottom bg-light">
+                    </div>
+
+                <div id="manageSamplesLoading" class="text-center py-5 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Loading test assignments...</p>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Investigation (Test)</th>
+                                <th>Assigned Sample / Tube</th>
+                                <th>Collection Date</th>
+                                <th class="text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manageSamplesBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white border-top py-3">
+                <button type="button" class="btn btn-link text-muted text-decoration-none fw-medium" data-bs-dismiss="modal">Close</button>
+                <button type="button" 
+                    id="btnFinalizePhleb" 
+                    class="btn btn-success px-4 fw-bold shadow-sm" 
+                    onclick="finalizeCollection()"> <i class="ti ti-circle-check me-1"></i> Finalize Collection
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </div>
 

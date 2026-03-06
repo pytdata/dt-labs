@@ -144,6 +144,9 @@ class Appointment(Base):
     lab_order: Mapped["LabOrder"] = relationship(
         "LabOrder", back_populates="appointment", uselist=False
     )
+    phlebotomy: Mapped["Phlebotomy"] = relationship(
+        "Phlebotomy", back_populates="appointment", uselist=False
+    )
 
 
 class LabOrder(Base):
@@ -188,20 +191,14 @@ class LabOrderItem(Base):
         ForeignKey("lab_orders.id", ondelete="CASCADE"), index=True
     )
     test_id: Mapped[int] = mapped_column(ForeignKey("tests.id"), index=True)
-    analyzer_id: Mapped[int | None] = mapped_column(
-        ForeignKey("analyzers.id"), nullable=True
-    )  # chosen per test
-    # overall status for LIS
-    status: Mapped[str] = mapped_column(
-        String(30), default="pending"
-    )  # pending|in_progress|completed|cancelled
 
-    sample_id: Mapped[str | None] = mapped_column(String(80), index=True, nullable=True)
+    # The Link to Sample
+    sample_id: Mapped[int | None] = mapped_column(
+        ForeignKey("samples.id", ondelete="SET NULL"), index=True, nullable=True
+    )
 
-    # workflow stage (your lab process)
-    stage: Mapped[str] = mapped_column(
-        default=LabStage.BOOKING,
-    )  # booking|sampling|running|complete|analyzing|printing|ended
+    status: Mapped[str] = mapped_column(String(30), default="awaiting_sample")
+    stage: Mapped[str] = mapped_column(default=LabStage.BOOKING)
 
     assigned_to_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
@@ -209,17 +206,15 @@ class LabOrderItem(Base):
     entered_by_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )
-    external_sample_id: Mapped[str | None] = mapped_column(
-        String(100), nullable=True
-    )  # sample/run id used by analyzer
 
-    # Relationship
+    # Relationships
     order = relationship("LabOrder", back_populates="items")
     test = relationship("Test")
-    analyzer = relationship("Analyzer")
+    # Link back to Sample - notice we use 'items' to match Sample.items
+    sample = relationship("Sample", back_populates="items")
+
     assigned_to = relationship("User", foreign_keys=[assigned_to_user_id])
     entered_by = relationship("User", foreign_keys=[entered_by_user_id])
-
     result = relationship(
         "LabResult",
         uselist=False,

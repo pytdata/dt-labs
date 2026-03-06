@@ -221,27 +221,6 @@ async def get_all_appointments(
     return appointment
 
 
-@router.get(
-    "/appointments/{appointment_id}/pending-tests",
-    response_model=list[TestResponse],
-)
-async def get_pending_tests(
-    appointment_id: int,
-    db: AsyncSession = Depends(get_db),
-):
-    stmt = (
-        select(Test)
-        .join(Appointment.tests)
-        .where(
-            Appointment.id == appointment_id,
-            Test.requires_phlebotomy == True,  # noqa: E712
-        )
-    )
-
-    result = await db.execute(stmt)
-    return result.scalars().all()
-
-
 @router.put(
     "/{appointment_id}/",
     status_code=status.HTTP_200_OK,

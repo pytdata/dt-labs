@@ -15,7 +15,7 @@ from datetime import datetime, time
 
 from app.db.base import Base
 from app.models.enums import PhlebotomyStatus
-from app.models.lab import Appointment
+from app.models.lab import Appointment, LabOrderItem
 from app.schemas.sample import SampleCondition
 from app.schemas.tests import TestStatus
 from . import association
@@ -130,7 +130,6 @@ class Test(Base):
         viewonly=True,  # ← prevents warning
     )
     templates = relationship("TestTemplate", back_populates="test")
-    sample_links: Mapped[list["SampleTest"]] = relationship(back_populates="test")
 
 
 class TestParameter(Base):
@@ -175,18 +174,18 @@ class SampleStatus(str, Enum):
     pending = "pending"
 
 
-# association
-class SampleTest(Base):
-    __tablename__ = "sample_tests"
+# # association
+# class SampleTest(Base):
+#     __tablename__ = "sample_tests"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+#     id: Mapped[int] = mapped_column(primary_key=True)
 
-    sample_id: Mapped[int] = mapped_column(ForeignKey("samples.id", ondelete="CASCADE"))
+#     sample_id: Mapped[int] = mapped_column(ForeignKey("samples.id", ondelete="CASCADE"))
 
-    test_id: Mapped[int] = mapped_column(ForeignKey("tests.id", ondelete="CASCADE"))
+#     test_id: Mapped[int] = mapped_column(ForeignKey("tests.id", ondelete="CASCADE"))
 
-    sample: Mapped["Sample"] = relationship(back_populates="tests")
-    test: Mapped["Test"] = relationship(back_populates="sample_links")
+#     sample: Mapped["Sample"] = relationship(back_populates="tests")
+#     test: Mapped["Test"] = relationship(back_populates="sample_links")
 
 
 class SampleCategory(Base):
@@ -204,42 +203,29 @@ class Sample(Base):
     __tablename__ = "samples"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-
-    sample_type: Mapped[int] = mapped_column(ForeignKey("sample_categories.id"))
-
+    sample_type_id: Mapped[int] = mapped_column(ForeignKey("sample_categories.id"))
     appointment_id: Mapped[int] = mapped_column(
         ForeignKey("appointments.id"), index=True
     )
-
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
-
-    # test_requested: Mapped[list[int]] = mapped_column(JSON, default=list)
-
-    priority: Mapped[str] = mapped_column(default=Priority.routine)
-
-    storage_location: Mapped[str] = mapped_column(default=StorageLocation.fridge)
-
-    collection_date: Mapped[DateTime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
     phlebotomy_id: Mapped[int | None] = mapped_column(
-        ForeignKey("phlebotomies.id"), nullable=True
-    )
-    collector_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"), index=True, nullable=True
+        ForeignKey("phlebotomies.id", ondelete="SET NULL"), index=True, nullable=True
     )
 
-    collection_site: Mapped[str] = mapped_column(default=CollectionSite.hospital)
+    storage_location: Mapped[str] = mapped_column(default="ambient")
+    collection_site: Mapped[str] = mapped_column(default="clinic")
+    priority: Mapped[str] = mapped_column(default="routine")
 
-    status: Mapped[str] = mapped_column(default=SampleStatus.collected)
+    collector_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    collection_date: Mapped[datetime] = mapped_column(server_default=func.now())
+    status: Mapped[str] = mapped_column(default="collected")
 
-    # Relationships
-    sample_category = relationship("SampleCategory")
-    collector = relationship("User")
-    phlebotomy = relationship("Phlebotomy", back_populates="samples")
-    tests: Mapped[list["SampleTest"]] = relationship(
-        back_populates="sample", cascade="all, delete-orphan"
+    # ONE relationship to LabOrderItem, named 'items'
+    items: Mapped[list["LabOrderItem"]] = relationship(
+        "LabOrderItem", back_populates="sample", cascade="all, delete-orphan"
     )
+    phlebotomy: Mapped["Phlebotomy"] = relationship(back_populates="samples")
+    category: Mapped["SampleCategory"] = relationship()
 
 
 class Phlebotomy(Base):
@@ -266,12 +252,17 @@ class Phlebotomy(Base):
     )
     status: Mapped[str] = mapped_column(default=PhlebotomyStatus.pending)
     notes: Mapped[str | None] = mapped_column(nullable=True)
+    completed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Relationships
-    samples = relationship(
+    samples: Mapped[list["Sample"]] = relationship(
         "Sample", back_populates="phlebotomy", cascade="all, delete-orphan"
     )
 
     patient = relationship("Patient")
     collector = relationship("User")
-    appointment: Mapped["Appointment"] = relationship()
+    appointment: Mapped["Appointment"] = relationship(
+        "Appointment", back_populates="phlebotomy"
+    )
