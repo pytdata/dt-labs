@@ -5,26 +5,23 @@ from enum import Enum
 class LabStage(str, Enum):
     BOOKING = "booking"
     SAMPLING = "sampling"
-    RUNNING = "running"
+    RUNNING = "analysis"  # Must be lowercase to match DB
+    ANALYZING = "review"  # Must be lowercase to match DB
     COMPLETE = "complete"
-    ANALYZING = "analyzing"
     PRINTING = "printing"
     ENDED = "ended"
-
-    @classmethod
-    def ordered(cls) -> list["LabStage"]:
-        return [
-            cls.BOOKING,
-            cls.SAMPLING,
-            cls.RUNNING,
-            cls.COMPLETE,
-            cls.ANALYZING,
-            cls.PRINTING,
-            cls.ENDED,
-        ]
 
 
 class PhlebotomyStatus(str, Enum):
     pending = "in_progress"
     collected = "collected"
     completed = "completed"
+
+
+class LabStatus(str, Enum):
+    AWAITING_SAMPLE = "AWAITING_SAMPLE"
+    AWAITING_RESULTS = "AWAITING_RESULTS"
+    IN_PROGRESS = "IN_PROGRESS"
+    AWAITING_APPROVAL = "AWAITING_APPROVAL"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"

@@ -1,16 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Enum, func, select, update
-from sqlalchemy.orm import contains_eager, selectinload
+from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Test
-from app.models.enums import LabStage
+from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem
 from app.schemas.appointment import TestResponse
 from app.schemas.lab import LabOrderItemResponse, LabQueueResponse, LabQueueResponse2
+from app.core.config import settings
 
 
+templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 router = APIRouter()
 
 
@@ -27,40 +31,173 @@ class PhlebotomyStatus(str, Enum):
 
 @router.get("/queue/radiology", response_model=list[LabQueueResponse2])
 async def get_radiology_queue(db: AsyncSession = Depends(get_db)):
-    """
-    Fetches all pending radiology investigations across all appointments.
-    """
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
+        .outerjoin(Test.test_category)  # JOIN CATEGORY HERE
         .join(LabOrderItem.order)
         .join(LabOrder.appointment)
         .join(Appointment.patient)
-        .outerjoin(Appointment.doctor)  # Get the referring physician
+        .outerjoin(Appointment.doctor)
         .where(
-            Test.requires_phlebotomy == False,  # Radiology/Imaging only
+            Test.requires_phlebotomy == False,
+            # Use the Enum members directly if your model uses Enum types
             LabOrderItem.status.in_(
-                ["awaiting_results", "in_progress", "awaiting_approval"]
+                [
+                    LabStatus.AWAITING_RESULTS,
+                    LabStatus.AWAITING_APPROVAL,
+                ]
             ),
-            LabOrderItem.stage.in_([LabStage.RUNNING, LabStage.ANALYZING]),
+            LabOrderItem.stage.in_(
+                [
+                    LabStage.RUNNING,
+                    LabStage.ANALYZING,
+                ]
+            ),
         )
         .options(
-            contains_eager(LabOrderItem.test),
+            # Eagerly load the category to satisfy Pydantic
+            contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
             contains_eager(LabOrderItem.order)
             .contains_eager(LabOrder.appointment)
-            .contains_eager(Appointment.patient),
-            contains_eager(LabOrderItem.order)
-            .contains_eager(LabOrder.appointment)
-            .contains_eager(Appointment.doctor),
-            # Pre-load results to avoid lazy-loading errors in Pydantic
+            .options(
+                contains_eager(Appointment.patient), contains_eager(Appointment.doctor)
+            ),
             selectinload(LabOrderItem.radiology_result),
             selectinload(LabOrderItem.lab_result),
         )
     )
 
     result = await db.execute(stmt)
-    # .unique() is required when using contains_eager with joins
-    return result.unique().scalars().all()
+    results = result.unique().scalars().all()
+    return results
+
+
+@router.get("/active-appointments/", response_model=list[LabQueueResponse])
+async def get_all_finalized_results(db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(LabOrderItem)
+        .join(LabOrderItem.test)
+        .options(
+            # 1. Load test and category
+            joinedload(LabOrderItem.test).joinedload(Test.test_category),
+            # 2. Load the chain: Order -> Appointment -> Patient AND Phlebotomy
+            joinedload(LabOrderItem.order)
+            .joinedload(LabOrder.appointment)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.phlebotomy),  # <--- THIS FIXES THE ERROR
+                joinedload(Appointment.doctor),  # Recommended to avoid future errors
+            ),
+            # 3. Load results
+            selectinload(LabOrderItem.lab_result),
+            selectinload(LabOrderItem.radiology_result),
+        )
+        .where(LabOrderItem.status == LabStatus.COMPLETED)
+    )
+
+    result = await db.execute(stmt)
+    # unique() is vital here because we have multiple joinedloads
+    results = result.unique().scalars().all()
+    print(f"Found {len(results)} finalized records.")
+    return results
+
+
+@router.get("/item/{item_id}")
+async def get_lab_item_details(item_id: int, db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(LabOrderItem)
+        .options(
+            joinedload(LabOrderItem.test).joinedload(Test.test_category),
+            joinedload(LabOrderItem.order)
+            .joinedload(LabOrder.appointment)
+            .joinedload(Appointment.patient),
+            selectinload(LabOrderItem.lab_result),
+            selectinload(LabOrderItem.radiology_result),
+        )
+        .where(LabOrderItem.id == item_id)
+    )
+    result = await db.execute(stmt)
+    item = result.scalar_one_or_none()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Result not found")
+    return item
+
+
+@router.get("/report/{item_id}")
+async def get_radiology_report_data(item_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Fetches comprehensive data for a finalized radiology report including
+    patient, doctor, and test details.
+    """
+    stmt = (
+        select(LabOrderItem)
+        .options(
+            joinedload(LabOrderItem.test),
+            joinedload(LabOrderItem.radiology_result),
+            joinedload(LabOrderItem.order)
+            .joinedload(LabOrder.appointment)
+            .joinedload(Appointment.patient),
+            joinedload(LabOrderItem.order)
+            .joinedload(LabOrder.appointment)
+            .joinedload(Appointment.doctor),
+        )
+        .where(LabOrderItem.id == item_id)
+    )
+
+    result = await db.execute(stmt)
+    # .unique() is required when using joinedload on many-to-one relationships in some versions
+    item = result.unique().scalar_one_or_none()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Lab item not found")
+
+    if not item.radiology_result:
+        raise HTTPException(status_code=404, detail="No results found for this item")
+
+    # Return a structured dictionary or a Pydantic model
+    return {
+        "id": item.id,
+        "test_name": item.test.name,
+        "patient": item.order.appointment.patient,
+        "doctor": item.order.appointment.doctor,
+        "findings": item.radiology_result.result_value,
+        "conclusion": item.radiology_result.comments,
+        "status": item.status,
+        "finalized_at": item.radiology_result.entered_at,
+    }
+
+
+@router.get("/report/print/{item_id}", response_class=HTMLResponse)
+async def print_lab_report(
+    request: Request, item_id: int, db: AsyncSession = Depends(get_db)
+):
+    stmt = (
+        select(LabOrderItem)
+        .options(
+            joinedload(LabOrderItem.test).joinedload(Test.test_category),
+            joinedload(LabOrderItem.order)
+            .joinedload(LabOrder.appointment)
+            .joinedload(Appointment.patient),
+            joinedload(LabOrderItem.order)
+            .joinedload(LabOrder.appointment)
+            .joinedload(Appointment.doctor),
+            selectinload(LabOrderItem.lab_result),
+            selectinload(LabOrderItem.radiology_result),
+        )
+        .where(LabOrderItem.id == item_id)
+    )
+    result = await db.execute(stmt)
+    item = result.scalar_one_or_none()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    # Pass the data to a clean, printable HTML template
+    return templates.TemplateResponse(
+        "lab/report_print.html", {"request": request, "item": item}
+    )
 
 
 @router.get("/queue/{dept}", response_model=list[LabQueueResponse])
@@ -68,40 +205,36 @@ async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
+        # We need to join the category so contains_eager can see it
+        .outerjoin(Test.test_category)
         .join(LabOrderItem.order)
         .join(LabOrder.appointment)
         .join(Appointment.patient)
-        # Use outerjoin because Phlebotomy might not exist yet
         .outerjoin(Appointment.phlebotomy)
         .options(
-            contains_eager(LabOrderItem.test),
+            # Use contains_eager for everything since you joined them manually
+            contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
             contains_eager(LabOrderItem.order)
             .contains_eager(LabOrder.appointment)
-            .contains_eager(Appointment.patient),
-            # Load the phlebotomy record into the appointment object
-            contains_eager(LabOrderItem.order)
-            .contains_eager(LabOrder.appointment)
-            .contains_eager(Appointment.phlebotomy),
+            .options(
+                contains_eager(Appointment.patient),
+                contains_eager(Appointment.phlebotomy),
+            ),
         )
     )
 
-    if dept == DepartmentType.phlebotomy:
-        # Only tests that need a needle
-        stmt = stmt.where(Test.requires_phlebotomy == True)  # noqa: E712
+    if dept == "phlebotomy":
+        stmt = stmt.where(
+            Test.requires_phlebotomy == True,
+            LabOrderItem.status == LabStatus.AWAITING_SAMPLE,
+        )
     else:
-        # Radiology / Laboratory Investigations that don't need a sample
-        stmt = stmt.where(Test.requires_phlebotomy == False)  # noqa: E712
-
-    # Only show items that aren't finished yet
-    stmt = stmt.where(
-        LabOrderItem.status.in_(
-            [
-                PhlebotomyStatus.awaiting_sample,
-                # PhlebotomyStatus.awaiting_results,
-                PhlebotomyStatus.in_progress,
-            ]
+        stmt = stmt.where(
+            Test.requires_phlebotomy == False,
+            LabOrderItem.status.in_(
+                [LabStatus.AWAITING_RESULTS, LabStatus.AWAITING_APPROVAL]
+            ),
         )
-    )
 
     result = await db.execute(stmt)
     return result.unique().scalars().all()

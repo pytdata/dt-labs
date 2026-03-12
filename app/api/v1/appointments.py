@@ -17,7 +17,7 @@ from app.db.session import get_db
 from app.models import Patient, association
 from app.models.billing import Invoice, InvoiceItem, Payment
 from app.models.catalog import Phlebotomy, Priority, Sample, SampleStatus, Test
-from app.models.enums import LabStage
+from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
 from app.models.users import User
 from app.schemas.appointment import (
@@ -58,10 +58,10 @@ async def _next_test_no(db: AsyncSession) -> str:
 @router.post("/")
 async def create_appointment(
     data: AppointmenCreate,
-    # current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     try:
+        # Use begin() for atomic transaction: everything succeeds or everything fails
         async with db.begin():
             # 1. Fetch Tests
             stmt = select(Test).where(Test.id.in_(data.test_ids))
@@ -80,30 +80,28 @@ async def create_appointment(
                 notes=data.notes,
                 mode_of_payment=data.mode_of_payment,
                 total_price=total_amount,
-                # Link tests to the appointment if your model supports the relationship
-                # tests=tests,
             )
             db.add(appointment)
-            await db.flush()  # Gets appointment.id
+            await db.flush()
 
-            # 3. Create Lab Order (The Clinical "Folder")
+            # 3. Create Lab Order
             order = LabOrder(
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
-                status="pending",
+                status="pending",  # This is LabOrder level, separate from items
             )
             db.add(order)
-            await db.flush()  # Gets order.id
+            await db.flush()
 
-            # 4. Create Invoice (The Financial "Folder")
+            # 4. Create Invoice
             invoice = Invoice(
-                invoice_no=f"INV-{appointment.id}",
+                invoice_no=f"INV-{appointment.id}-{datetime.now().strftime('%M%S')}",
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
                 total_amount=total_amount,
                 amount_paid=data.total_price,
                 balance=total_amount - data.total_price,
-                status="unpaid",  # Or logic based on balance
+                status="unpaid" if (total_amount - data.total_price) > 0 else "paid",
                 payment_mode=data.mode_of_payment,
             )
             db.add(invoice)
@@ -111,7 +109,7 @@ async def create_appointment(
 
             # 5. Process Tests into Lab Order Items
             for test in tests:
-                # A. Create Invoice Item (Billing)
+                # A. Billing Item
                 db.add(
                     InvoiceItem(
                         invoice_id=invoice.id,
@@ -123,26 +121,26 @@ async def create_appointment(
                     )
                 )
 
-                # B. Determine initial Status and Stage
-                # If it's a blood/specimen test, it needs 'sampling'
+                # B. ENUM LOGIC: Determine clinical flow
                 if test.requires_phlebotomy:
-                    item_status = "awaiting_sample"
+                    # Blood tests go to Phlebotomy first
+                    item_status = LabStatus.AWAITING_SAMPLE
                     item_stage = LabStage.SAMPLING
                 else:
-                    # If it's Radiology (X-Ray, Scan), skip sampling and go to queue
-                    item_status = "awaiting_results"
+                    # Radiology/Scans skip sampling and go straight to 'analysis' (RUNNING)
+                    item_status = LabStatus.AWAITING_RESULTS
                     item_stage = LabStage.RUNNING
 
-                # C. Create the Task
+                # C. The Task Record
                 order_item = LabOrderItem(
                     order_id=order.id,
                     test_id=test.id,
                     status=item_status,
-                    stage=item_stage,  # <--- Explicitly setting the workflow stage
+                    stage=item_stage,
                 )
                 db.add(order_item)
 
-            # 6. Record Initial Payment
+            # 6. Record Initial Payment if any
             if data.total_price > 0:
                 db.add(
                     Payment(
@@ -153,17 +151,19 @@ async def create_appointment(
                     )
                 )
 
-        # Transaction auto-commits here due to 'async with db.begin()'
         return {
             "status": "success",
             "appointment_id": appointment.id,
             "order_id": order.id,
+            "invoice_id": invoice.id,
         }
 
     except Exception as e:
-        # rollback is handled automatically by the 'async with db.begin()' context on error
-        print(f"ERROR creating appointment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Transaction rolls back automatically here
+        print(f"ERROR: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to create appointment and orders"
+        )
 
 
 @router.get("/", response_model=list[AppointmentResponse])

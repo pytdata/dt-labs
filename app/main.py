@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.v1.router import router as api_router
@@ -32,4 +33,5 @@ def create_app() -> FastAPI:
     return app
 
 
+# templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 app = create_app()

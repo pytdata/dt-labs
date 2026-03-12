@@ -1,116 +1,203 @@
-const labResultsContainerEl = document.querySelector(".lab__container");
-const totalLabResultsEl = document.querySelector(".lab__results__total");
+const laboratoryURL = "/api/v1/lab/active-appointments/";
 
-let labResultsURL = "/api/v1/patients/lab-results";
+// DOM ELEMENTS
+const labTestsContainerEl = document.querySelector(".labtest__container");
+const totalLabTestsEl = document.querySelector("#total__test__count");
 
 (async function init() {
-  const res = await getRemoteData(labResultsURL);
-  totalLabResultsEl.textContent = res.length;
-  console.log(res.length);
-    render(res);
+  const res = await getRemoteData(laboratoryURL);
+  console.log(res, "data received");
+  render(res);
 })();
 
 /**
- * Fetch all lab-results data
- * @returns Array[objects]
+ * Main Render Function
  */
-async function getRemoteData(url) {
-  try {
-    const res = await fetch(url);
+function render(labList) {
+ if (!labList) return;
+  totalLabTestsEl.textContent = labList.length;
 
-    if (!res.ok) throw new Error("Failed to fetch data");
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    console.error(error);
+  // 1. Generate the HTML string
+  const renderedHTML = labList
+    .map((lab) => renderData(lab))
+    .join("");
+
+  // 2. Insert into the DOM
+  labTestsContainerEl.innerHTML = renderedHTML;
+
+  // 3. Re-initialize the Table (Vanilla JS approach)
+  // We check if a DataTable instance already exists and refresh it
+  const tableEl = document.querySelector(".datatable");
+  
+  if (tableEl) {
+    // If you are using simple-datatables:
+    if (window.simpleDatatables) {
+        new simpleDatatables.DataTable(tableEl);
+    } 
+    // If you ARE using jQuery but it's just not loaded yet, 
+    // you'd need to add the <script src="..."> for jQuery in your HTML.
   }
 }
 
 /**
- * Render a lsit of object as html elements and display in DOM
- * @param {Array[Object]} labResultsList
+ * Renders an individual Lab/Radiology item into a table row.
  */
-function render(labResultsList) {
-  // render patients data into html and join the results into an html string
-  const renderedHTML = labResultsList
-    .map((labResults) => {
-      return renderData(labResults);
-    })
-    .join("");
+function renderData(item) {
+  const statusColors = {
+    "COMPLETED": "badge-soft-success text-success border-success",
+    "APPROVED": "badge-soft-info text-info border-info"
+  };
+  
+  const statusClass = statusColors[item.status] || "badge-soft-success";
+  const statusText = "FINALIZED";
 
-  // insert data into DOM
-  labResultsContainerEl.innerHTML = renderedHTML;
+  // Mapping data from your JSON structure
+  const patient = item.order.appointment.patient;
+  const appointmentDate = item.order.appointment.appointment_at;
+
+  return `  
+  <tr class="align-middle">
+    <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
+    
+    <td class="fw-bold text-dark">#ORD-${item.id}</td>
+    
+    <td>
+        <div class="d-flex flex-column">
+            <span class="text-dark fw-medium">${patient.full_name}</span>
+            <small class="text-muted">${patient.patient_no}</small>
+        </div>
+    </td>
+
+    <td>${patient.sex || 'N/A'}</td>
+
+    <td>${formatDate(appointmentDate)}</td>
+
+    <td>Dr. ${item.order.appointment.doctor?.full_name || 'System'}</td>
+
+    <td>${item.test.name}</td>
+
+    <td><span class="badge badge-md ${statusClass}">${statusText}</span></td>
+
+    <td class="text-end">
+        <div class="d-flex align-items-center justify-content-end gap-2">
+            <button class="btn btn-sm btn-light" onclick="viewFinalReport(${item.id})">
+                <i class="ti ti-eye me-1"></i> View
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="printResult(${item.id})">
+                <i class="ti ti-printer"></i>
+            </button>
+        </div>
+    </td>
+</tr>`;
+}
+// --- MODAL HELPERS ---
+
+window.openStandardResultModal = function(itemId, testName) {
+    const modalEl = document.getElementById('standardResultModal'); 
+    console.log(modalEl)
+    
+    // Debugging: This will print 'null' in the console if it's still missing
+    console.log("Looking for modal... found:", modalEl);
+
+    if(!modalEl) {
+        return alert("Error: The modal with ID 'standardResultModal' is missing from this HTML page.");
+    }
+    
+    // Set values
+    const idInput = document.querySelector("#standard_order_item_id");
+    const nameDisplay = document.querySelector("#standard_test_name_display");
+
+    if(idInput) idInput.value = itemId;
+    if(nameDisplay) nameDisplay.innerText = testName;
+    
+    // Open modal
+    const myModal = new bootstrap.Modal(modalEl);
+    myModal.show();
 }
 
-/**
- * Render a lsit of object as html elements and display in DOM
- * @param {Array[Object]} labResultsList
- */
-function render(labResultsList) {
-  // render patients data into html and join the results into an html string
-  const renderedHTML = labResultsList
-    .map((labReults) => {
-      return renderData(labReults);
-    })
-    .join("");
 
-  // insert data into DOM
-  labResultsContainerEl.innerHTML = renderedHTML;
+window.openRadiologyResultModal = function(itemId, testName) {
+    const modalEl = document.getElementById('radiologyResultModal');
+    if(!modalEl) return alert("Radiology Result Modal not found in HTML");
+    
+    document.getElementById('rad_order_item_id').value = itemId;
+    document.getElementById('rad_test_name_display').innerText = testName;
+    
+    new bootstrap.Modal(modalEl).show();
 }
 
-/**
- * Renders the patient data into html.
- * @param {Map} patient
- * @returns htmlement
- */
-function renderData(latResults) {
-  console.log(latResults)
-  const htmlElement = `
-       <tr>
-            <td>
-                <div class="form-check form-check-md">
-                    <input class="form-check-input" type="checkbox">
-                </div>
-            </td>
-            <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TE0025</a></td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <a href="patient-details.html" class="avatar avatar-xs me-2">
-                        <img src="/static/img/users/avatar-5.jpg" alt="img" class="rounded">
-                    </a>
-                    <div>
-                        <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">James Carter</a></h6>
-                    </div>
-                </div>
-            </td>
-            <td>Male</td>
-            <td>17 Jun 2025</td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                        <img src="/static/img/doctors/doctor-01.jpg" alt="img" class="rounded">
-                    </a>
-                    <div>
-                        <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Andrew Clark</a></h6>
-                    </div>
-                </div>
-            </td>
-            <td>Blood Test</td>
-            <td><span class="badge badge-md badge-soft-success border border-success text-success">Received</span></td>
-            <td class="text-end">
-                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                <ul class="dropdown-menu p-2">
-                    <li>
-                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                    </li>
-                </ul>
-            </td>
-        </tr>
+window.viewFinalReport = async function(itemId) {
+    try {
+        const res = await fetch(`/api/v1/lab/item/${itemId}`);
+        if (!res.ok) throw new Error("Could not fetch report details.");
+        const data = await res.json();
+        
+        const modalEl = document.getElementById('viewReportModal');
+        if (!modalEl) return console.error("viewReportModal missing");
 
-  `;
+        // Set Header
+        document.querySelector("#view_test_name").innerText = data.test.name;
+        
+        // Toggle Display based on Category
+        const isRad = data.test.test_category?.category_name === "Radiology";
+        document.getElementById('lab_result_display').style.display = isRad ? 'none' : 'block';
+        document.getElementById('rad_result_display').style.display = isRad ? 'block' : 'none';
 
-  return htmlElement;
+        if (isRad) {
+            // Populate Radiology fields
+            document.querySelector("#view_rad_findings").innerText = data.radiology_result?.result_value || "No findings recorded.";
+            document.querySelector("#view_rad_impression").innerText = data.radiology_result?.comments || "N/A";
+        } else {
+            // Populate Lab fields
+            document.querySelector("#view_result_value").innerText = `${data.lab_result?.result_value || '--'} ${data.lab_result?.unit || ''}`;
+            document.querySelector("#view_ref_range").innerText = data.lab_result?.reference_range || 'Normal';
+        }
+
+        document.querySelector("#view_remarks").innerText = data.lab_result?.remarks || data.radiology_result?.comments || "No additional remarks.";
+
+        // Show Modal
+        new bootstrap.Modal(modalEl).show();
+
+    } catch (error) {
+        console.error(error);
+        alert("Error loading report: " + error.message);
+    }
+}
+
+
+window.printResult = function(itemId) {
+    // Usually, you'd want to open a dedicated print-friendly URL
+    const printUrl = `/api/v1/lab/report/print/${itemId}`;
+    const printWindow = window.open(printUrl, '_blank');
+    printWindow.focus();
+};
+
+
+// A simple helper to handle empty data
+const cleanText = (val) => val && val !== "null" ? val : "--";
+
+// Inside your viewFinalReport function:
+document.querySelector("#view_rad_findings").innerText = cleanText(data.radiology_result?.result_value);
+
+// --- UTILITIES ---
+
+async function getRemoteData(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch data.");
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    alert("Error loading laboratory queue.");
+  }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "N/A";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }

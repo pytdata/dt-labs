@@ -7,6 +7,7 @@ const containerEl = document.querySelector(".lab__container");
 
 (async function init() {
     const data = await fetchData(radiologyQueueURL);
+    console.log("RADIOLOGY DATA: >>>>>>> ", data)
     if (data) renderRadiologyTable(data);
 })();
 
@@ -22,7 +23,7 @@ async function fetchData(url) {
 }
 
 function renderRadiologyTable(items) {
-    const containerEl = document.getElementById('radiology_queue_container'); // Ensure this ID matches your HTML
+    const containerEl = document.querySelector('.lab__container'); 
     if (!containerEl) return;
     
     if (!items || items.length === 0) {
@@ -34,7 +35,7 @@ function renderRadiologyTable(items) {
         const appointment = item.order?.appointment || {};
         const patient = appointment.patient || {};
         const doctor = appointment.doctor || {};
-        const testNameEscaped = item.test.name.replace(/'/g, "\\'"); // Escaping for JS onclick
+        const testNameEscaped = item.test.name.replace(/'/g, "\\'"); 
         
         const dateSource = appointment.appointment_at || item.entered_at;
         const displayDate = dateSource 
@@ -42,15 +43,27 @@ function renderRadiologyTable(items) {
             : 'Pending';
 
         // --- DYNAMIC STATUS & ACTION LOGIC ---
+        // Normalize status for comparison
+        const currentStatus = item.status.toUpperCase();
+        const currentStage = item.stage.toLowerCase();
+
         let statusLabel = item.status.replace('_', ' ').toUpperCase();
-        let badgeClass = 'badge-soft-warning border-warning text-warning'; // Default: Awaiting Results
-        let actionHtml = '';
+        let badgeClass = 'badge-soft-warning border-warning text-warning';
+        let primaryActionBtn = ''; // Direct button in the row
+        let dropdownActionHtml = ''; // Inside the three-dot menu
 
         // Case 1: Result entered, needs Senior approval
-        if (item.status === 'awaiting_approval' || item.stage === 'analyzing') {
+        if (currentStatus === 'AWAITING_APPROVAL' || currentStage === 'review' || currentStage === 'analyzing') {
             badgeClass = 'badge-soft-info border-info text-info';
             statusLabel = 'AWAITING APPROVAL';
-            actionHtml = `
+            
+            primaryActionBtn = `
+                <button class="btn btn-sm btn-info text-white me-2 d-flex align-items-center" 
+                        onclick="reviewReport(${item.id}, '${testNameEscaped}')">
+                    <i class="ti ti-checklist me-1"></i> Review
+                </button>`;
+                
+            dropdownActionHtml = `
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center text-info" 
                        onclick="reviewReport(${item.id}, '${testNameEscaped}')">
@@ -59,10 +72,17 @@ function renderRadiologyTable(items) {
                 </li>`;
         } 
         // Case 2: New request, needs findings
-        else if (item.status === 'awaiting_results' || item.stage === 'running') {
+        else if (currentStatus === 'AWAITING_RESULTS' || currentStage === 'analysis' || currentStage === 'running') {
             badgeClass = 'badge-soft-warning border-warning text-warning';
             statusLabel = 'PENDING SCAN';
-            actionHtml = `
+            
+            primaryActionBtn = `
+                <button class="btn btn-sm btn-primary me-2 d-flex align-items-center" 
+                        onclick="openReportModal(${item.id}, '${testNameEscaped}')">
+                    <i class="ti ti-report-medical me-1"></i> Findings
+                </button>`;
+
+            dropdownActionHtml = `
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center text-primary" 
                        onclick="openReportModal(${item.id}, '${testNameEscaped}')">
@@ -71,10 +91,17 @@ function renderRadiologyTable(items) {
                 </li>`;
         } 
         // Case 3: Fully verified
-        else if (item.status === 'completed' || item.stage === 'complete') {
+        else if (currentStatus === 'COMPLETED' || currentStage === 'complete') {
             badgeClass = 'badge-soft-success border-success text-success';
             statusLabel = 'FINALIZED';
-            actionHtml = `
+            
+            primaryActionBtn = `
+                <button class="btn btn-sm btn-outline-success me-2 d-flex align-items-center" 
+                        onclick="viewFinalReport(${item.id})">
+                    <i class="ti ti-file-certificate me-1"></i> View
+                </button>`;
+
+            dropdownActionHtml = `
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" onclick="viewFinalReport(${item.id})">
                         <i class="ti ti-file-certificate me-2"></i>View Final Report
@@ -114,19 +141,23 @@ function renderRadiologyTable(items) {
             </td>
             <td><span class="badge badge-md ${badgeClass} border">${statusLabel}</span></td>
             <td class="text-end">
-                <div class="dropdown">
-                    <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown">
-                        <i class="ti ti-dots-vertical"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
-                        ${actionHtml}
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a href="javascript:void(0);" class="dropdown-item text-danger d-flex align-items-center">
-                                <i class="ti ti-trash me-2"></i>Cancel Request
-                            </a>
-                        </li>
-                    </ul>
+                <div class="d-flex align-items-center justify-content-end">
+                    ${primaryActionBtn}
+
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown">
+                            <i class="ti ti-dots-vertical"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
+                            ${dropdownActionHtml}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item text-danger d-flex align-items-center">
+                                    <i class="ti ti-trash me-2"></i>Cancel Request
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </td>
         </tr>`;
@@ -158,16 +189,22 @@ window.openReportModal = function(itemId, testName) {
 
 
 // 6. SUBMISSION
-
 async function saveRadiologyResult() {
     const findings = document.getElementById('rad_findings').value;
     const conclusion = document.getElementById('rad_conclusion').value;
     const itemId = document.getElementById('rad_order_item_id').value;
 
+    // Validation
     if (!findings.trim()) {
-        alert("Please enter clinical findings.");
+        alert("Please enter clinical findings before submitting.");
         return;
     }
+
+    // UI Feedback: Disable button to prevent double submission
+    const submitBtn = document.getElementById('btn_save_result');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Submitting...`;
 
     try {
         const response = await fetch('/api/v1/radiology/submit-result', {
@@ -180,23 +217,33 @@ async function saveRadiologyResult() {
             })
         });
 
-        if (response.ok) {
-            // 1. Hide the modal using the Bootstrap instance
-            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('radiologyResultModal'));
-            modalInstance.hide();
+        const result = await response.json();
 
-            // 2. Refresh the table data (This removes the completed item from the list)
+        if (response.ok) {
+            // 1. Close Modal
+            const modalEl = document.getElementById('radiologyResultModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+
+            // 2. Refresh the Queue (The item will now have a different status/color)
             const data = await fetchData(radiologyQueueURL);
             renderRadiologyTable(data);
 
-            // 3. Clear the modal inputs for the next patient
-            document.getElementById('rad_findings').value = '';
-            document.getElementById('rad_conclusion').value = '';
+            // 3. Optional: Success Notification
+            console.log("Success:", result.message);
+        } else {
+            alert("Error: " + (result.detail || "Failed to save results"));
         }
     } catch (error) {
-        console.error("Save error:", error);
+        console.error("Network Error:", error);
+        alert("A network error occurred. Please try again.");
+    } finally {
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 }
+
 
 window.reviewReport = async function(itemId, testName) {
     const modalEl = document.getElementById('radiologyResultModal');
@@ -204,7 +251,7 @@ window.reviewReport = async function(itemId, testName) {
 
     try {
         // 1. Fetch the existing result data from the backend
-        const response = await fetch(`/api/v1/lab/radiology/result-by-item/${itemId}`);
+        const response = await fetch(`/api/v1/radiology/result-by-item/${itemId}`);
         if (!response.ok) throw new Error("Failed to fetch report data");
         
         const resultData = await response.json();
@@ -240,7 +287,7 @@ window.finalizeReport = async function() {
     }
 
     try {
-        const response = await fetch(`/api/v1/lab/finalize-report/${itemId}`, {
+        const response = await fetch(`/api/v1/radiology/finalize-report/${itemId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -265,5 +312,78 @@ window.finalizeReport = async function() {
     } catch (error) {
         console.error("Finalization error:", error);
         alert("A network error occurred.");
+    }
+};
+
+
+window.viewFinalReport = async function(itemId) {
+    try {
+        const response = await fetch(`/api/v1/lab/report/${itemId}`);
+        if (!response.ok) throw new Error("Could not fetch report data");
+        
+        const data = await response.json();
+        const patient = data.patient;
+        const doctor = data.doctor || { full_name: "Self-Referral" };
+
+        // Open new window for printing
+        const printWindow = window.open('', '_blank', 'width=900,height=800');
+        
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Report - ${patient.first_name} ${patient.surname}</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 50px; color: #333; }
+                    .report-header { text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; margin-bottom: 30px; }
+                    .patient-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+                    .section-title { font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; margin-top: 20px; padding-bottom: 5px; color: #2c3e50; }
+                    .content { padding: 10px 0; white-space: pre-line; line-height: 1.6; }
+                    .footer { margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; font-size: 0.9rem; font-style: italic; }
+                    @media print { .btn-print { display: none; } }
+                    .btn-print { background: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; float: right; }
+                </style>
+            </head>
+            <body>
+                <button class="btn-print" onclick="window.print()">Print PDF</button>
+                <div class="report-header">
+                    <h2>DATA GLOW DIAGNOSTICS</h2>
+                    <p>Accra, Ghana | Digital Health Excellence</p>
+                </div>
+                
+                <div class="patient-box">
+                    <div>
+                        <strong>Patient:</strong> ${patient.first_name} ${patient.surname} <br>
+                        <strong>ID:</strong> ${patient.patient_no} | <strong>Gender:</strong> ${patient.sex || patient.gender}
+                    </div>
+                    <div style="text-align: right;">
+                        <strong>Date:</strong> ${new Date(data.finalized_at).toLocaleDateString('en-GB')} <br>
+                        <strong>Referrer:</strong> Dr. ${doctor.full_name}
+                    </div>
+                </div>
+
+                <div class="section-title">EXAMINATION</div>
+                <div class="content"><strong>${data.test_name}</strong></div>
+
+                <div class="section-title">FINDINGS / OBSERVATIONS</div>
+                <div class="content">${data.findings}</div>
+
+                <div class="section-title">IMPRESSION / CONCLUSION</div>
+                <div class="content"><strong>${data.conclusion || 'No specific conclusion provided.'}</strong></div>
+
+                <div class="footer">
+                    This is a digitally verified report. No physical signature is required. <br>
+                    Verified on: ${new Date(data.finalized_at).toLocaleString()}
+                </div>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+
+    } catch (error) {
+        console.error("Print error:", error);
+        alert("Failed to generate the report. Please ensure the item is finalized.");
     }
 };

@@ -12,9 +12,9 @@ from sqlalchemy import (
     JSON,
     Time,
 )
-from sqlalchemy import Enum as SAEnum
+from sqlalchemy import Enum as SQLEnum
 from app.models.billing import Invoice
-from app.models.enums import LabStage
+from app.models.enums import LabStage, LabStatus
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -198,9 +198,15 @@ class LabOrderItem(Base):
         ForeignKey("samples.id", ondelete="SET NULL"), index=True, nullable=True
     )
 
-    status: Mapped[str] = mapped_column(String(30), default="awaiting_sample")
-    stage: Mapped[str] = mapped_column(default=LabStage.BOOKING)
+    # Store as String(50), but interact via LabStatus Enum
+    status: Mapped[LabStatus] = mapped_column(
+        String(50), default=LabStatus.AWAITING_SAMPLE, nullable=False
+    )
 
+    # Store as String(50), but interact via LabStage Enum
+    stage: Mapped[LabStage] = mapped_column(
+        String(50), default=LabStage.BOOKING, nullable=False
+    )
     assigned_to_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )

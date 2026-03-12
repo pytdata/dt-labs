@@ -1,83 +1,78 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import joinedload, selectinload
 from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Sample
-from app.models.enums import LabStage
+from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrderItem, RadiologyLabResult
 
 
-from app.schemas.lab import RadiologyResultResponse, RadiologyResultSubmit
+from app.schemas.lab import RadiologyResultResponse, RadiologySubmitRequest
 
 router = APIRouter()
 
 
 @router.post("/submit-result")
 async def submit_radiology_result(
-    payload: RadiologyResultSubmit,
+    data: RadiologySubmitRequest,
     db: AsyncSession = Depends(get_db),
+    # current_user: User = Depends(get_current_user),
 ):
-    # 1. Fetch the LabOrderItem
-    # Use select(...).with_for_update() if you want to prevent
-    # two scientists from submitting the same result simultaneously.
-    stmt = select(LabOrderItem).where(LabOrderItem.id == payload.order_item_id)
-    result = await db.execute(stmt)
-    item = result.scalar_one_or_none()
-
-    if not item:
-        raise HTTPException(status_code=404, detail="Radiology test item not found")
-
-    # 2. Prevent duplicate results if one already exists
-    # (Optional but recommended)
-    check_stmt = select(RadiologyLabResult).where(
-        RadiologyLabResult.order_item_id == item.id
-    )
-    existing = await db.execute(check_stmt)
-    if existing.scalar_one_or_none():
-        raise HTTPException(
-            status_code=400, detail="Result already exists for this item"
+    # 1. Update the Order Item Status & Stage
+    # This moves it from 'AWAITING_RESULTS' to 'AWAITING_APPROVAL'
+    stmt = (
+        update(LabOrderItem)
+        .where(LabOrderItem.id == data.order_item_id)
+        .values(
+            status=LabStatus.AWAITING_APPROVAL,
+            stage=LabStage.ANALYZING,  # This represents the "Review" phase
+            # entered_by_user_id=current_user.id,
         )
-
-    # 3. Create the New LabResult
-    new_result = RadiologyLabResult(
-        order_item_id=item.id,
-        result_value=payload.findings,
-        comments=payload.conclusion,
-        status="pending",
-        # entered_by_user_id=current_user.id, # Uncomment when Auth is ready
     )
+    await db.execute(stmt)
 
-    # 4. Update the LabOrderItem Status
-    item.status = "awaiting_approval"
-    item.stage = LabStage.ANALYZING
-
+    # 2. Save the Long-form Findings
+    new_result = RadiologyLabResult(
+        order_item_id=data.order_item_id,
+        result_value=data.findings,
+        comments=data.conclusion,
+        # entered_by_user_id=current_user.id,
+        status="pending_verification",
+    )
     db.add(new_result)
 
     try:
         await db.commit()
-        # We refresh to ensure new_result.id is loaded before the session ends
-        await db.refresh(new_result)
-
-        return {
-            "message": "Radiology report submitted successfully",
-            "id": new_result.id,
-            "order_item_id": item.id,
-        }
     except Exception as e:
         await db.rollback()
-        # Log the error properly here
-        print(f"Database Error: {e}")
-        raise HTTPException(status_code=500, detail="Could not save report to database")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    return {"status": "success", "message": "Results submitted for review"}
+
+
+@router.get("/result-by-item/{item_id}")
+async def get_radiology_result(item_id: int, db: AsyncSession = Depends(get_db)):
+    """Fetches findings so a Senior can review them in the modal."""
+    stmt = select(RadiologyLabResult).where(RadiologyLabResult.order_item_id == item_id)
+    result = await db.execute(stmt)
+    report = result.scalar_one_or_none()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Report findings not found")
+
+    return report
 
 
 @router.post("/finalize-report/{item_id}")
-async def finalize_radiology_report(item_id: int, db: AsyncSession = Depends(get_db)):
-    """
-    Finalizes a radiology report, moves it out of the active queue,
-    and marks the results as verified.
-    """
-    # 1. Fetch the LabOrderItem with its related result
+async def finalize_radiology_report(
+    item_id: int,
+    db: AsyncSession = Depends(get_db),
+    # current_user: User = Depends(get_current_user),  # Crucial for medical audit trails
+):
+    # 1. Fetch with selectinload (matches your relationship name)
     stmt = (
         select(LabOrderItem)
         .options(selectinload(LabOrderItem.radiology_result))
@@ -89,7 +84,7 @@ async def finalize_radiology_report(item_id: int, db: AsyncSession = Depends(get
     if not item:
         raise HTTPException(status_code=404, detail="Radiology item not found")
 
-    # 2. Check if the result exists before finalizing
+    # 2. Safety check: Ensure findings exist
     if not item.radiology_result:
         raise HTTPException(
             status_code=400,
@@ -97,15 +92,16 @@ async def finalize_radiology_report(item_id: int, db: AsyncSession = Depends(get
         )
 
     try:
-        # 3. Update the LabOrderItem
-        # This moves it out of the 'RUNNING'/'ANALYZING' filter in your queue
-        item.status = "completed"
-        item.stage = LabStage.ENDED
+        # 3. Update Order Item Status
+        # Using the Enum ensures consistency with your queue filter
+        item.status = LabStatus.COMPLETED
+        item.stage = LabStage.COMPLETE  # Or LabStage.ENDED per your Enum
 
-        # 4. Update the Radiology Result Record
+        # 4. Finalize the Result Record (The Digital Signature)
         item.radiology_result.status = "verified"
-        # item.radiology_result.verified_at = datetime.now()
-        # item.radiology_result.verified_by = current_user.id
+        # Since your model has entered_by_user_id, we can track who finalized it here
+        # Or add a 'verified_by_id' to your RadiologyLabResult model later
+        item.radiology_result.entered_at = datetime.now()
 
         await db.commit()
 
@@ -117,10 +113,9 @@ async def finalize_radiology_report(item_id: int, db: AsyncSession = Depends(get
 
     except Exception as e:
         await db.rollback()
-        print(f"Finalization Error: {e}")
-        raise HTTPException(
-            status_code=500, detail="Internal server error during finalization"
-        )
+        # Log the error properly for debugging
+        print(f"Finalization Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to finalize report")
 
 
 @router.get(

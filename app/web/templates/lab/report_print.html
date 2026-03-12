@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab Report - {{ item.order.appointment.patient.full_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { padding: 20px; }
+        }
+        .report-header { border-bottom: 2px solid #333; margin-bottom: 20px; }
+        .patient-info { background: #f8f9fa; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body onload="window.print()"> <div class="container mt-5">
+        <div class="no-print mb-4">
+            <button onclick="window.print()" class="btn btn-primary">Print Now</button>
+            <button onclick="window.close()" class="btn btn-secondary">Close</button>
+        </div>
+
+        <div class="report-header d-flex justify-content-between align-items-center">
+            <div>
+                <h2>HEALTHCARE CLINIC</h2>
+                <p class="text-muted">123 Medical Way, Health City<br>Tel: +123 456 789</p>
+            </div>
+            <div class="text-end">
+                <h4>OFFICIAL TEST REPORT</h4>
+                <p>Order ID: #ORD-{{ item.id }}<br>Date: {{ item.created_at.strftime('%d %b %Y') }}</p>
+            </div>
+        </div>
+
+        <div class="patient-info row mb-4">
+            <div class="col-6">
+                <strong>Patient:</strong> {{ item.order.appointment.patient.full_name }}<br>
+                <strong>Patient ID:</strong> {{ item.order.appointment.patient.patient_no }}
+            </div>
+            <div class="col-6 text-end">
+                <strong>Referrer:</strong> Dr. {{ item.order.appointment.doctor.full_name }}<br>
+                <strong>Gender/Age:</strong> {{ item.order.appointment.patient.sex }} / {{ item.order.appointment.patient.age }}
+            </div>
+        </div>
+
+        <h4 class="text-center text-decoration-underline mb-4">{{ item.test.name }}</h4>
+
+        <div class="results-section">
+            {% if item.radiology_result %}
+                <h5>FINDINGS:</h5>
+                <p>{{ item.radiology_result.result_value }}</p>
+                <h5>IMPRESSION:</h5>
+                <p><strong>{{ item.radiology_result.comments }}</strong></p>
+            {% elif item.lab_result %}
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Result</th>
+                            <th>Reference Range</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ item.test.name }}</td>
+                            <td><strong>{{ item.lab_result.result_value }} {{ item.lab_result.unit }}</strong></td>
+                            <td>{{ item.lab_result.reference_range }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="mt-3"><strong>Technician Remarks:</strong> {{ item.lab_result.remarks or 'No remarks' }}</p>
+            {% endif %}
+        </div>
+
+        <div class="footer mt-5 pt-5 border-top d-flex justify-content-between">
+            <p>Report Generated on: {{ item.created_at.now().strftime('%d %b %Y %H:%M') }}</p>
+            <div class="text-center">
+                <br><br>
+                _______________________<br>
+                Authorized Signature
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -98,6 +98,8 @@ class QueueAppointment(BaseModel):
     patient: QueuePatient
     # Add this! It can be None if the session hasn't started yet
     phlebotomy: Optional[QueuePhlebotomy] = None
+    appointment_at: datetime
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -107,12 +109,31 @@ class QueueOrder(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CategoryResponse(BaseModel):
+    id: int
+    category_name: str
+    model_config = ConfigDict(from_attributes=True)
+
+
 class TestResponse(BaseModel):
     id: int
     name: str
     sample_type: Optional[str] = None
+    # Ensure this matches the relationship name in your Test model
+    test_category: Optional[CategoryResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# class TestResponse(BaseModel):
+#     id: int
+#     name: str
+#     sample_type: Optional[str] = None
+#     requires_phlebotomy: bool  # Helpful for the JS logic we wrote
+#     # Match the attribute name in your SQLAlchemy model
+#     test_category: Optional[CategoryResponse] = None
+
+#     model_config = ConfigDict(from_attributes=True)
 
 
 class LabQueueResponse(BaseModel):
@@ -181,6 +202,7 @@ class LabOrderBaseResponse(BaseModel):
 class LabQueueResponse2(BaseModel):
     id: int
     status: str
+    stage: str
     entered_at: Optional[datetime] = Field(None, alias="entered_at")
     test: TestResponse
     order: LabOrderBaseResponse
@@ -210,3 +232,9 @@ class RadiologyResultSubmit(BaseModel):
     conclusion: Optional[str] = None  # The short "Impression"
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class RadiologySubmitRequest(BaseModel):
+    order_item_id: int
+    findings: str
+    conclusion: Optional[str] = None
