@@ -80,6 +80,7 @@ async def create_appointment(
                 notes=data.notes,
                 mode_of_payment=data.mode_of_payment,
                 total_price=total_amount,
+                tests=tests,
             )
             db.add(appointment)
             await db.flush()

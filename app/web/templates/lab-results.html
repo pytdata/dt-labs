@@ -36,6 +36,15 @@
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
 
+    <style>
+        .bg-danger-light {
+            background-color: rgba(255, 0, 0, 0.04) !important;
+        }
+        .bg-success-soft {
+            background-color: rgba(40, 199, 111, 0.1);
+        }
+    </style>
+
 </head>
 
 <body>
@@ -1024,49 +1033,71 @@
 
 <!-- View modal -->
 <div class="modal fade" id="viewReportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title">Patient Test Report</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <h6 class="text-uppercase text-muted small fw-bold">Investigation</h6>
-                    <h4 id="view_test_name" class="text-primary mr-0"></h4>
+    <div class="modal-dialog modal-xl modal-dialog-centered"> 
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-dark text-white py-3">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-report-medical fs-2 me-2 text-primary"></i>
+                    <h5 class="modal-title fw-bold" id="view_test_name">Investigation Report</h5>
                 </div>
-                
-                <div class="card bg-light border-0">
-                    <div class="card-body">
-                        <div id="lab_result_display" style="display: none;">
-                            <div class="row text-center">
-                                <div class="col-6">
-                                    <label class="small text-muted">Result</label>
-                                    <p class="h4 mb-0" id="view_result_value"></p>
-                                </div>
-                                <div class="col-6 border-start">
-                                    <label class="small text-muted">Reference</label>
-                                    <p class="h4 mb-0" id="view_ref_range"></p>
-                                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-4 bg-light-subtle">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body py-3">
+                        <div class="row text-center text-md-start">
+                            <div class="col-md-4 border-end-md">
+                                <label class="text-uppercase small fw-bold text-muted mb-1 d-block">Report For</label>
+                                <span id="header_patient_name" class="h5 fw-bold text-dark">-</span>
                             </div>
-                        </div>
-
-                        <div id="rad_result_display" style="display: none;">
-                            <label class="small text-muted fw-bold">Findings:</label>
-                            <p id="view_rad_findings" class="mb-3"></p>
-                            <label class="small text-muted fw-bold">Conclusion:</label>
-                            <p id="view_rad_impression" class="fw-bold text-dark"></p>
+                            <div class="col-md-4 border-end-md">
+                                <label class="text-uppercase small fw-bold text-muted mb-1 d-block">Investigation Type</label>
+                                <span id="header_test_type" class="h6 fw-medium text-primary">-</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-uppercase small fw-bold text-muted mb-1 d-block">Generated On</label>
+                                <span id="header_date" class="h6 fw-medium text-dark">-</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-3">
-                    <label class="small text-muted">Technologist Remarks:</label>
-                    <p id="view_remarks" class="fst-italic text-secondary small"></p>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="fw-bold m-0"><i class="ti ti-list-details me-1 text-primary"></i> Findings & Observations</h6>
+                    </div>
+                    <div class="card-body p-0"> <div id="lab_result_display" style="display:none;">
+                            </div>
+
+                        <div id="rad_result_display" class="p-4" style="display:none;">
+                            <div class="mb-4">
+                                <label class="fw-bold text-muted small text-uppercase">Clinical Findings</label>
+                                <p id="view_rad_findings" class="mt-2 p-3 bg-light rounded border" style="white-space: pre-wrap; min-height: 100px;">-</p>
+                            </div>
+                            <div>
+                                <label class="fw-bold text-muted small text-uppercase">Impression</label>
+                                <div id="view_rad_impression" class="mt-2 fw-bold text-dark h6">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <label class="fw-bold text-muted small text-uppercase">Clinical Remarks</label>
+                        <div id="view_remarks" class="p-3 bg-white border rounded text-muted italic">
+                            No additional remarks.
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            <div class="modal-footer bg-light p-3">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="printFromModal()">
+                    <i class="ti ti-printer me-1"></i> Print Official Report
+                </button>
             </div>
         </div>
     </div>

@@ -77,6 +77,15 @@ async def get_all_tests(
 #     return tests_data
 
 
+@router.get("/phlebotomy-only", response_model=list[TestResponse])
+async def get_phlebotomy_tests(db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(Test).where(Test.requires_phlebotomy == True).order_by(Test.name.asc())
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
 @router.patch("/{id}/", response_model=LabResultResponse)
 async def manual_update_test_results(
     id: int, data: ManualTestResult, db: AsyncSession = Depends(get_db)

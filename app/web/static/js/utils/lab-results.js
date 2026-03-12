@@ -6,124 +6,46 @@ const totalLabTestsEl = document.querySelector("#total__test__count");
 
 (async function init() {
   const res = await getRemoteData(laboratoryURL);
-  console.log(res, "data received");
   render(res);
 })();
 
-/**
- * Main Render Function
- */
 function render(labList) {
- if (!labList) return;
+  if (!labList) return;
   totalLabTestsEl.textContent = labList.length;
-
-  // 1. Generate the HTML string
-  const renderedHTML = labList
-    .map((lab) => renderData(lab))
-    .join("");
-
-  // 2. Insert into the DOM
+  const renderedHTML = labList.map((lab) => renderData(lab)).join("");
   labTestsContainerEl.innerHTML = renderedHTML;
-
-  // 3. Re-initialize the Table (Vanilla JS approach)
-  // We check if a DataTable instance already exists and refresh it
   const tableEl = document.querySelector(".datatable");
-  
-  if (tableEl) {
-    // If you are using simple-datatables:
-    if (window.simpleDatatables) {
-        new simpleDatatables.DataTable(tableEl);
-    } 
-    // If you ARE using jQuery but it's just not loaded yet, 
-    // you'd need to add the <script src="..."> for jQuery in your HTML.
+  if (tableEl && window.simpleDatatables) {
+      new simpleDatatables.DataTable(tableEl);
   }
 }
 
-/**
- * Renders an individual Lab/Radiology item into a table row.
- */
 function renderData(item) {
-  const statusColors = {
-    "COMPLETED": "badge-soft-success text-success border-success",
-    "APPROVED": "badge-soft-info text-info border-info"
-  };
-  
+  const statusColors = { "COMPLETED": "badge-soft-success text-success border-success", "APPROVED": "badge-soft-info text-info border-info" };
   const statusClass = statusColors[item.status] || "badge-soft-success";
-  const statusText = "FINALIZED";
-
-  // Mapping data from your JSON structure
   const patient = item.order.appointment.patient;
-  const appointmentDate = item.order.appointment.appointment_at;
-
   return `  
   <tr class="align-middle">
     <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-    
     <td class="fw-bold text-dark">#ORD-${item.id}</td>
-    
     <td>
         <div class="d-flex flex-column">
             <span class="text-dark fw-medium">${patient.full_name}</span>
             <small class="text-muted">${patient.patient_no}</small>
         </div>
     </td>
-
     <td>${patient.sex || 'N/A'}</td>
-
-    <td>${formatDate(appointmentDate)}</td>
-
+    <td>${formatDate(item.order.appointment.appointment_at)}</td>
     <td>Dr. ${item.order.appointment.doctor?.full_name || 'System'}</td>
-
     <td>${item.test.name}</td>
-
-    <td><span class="badge badge-md ${statusClass}">${statusText}</span></td>
-
+    <td><span class="badge badge-md ${statusClass}">FINALIZED</span></td>
     <td class="text-end">
         <div class="d-flex align-items-center justify-content-end gap-2">
-            <button class="btn btn-sm btn-light" onclick="viewFinalReport(${item.id})">
-                <i class="ti ti-eye me-1"></i> View
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="printResult(${item.id})">
-                <i class="ti ti-printer"></i>
-            </button>
+            <button class="btn btn-sm btn-light" onclick="viewFinalReport(${item.id})"><i class="ti ti-eye me-1"></i> View</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="printResult(${item.id})"><i class="ti ti-printer"></i></button>
         </div>
     </td>
 </tr>`;
-}
-// --- MODAL HELPERS ---
-
-window.openStandardResultModal = function(itemId, testName) {
-    const modalEl = document.getElementById('standardResultModal'); 
-    console.log(modalEl)
-    
-    // Debugging: This will print 'null' in the console if it's still missing
-    console.log("Looking for modal... found:", modalEl);
-
-    if(!modalEl) {
-        return alert("Error: The modal with ID 'standardResultModal' is missing from this HTML page.");
-    }
-    
-    // Set values
-    const idInput = document.querySelector("#standard_order_item_id");
-    const nameDisplay = document.querySelector("#standard_test_name_display");
-
-    if(idInput) idInput.value = itemId;
-    if(nameDisplay) nameDisplay.innerText = testName;
-    
-    // Open modal
-    const myModal = new bootstrap.Modal(modalEl);
-    myModal.show();
-}
-
-
-window.openRadiologyResultModal = function(itemId, testName) {
-    const modalEl = document.getElementById('radiologyResultModal');
-    if(!modalEl) return alert("Radiology Result Modal not found in HTML");
-    
-    document.getElementById('rad_order_item_id').value = itemId;
-    document.getElementById('rad_test_name_display').innerText = testName;
-    
-    new bootstrap.Modal(modalEl).show();
 }
 
 window.viewFinalReport = async function(itemId) {
@@ -133,71 +55,76 @@ window.viewFinalReport = async function(itemId) {
         const data = await res.json();
         
         const modalEl = document.getElementById('viewReportModal');
-        if (!modalEl) return console.error("viewReportModal missing");
+        if (!modalEl) return console.error("viewReportModal missing from HTML");
 
-        // Set Header
-        document.querySelector("#view_test_name").innerText = data.test.name;
-        
-        // Toggle Display based on Category
-        const isRad = data.test.test_category?.category_name === "Radiology";
-        document.getElementById('lab_result_display').style.display = isRad ? 'none' : 'block';
-        document.getElementById('rad_result_display').style.display = isRad ? 'block' : 'none';
+        const safeSet = (selector, value) => {
+            const el = document.querySelector(selector);
+            if (el) el.innerText = value || "--";
+        };
+
+        safeSet("#view_test_name", data.test?.name);
+        const patient = data.order?.appointment?.patient || data.order?.patient;
+        if (patient) safeSet("#header_patient_name", `${patient.first_name} ${patient.surname}`);
+
+        safeSet("#header_test_type", data.test?.test_category?.category_name);
+        safeSet("#header_date", formatDate(data.order?.created_at));
+        safeSet("#display_order_id", `#ORD-${data.id}`);
+
+        const isRad = data.test?.test_category?.category_name === "Radiology";
+        const labDisplay = document.getElementById('lab_result_display');
+        const radDisplay = document.getElementById('rad_result_display');
 
         if (isRad) {
-            // Populate Radiology fields
-            document.querySelector("#view_rad_findings").innerText = data.radiology_result?.result_value || "No findings recorded.";
-            document.querySelector("#view_rad_impression").innerText = data.radiology_result?.comments || "N/A";
+            if(labDisplay) labDisplay.style.display = 'none';
+            if(radDisplay) radDisplay.style.display = 'block';
+            safeSet("#view_rad_findings", data.radiology_result?.result_value);
+            safeSet("#view_rad_impression", data.radiology_result?.comments);
         } else {
-            // Populate Lab fields
-            document.querySelector("#view_result_value").innerText = `${data.lab_result?.result_value || '--'} ${data.lab_result?.unit || ''}`;
-            document.querySelector("#view_ref_range").innerText = data.lab_result?.reference_range || 'Normal';
+            if(labDisplay) labDisplay.style.display = 'block';
+            if(radDisplay) radDisplay.style.display = 'none';
+            const resultsJson = data.lab_result?.results; 
+            if (resultsJson && Object.keys(resultsJson).length > 0) {
+                let tableHtml = `<div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light text-uppercase small"><tr><th class="ps-4 py-3">Parameter</th><th class="text-center">Result</th><th class="text-center">Unit</th><th class="text-center">Flag</th><th class="pe-4 text-center">Reference Range</th></tr></thead><tbody>`;
+                for (const [parameter, details] of Object.entries(resultsJson)) {
+                    const isAbnormal = details.flag !== 'N' && details.flag !== '-';
+                    const flagBadgeClass = isAbnormal ? 'bg-danger text-white' : 'bg-success-soft text-success';
+                    tableHtml += `<tr class="${isAbnormal ? 'bg-danger-light' : ''}"><td class="ps-4 py-3 fw-bold text-dark">${parameter}</td><td class="text-center h6 mb-0 fw-bold">${details.value}</td><td class="text-center text-muted">${details.unit || '-'}</td><td class="text-center"><span class="badge ${flagBadgeClass} px-3 py-2">${details.flag || 'N'}</span></td><td class="pe-4 text-center text-muted small">${details.reference_range || '-'}</td></tr>`;
+                }
+                tableHtml += `</tbody></table></div>`;
+                if(labDisplay) labDisplay.innerHTML = tableHtml;
+            } else {
+                if(labDisplay) labDisplay.innerHTML = `<div class="p-5 text-center text-muted">No lab data found.</div>`;
+            }
         }
-
-        document.querySelector("#view_remarks").innerText = data.lab_result?.remarks || data.radiology_result?.comments || "No additional remarks.";
-
-        // Show Modal
+        safeSet("#view_remarks", data.lab_result?.comments || data.radiology_result?.comments);
         new bootstrap.Modal(modalEl).show();
-
     } catch (error) {
-        console.error(error);
-        alert("Error loading report: " + error.message);
+        console.error("View Report Error:", error);
     }
-}
+}; 
 
-
-window.printResult = function(itemId) {
-    // Usually, you'd want to open a dedicated print-friendly URL
-    const printUrl = `/api/v1/lab/report/print/${itemId}`;
-    const printWindow = window.open(printUrl, '_blank');
-    printWindow.focus();
+window.printFromModal = function() {
+    const orderId = document.querySelector("#display_order_id").innerText.replace('#ORD-', '');
+    window.open(`/api/v1/lab/report/print/${orderId}`, '_blank');
 };
 
+window.printResult = function(itemId) {
+    window.open(`/api/v1/lab/report/print/${itemId}`, '_blank');
+};
 
-// A simple helper to handle empty data
 const cleanText = (val) => val && val !== "null" ? val : "--";
 
-// Inside your viewFinalReport function:
-document.querySelector("#view_rad_findings").innerText = cleanText(data.radiology_result?.result_value);
-
 // --- UTILITIES ---
-
 async function getRemoteData(url) {
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch data.");
     return await res.json();
-  } catch (error) {
-    console.error(error);
-    alert("Error loading laboratory queue.");
-  }
+  } catch (error) { console.error(error); }
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return "N/A";
   const date = new Date(dateStr);
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }

@@ -4,10 +4,11 @@
 
 const radiologyQueueURL = "/api/v1/lab/queue/radiology";
 const containerEl = document.querySelector(".lab__container");
+const totalRadiology = document
+.querySelector(".lab__results__total");
 
 (async function init() {
     const data = await fetchData(radiologyQueueURL);
-    console.log("RADIOLOGY DATA: >>>>>>> ", data)
     if (data) renderRadiologyTable(data);
 })();
 
@@ -25,6 +26,8 @@ async function fetchData(url) {
 function renderRadiologyTable(items) {
     const containerEl = document.querySelector('.lab__container'); 
     if (!containerEl) return;
+
+    totalRadiology.textContent = items.length;
     
     if (!items || items.length === 0) {
         containerEl.innerHTML = `<tr><td colspan="9" class="text-center p-4">No pending radiology requests found.</td></tr>`;

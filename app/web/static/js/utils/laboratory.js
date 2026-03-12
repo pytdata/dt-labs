@@ -1,144 +1,235 @@
-const laboratoryURL = "/api/v1/lab/active-appointments/";
+const fillQueueURL = "/api/v1/lab/phlebotomy-queue/"; // Updated to your dedicated route
 
-// DOM ELEMENTS
-const labTestsContainerEl = document.querySelector(".labtest__container");
-const totalLabTestsEl = document.querySelector("#total__test__count");
-
-(async function init() {
-  const res = await getRemoteData(laboratoryURL);
-  console.log(res, "data received");
-  render(res);
-})();
-
-/**
- * Main Render Function
- */
-function render(labList) {
-  console.log(labList, "labList======================")
-  console.log(totalLabTestsEl, labTestsContainerEl)
-  if (!labList) return;
-  totalLabTestsEl.textContent = labList.length;
-
-  const renderedHTML = labList
-    .map((lab) => renderData(lab))
-    .join("");
-
-  labTestsContainerEl.innerHTML = renderedHTML;
+async function init() {
+    const data = await getRemoteData(fillQueueURL);
+    if (data) renderQueue(data);
 }
 
-/**
- * Renders an individual Lab/Radiology item into a table row.
- */
-function renderData(item) {
-  // Mapping statuses to Bootstrap classes
-  const statusColors = {
-    "AWAITING_SAMPLE": "badge-soft-secondary text-secondary border-secondary",
-    "AWAITING_RESULTS": "badge-soft-warning text-warning border-warning",
-    "IN_PROGRESS": "badge-soft-primary text-primary border-primary",
-    "COMPLETED": "badge-soft-success text-success border-success"
-  };
-  
-  const statusClass = statusColors[item.status] || "badge-soft-dark";
-  const statusText = item.status.replace("_", " ").toUpperCase();
-  
-  // LOGIC: Determine if it's Radiology based on the JSON category_name
-  const categoryName = item.test.test_category?.category_name || "";
-  const isRadiology = categoryName.toLowerCase().includes("radiology");
+function renderQueue(list) {
+    const container = document.querySelector(".labtest__container");
+    
+    container.innerHTML = list.map(item => {
+        // Construct Full Name from JSON fields
+        const patient = item.order.patient;
+        const fullName = `${patient.first_name} ${patient.surname}`;
+        const testName = item.test.name;
+        const dateCreated = formatDate(item.order.created_at);
 
-  const actionFunction = isRadiology ? 'openRadiologyResultModal' : 'openStandardResultModal';
-  const actionIcon = isRadiology ? 'ti-scan' : 'ti-microscope';
-  const actionLabel = isRadiology ? 'Findings' : 'Results';
+        return `
+        <tr class="align-middle">
+            <td><input class="form-check-input" type="checkbox"></td>
+            <td class="fw-bold">#ORD-${item.order_id}</td>
+            <td>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-dark">${fullName}</span>
+                    <small class="text-muted">${patient.patient_no}</small>
+                </div>
+            </td>
+            <td>${testName}</td>
+            <td><span class="badge bg-outline-info text-info border-info">${item.test.test_category.category_name}</span></td>
+            <td>${dateCreated}</td>
+            <td><span class="badge bg-soft-warning text-warning border-warning">Awaiting Results</span></td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-primary shadow-sm" 
+                    onclick="openFillModal(${item.id}, '${testName.replace(/'/g, "\\'")}', '${fullName.replace(/'/g, "\\'")}')">
+                    <i class="ti ti-edit me-1"></i> Enter Results
+                </button>
+            </td>
+        </tr>
+    `}).join('');
+}
 
-  // Extract Patient Data
-  const patient = item.order.appointment.patient;
+// 1. OPEN MODAL & FETCH TEMPLATE
+window.openFillModal = async function(itemId, testName, patientName) {
+    // 1. UI Setup
+    document.getElementById('display_test_name').innerText = testName;
+    document.getElementById('display_patient_name').innerText = patientName;
+    document.getElementById('display_order_id').innerText = `#ORD-${itemId}`;
+    document.getElementById('fill_order_item_id').value = itemId;
+    
+    const container = document.getElementById('dynamic_template_container');
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Loading ${testName} template...</p>
+        </div>`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('fillResultModal'));
+    modal.show();
 
-  return `  
-  <tr class="align-middle">
-    <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-    <td class="fw-bold text-dark">#ORD-${item.id}</td>
-    <td>
-        <div class="d-flex flex-column">
-            <span class="text-dark fw-medium">${patient.full_name}</span>
-            <small class="text-muted">${patient.patient_no}</small>
+    try {
+        // 2. Fetch using the specific "by-item" route we created above
+        const response = await fetch(`/api/v1/tests-templates/by-item/${itemId}`);
+        
+        if (!response.ok) throw new Error("Template not found");
+        
+        const templates = await response.json();
+        
+        if (templates.length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center">
+                    <i class="ti ti-alert-triangle fs-4 me-2"></i>
+                    <div>
+                        <strong>No Template Found:</strong> Please go to Settings and add parameters for "${testName}".
+                    </div>
+                </div>`;
+            return;
+        }
+
+        // 3. Render the dynamic inputs
+        container.innerHTML = templates.map(t => `
+    <div class="row mx-0 align-items-center test-row py-3 border-bottom bg-white hover-bg-light">
+        <div class="col-md-3 ps-3">
+            <span class="fw-bold text-dark d-block">${t.test_name}</span>
+            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">${t.short_code || ''}</small>
         </div>
-    </td>
-    <td>
-        <div class="d-flex flex-column">
-            <span class="text-dark">${item.test.name}</span>
-            <small class="text-muted fs-11">${item.test.sample_type || ''}</small>
-        </div>
-    </td>
-    <td>
-        <span class="text-uppercase small fw-bold text-muted">
-            <i class="ti ${isRadiology ? 'ti-photo' : 'ti-flask'} me-1"></i>
-            ${categoryName}
-        </span>
-    </td>
-    <td>${formatDate(item.created_at)}</td>
-    <td><span class="badge badge-md ${statusClass}">${statusText}</span></td>
-    <td class="text-end">
-        <div class="d-flex align-items-center justify-content-end gap-2">
-            <button class="btn btn-sm btn-outline-primary d-flex align-items-center" 
-                    onclick="${actionFunction}(${item.id}, '${item.test.name.replace(/'/g, "\\'")}')">
-                <i class="ti ${actionIcon} me-1"></i> ${actionLabel}
-            </button>
-            
-            <div class="dropdown">
-                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown">
-                    <i class="ti ti-dots-vertical"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
-                    <li><a class="dropdown-item d-flex align-items-center" href="#"><i class="ti ti-eye me-2"></i>Details</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger d-flex align-items-center" href="#"><i class="ti ti-trash me-2"></i>Cancel</a></li>
-                </ul>
+
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="number" step="any" class="form-control form-control-lg result-input border-primary-subtle text-center fw-bold" 
+                       data-name="${t.test_name}" 
+                       data-min="${t.min_reference_range ?? ''}" 
+                       data-max="${t.max_reference_range ?? ''}"
+                       data-unit="${t.unit ?? ''}"
+                       oninput="validateFlag(this)"
+                       placeholder="0.00">
+                <span class="input-group-text bg-light small fw-medium" style="width: 80px; justify-content: center;">
+                    ${t.unit ?? '-'}
+                </span>
             </div>
         </div>
-    </td>
-</tr>`;
-}
 
-// --- MODAL HELPERS ---
+        <div class="col-md-1 text-center">
+            <span class="badge flag-badge bg-light text-dark fs-6 p-2 w-100">-</span>
+        </div>
 
-window.openStandardResultModal = function(itemId, testName) {
-    const modalEl = document.getElementById('standardResultModal'); 
-    if(!modalEl) return alert("Standard Result Modal not found in HTML");
+        <div class="col-md-4 text-center">
+            <div class="bg-light rounded py-2 border">
+                <span class="small text-muted d-block" style="font-size: 0.65rem;">NORMAL RANGE</span>
+                <span class="fw-bold px-2">${t.min_reference_range ?? '0'} — ${t.max_reference_range ?? 'N/A'}</span>
+                <small class="text-muted ms-1">${t.unit ?? ''}</small>
+            </div>
+        </div>
+    </div>
+`).join('');
+
+
+    } catch (err) {
+        console.error("Modal Load Error:", err);
+        container.innerHTML = `
+            <div class="alert alert-danger shadow-sm">
+                <i class="ti ti-circle-x me-2"></i> Error loading template. Please check your connection.
+            </div>`;
+    }
+};
+
+// 2. LIVE VALIDATION (High/Low)
+window.validateFlag = function(input) {
+    const val = parseFloat(input.value);
+    const min = parseFloat(input.dataset.min);
+    const max = parseFloat(input.dataset.max);
+    const badge = input.closest('.test-row').querySelector('.flag-badge');
+
+    if (isNaN(val)) {
+        badge.className = "badge flag-badge bg-light text-dark";
+        badge.innerText = "-";
+        return;
+    }
+
+    if (min && val < min) {
+        badge.className = "badge flag-badge bg-danger";
+        badge.innerText = "L";
+    } else if (max && val > max) {
+        badge.className = "badge flag-badge bg-danger text-white";
+        badge.innerText = "H";
+    } else {
+        badge.className = "badge flag-badge bg-success";
+        badge.innerText = "N";
+    }
+};
+
+// 3. SUBMIT TO BACKEND (SAVE AS JSON)
+document.getElementById('fill_results_form').addEventListener('submit', async function(e) {
+    e.preventDefault();
     
-    document.querySelector("#standard_order_item_id").value = itemId;
-    document.querySelector("#standard_test_name_display").innerText = testName;
+    const submitBtn = document.getElementById('save_results_btn');
+    const itemId = document.getElementById('fill_order_item_id').value;
+    const rows = document.querySelectorAll('.test-row');
     
-    new bootstrap.Modal(modalEl).show();
-}
+    // We build the object that will be stored in the JSON column
+    const resultsPayload = {};
 
-window.openRadiologyResultModal = function(itemId, testName) {
-    const modalEl = document.getElementById('radiologyResultModal');
-    if(!modalEl) return alert("Radiology Result Modal not found in HTML");
-    
-    document.getElementById('rad_order_item_id').value = itemId;
-    document.getElementById('rad_test_name_display').innerText = testName;
-    
-    new bootstrap.Modal(modalEl).show();
-}
+    rows.forEach(row => {
+        const input = row.querySelector('.result-input');
+        const parameterName = input.dataset.name;
+        const value = input.value;
+        
+        // Only save if a value was actually entered
+        if (value !== "") {
+            resultsPayload[parameterName] = {
+                value: value,
+                unit: input.dataset.unit,
+                flag: row.querySelector('.flag-badge').innerText, // 'L', 'H', or 'N'
+                reference_range: `${input.dataset.min} - ${input.dataset.max}`
+            };
+        }
+    });
 
-// --- UTILITIES ---
+    if (Object.keys(resultsPayload).length === 0) {
+        return alert("Please enter at least one result value.");
+    }
 
-async function getRemoteData(url) {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch data.");
-    return await res.json();
-  } catch (error) {
-    console.error(error);
-    alert("Error loading laboratory queue.");
-  }
-}
+    // Disable button to prevent double-submission
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+    try {
+        const response = await fetch('/api/v1/lab/results/submit-phlebotomy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                order_item_id: parseInt(itemId),
+                results: resultsPayload
+            })
+        });
+
+        if (response.ok) {
+            alert("Results finalized and saved successfully!");
+            location.reload(); // Refresh the queue
+        } else {
+            const error = await response.json();
+            throw new Error(error.detail || "Failed to save");
+        }
+    } catch (err) {
+        alert("Error: " + err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Save & Finalize Results";
+    }
+});
+
+
+init();
+
 
 function formatDate(dateStr) {
-  if (!dateStr) return "N/A";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
+
+
+// --- UTILS ---
+async function getRemoteData(url) {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Fetch failed");
+        return await res.json();
+    } catch (error) { console.error("Data error:", error); }
 }

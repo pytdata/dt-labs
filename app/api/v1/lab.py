@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Path, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -8,10 +10,11 @@ from sqlalchemy.orm import contains_eager, joinedload, selectinload
 from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Test
 from app.models.enums import LabStage, LabStatus
-from app.models.lab import Appointment, LabOrder, LabOrderItem
+from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult
 from app.schemas.appointment import TestResponse
 from app.schemas.lab import LabOrderItemResponse, LabQueueResponse, LabQueueResponse2
 from app.core.config import settings
+from app.schemas.lab_results import LabResultStatus
 
 
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
@@ -27,6 +30,67 @@ class PhlebotomyStatus(str, Enum):
     awaiting_sample = "awaiting_sample"
     awaiting_results = "awaiting_results"
     in_progress = "in_progress"
+
+
+@router.get("/phlebotomy-queue/")
+async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
+    """
+    Fetches only LabOrderItems that require phlebotomy and are awaiting results.
+    """
+    stmt = (
+        select(LabOrderItem)
+        .join(Test, LabOrderItem.test_id == Test.id)
+        .join(LabOrder, LabOrderItem.order_id == LabOrder.id)
+        .where(
+            # Using your specific Enum or String status
+            LabOrderItem.status == LabStatus.AWAITING_RESULTS,
+            # LabOrderItem.status == LabStatus.IN_PROGRESS,
+            # Ensure it's a lab test, not radiology
+            Test.requires_phlebotomy == True,
+        )
+        .options(
+            # Match your model relationships
+            selectinload(LabOrderItem.order).selectinload(LabOrder.patient),
+            selectinload(LabOrderItem.test).selectinload(Test.test_category),
+        )
+        .order_by(LabOrder.created_at.asc())
+    )
+
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.post("/results/submit-phlebotomy")
+async def submit_lab_results(
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+    # current_user: User = Depends(get_current_active_user),  # To track who entered it
+):
+    order_item_id = payload.get("order_item_id")
+    results_data = payload.get("results")  # This is our JSON object
+
+    async with db.begin():
+        # 1. Create the LabResult record
+        new_result = LabResult(
+            order_item_id=order_item_id,
+            results=results_data,  # This goes straight into the JSON column
+            source="manual",
+            # entered_by_user_id=current_user.id,
+            status=LabResultStatus.verified,  # Or pending if you want a second person to verify
+            received_at=func.now(),
+        )
+        db.add(new_result)
+
+        # 2. Update the LabOrderItem stage and status
+        # This moves it from 'analysis' to 'completed'
+        stmt = (
+            update(LabOrderItem)
+            .where(LabOrderItem.id == order_item_id)
+            .values(status="COMPLETED", stage="completed")
+        )
+        await db.execute(stmt)
+
+    return {"message": "Results saved and item completed successfully"}
 
 
 @router.get("/queue/radiology", response_model=list[LabQueueResponse2])
@@ -169,34 +233,39 @@ async def get_radiology_report_data(item_id: int, db: AsyncSession = Depends(get
     }
 
 
-@router.get("/report/print/{item_id}", response_class=HTMLResponse)
-async def print_lab_report(
-    request: Request, item_id: int, db: AsyncSession = Depends(get_db)
-):
+@router.get("/report/print/{item_id}")
+async def print_lab_report(item_id: int, db: AsyncSession = Depends(get_db)):
+    # Explicitly load EVERY relationship used in the HTML template
     stmt = (
         select(LabOrderItem)
         .options(
-            joinedload(LabOrderItem.test).joinedload(Test.test_category),
-            joinedload(LabOrderItem.order)
-            .joinedload(LabOrder.appointment)
-            .joinedload(Appointment.patient),
-            joinedload(LabOrderItem.order)
-            .joinedload(LabOrder.appointment)
-            .joinedload(Appointment.doctor),
+            selectinload(LabOrderItem.order)
+            .selectinload(LabOrder.appointment)
+            .selectinload(Appointment.patient),
+            selectinload(LabOrderItem.order)
+            .selectinload(LabOrder.appointment)
+            .selectinload(Appointment.doctor),  # Fixed: Load the doctor!
+            selectinload(LabOrderItem.test).selectinload(Test.test_category),
             selectinload(LabOrderItem.lab_result),
             selectinload(LabOrderItem.radiology_result),
         )
         .where(LabOrderItem.id == item_id)
     )
+
     result = await db.execute(stmt)
     item = result.scalar_one_or_none()
 
     if not item:
         raise HTTPException(status_code=404, detail="Report not found")
 
-    # Pass the data to a clean, printable HTML template
+    # Safety check for the template
+    is_lab = False
+    if item.test and item.test.test_category:
+        is_lab = item.test.test_category.category_name != "Radiology"
+
     return templates.TemplateResponse(
-        "lab/report_print.html", {"request": request, "item": item}
+        "lab/report_print.html",
+        {"request": {}, "item": item, "is_lab": is_lab, "now": datetime.now()},
     )
 
 
@@ -250,17 +319,15 @@ async def get_pending_lab_items(
 ):
     stmt = (
         select(LabOrderItem)
-        .join(LabOrderItem.order)
-        .join(LabOrderItem.test)
-        .where(
-            LabOrder.appointment_id == appointment_id,
-            LabOrderItem.status == "awaiting_sample",
-            # LabOrderItem.ssAdd this to ensure you're in the right workflow
-            Test.requires_phlebotomy == True,
-        )
         .options(
-            selectinload(LabOrderItem.test),
-            selectinload(LabOrderItem.radiology_result),  # Keeps Pydantic from crashing
+            selectinload(LabOrderItem.test).selectinload(Test.test_category),
+            selectinload(LabOrderItem.radiology_result),  # Add this!
+            selectinload(LabOrderItem.lab_result),  # Add this for safety too!
+        )
+        .where(
+            LabOrderItem.order.has(appointment_id=appointment_id),
+            LabOrderItem.stage == LabStage.SAMPLING,
+            LabOrderItem.status == LabStatus.AWAITING_SAMPLE,
         )
     )
 

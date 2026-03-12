@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Sample, SampleCategory, Test
+from app.models.enums import LabStage, LabStatus, PhlebotomyStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem
 from app.schemas.sample import (
     SampleCategoryCreate,
@@ -117,7 +118,7 @@ async def collect_sample(
     # 1. ENSURE PHLEBOTOMY EXISTS
     stmt = select(Phlebotomy).where(
         Phlebotomy.appointment_id == payload.appointment_id,
-        Phlebotomy.status != "completed",
+        Phlebotomy.status != PhlebotomyStatus.completed,
     )
     result = await db.execute(stmt)
     phleb = result.scalar_one_or_none()
@@ -126,7 +127,7 @@ async def collect_sample(
         phleb = Phlebotomy(
             appointment_id=payload.appointment_id,
             patient_id=payload.patient_id,
-            status="in_progress",
+            status=PhlebotomyStatus.pending,
         )
         db.add(phleb)
         await db.flush()
@@ -155,10 +156,13 @@ async def collect_sample(
     )
 
     # 4. UPDATE ITEM STATUSES INDIVIDUALLY
-    # Since we have the objects in memory, we update their attributes directly
     for item in items_to_link:
-        item.status = "in_progress"
-        item.stage = "sampling"
+        # Change from IN_PROGRESS to AWAITING_RESULTS
+        item.status = LabStatus.AWAITING_RESULTS
+
+        # Move the stage from SAMPLING to RUNNING (or ANALYSIS)
+        # so it leaves the Phlebotomy list and enters the Lab list
+        item.stage = LabStage.RUNNING
 
     db.add(new_sample)
 

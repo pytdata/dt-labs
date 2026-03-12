@@ -808,218 +808,151 @@
 
     <!-- Start add Modal -->
     <div id="add_modal" class="modal fade">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-            <div class="modal-content">
-                <div class="modal-header justify-content-between">
-                    <h4 class="text-dark modal-title fw-bold text-truncate">New Appointment</h4>
-                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+    <div class="modal-dialog modal-dialog-centered modal-lg"> <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white py-3">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-calendar-plus fs-2 me-2"></i>
+                    <h4 class="modal-title fw-bold m-0">New Patient Appointment</h4>
                 </div>
-                <form id="appointmentForm">
-                    <div class="modal-body pb-0">
-                        
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Select Patient</label>
-                                    <select class="select" value=""  name="patient_id" required>
-                                        <!-- <option>Select</option> -->
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="appointmentForm">
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Patient Name <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="ti ti-user"></i></span>
+                                    <select class="form-select select" name="patient_id" required>
+                                        <option value="" selected disabled>Select Patient</option>
                                         {% for patient in patients %}
-                                        <option value={{patient.id}}>{{patient.full_name}}</option>
-                                        {% endfor %}                                        
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Patient Type</label>
-                                    <select class="select" required name="patient_type">
-                                        <option>Select</option>
-                                        <option value="private">Private</option>
-                                        <option value="insurance">Insurance</option>
-                                    </select>
-                                </div>
-                            </div> -->
-                            <div class="col-lg-6">
-                                <div class="mb-3 mt-3">
-                                    <label class="form-label">Select Staff<span class="text-danger ms-1">*</span></label>
-                                    <select class="select" value="" required name="staff_id">
-                                        <!-- <option>Select</option> -->
-                                        {% for staff in staffs %}
-                                        <option value={{staff.id}}>{{staff.full_name}}</option>
+                                        <option value="{{patient.id}}">{{patient.full_name}}</option>
                                         {% endfor %}
-                                       
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Select Test Category<span class="text-danger ms-1">*</span></label>
-                                    <select class="select test__cat__type" value="" required name="test_category_id">
-                                        <option>Select</option>
-                                        {% for test_cat in test_categories %}
-                                        <option value="{{test_cat.id}}, {{test_cat.category_name}}">{{test_cat.category_name}}</option>
-                                      {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-6">
-
-                            <!-- Dynamically show the content -->
-                            <div class="mb-3 mt-3 is_cat_table_hidden">
-
-                            <h6>Search Test Types</h6>
-                            <div class="dropdown mb-3 bac__hidden" id="bacteria-test" data-test-type="bacteria">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-stethoscope me-1"></i>RADIOLOGY
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2 bac__search__results">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md search__bact" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <!-- <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                                        </label>
-                                    </li> -->
-                                </ul>
-                            </div>
-
-
-                            <div class="dropdown mb-3 chem__hidden" id="chemistry-test" data-test-type="chemistry">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-stethoscope me-1"></i>LABORATORY INVESTIGATION
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2 chem__search__results" >
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md search__chem" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <!-- <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                                        </label>
-                                    </li> -->
-                                    
-                                </ul>
-                            </div>
-                            
-                            </div>
-
-                            </div>
-
-                            <div class="col-lg-12 mb-3">
-                                <div class="accordion" id="accordionFlushExample">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                           
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne d-flex justify-content-center align-items-center">
-                                            SELECTED TESTS <span class="ps-5 fs-5" style="padding-left: 6.5rem !important; font-size: 1.1rem !important;">Total Price: GH₵ ‎<b class="total__price">0</b></span>
-                                        </button>
-                                        
-                                        </h2>
-                                        <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                        <div class="accordion-body">
-
-                                        <ol class="list-group list-group-numbered .list-group-flush selected__accordion">
-                                           
-                                            
-                                        </ol>  
-
-                                        </div>
-                                        </div>
-                                    </div>
-                                    
-                                    
-                                </div>
-                            </div>
-                            
-                            <!-- <div class="col-lg-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Date</label>
-                                    <div class="input-group w-auto input-group-flat">
-                                        <input type="date" class="form-control" data-provider="flatpickr" data-date-format="d M, Y" required name="appointment_at">
-                                        <span class="input-group-text">
-                                            <i class="ti ti-calendar"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div> -->
-
-                            <!-- <div class="col-lg-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Start Time</label>
-                                    <div class="input-icon-end position-relative">
-                                        <input type="time" class="form-control form-control" data-provider="timepickr" data-time-basic="true" placeholder="-- : -- : --" required name="start_time">
-                                        <span class="input-icon-addon">
-                                            <i class="ti ti-clock-hour-10 text-dark"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div> -->
-
-                            <!-- <div class="col-lg-4">
-                                <div class="mb-3">
-                                    <label class="form-label">End Time</label>
-                                    <div class="input-icon-end position-relative">
-                                        <input type="time" class="form-control form-control" data-provider="timepickr" data-time-basic="true"  placeholder="-- : -- : --" required name="end_time">
-                                        <span class="input-icon-addon">
-                                            <i class="ti ti-clock-hour-10 text-dark"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div> -->
-
-                            <!-- <div class="col-lg-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Reason</label>
-                                    <input class="input-tags form-control border-0 h-100" data-choices="" data-choices-limit="infinite" data-choices-removeitem="" type="text" name="reason">
-                                    <p class="fs-13 mb-0 mt-1">Enter reason</p>
-                                </div>
-                            </div> -->
-
-                            <div class="col-lg-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Quick Notes</label>
-                                    <textarea class="form-control" placeholder="Additional Information" rows="3" name="notes"></textarea>
-                                </div>
-                            </div>
-                            <div class="col-lg-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Mode of Payment</label>
-                                    <select class="select" name="payment_mode">
-                                        <option>Select</option>
-                                        <option value="cash">Cash</option>
-                                        <option value="momo">Momo</option>
-                                          <option value="hybrid">Hybrid</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Consulting Staff <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="ti ti-nurse"></i></span>
+                                    <select class="form-select select" name="staff_id" required>
+                                        <option value="" selected disabled>Select Staff</option>
+                                        {% for staff in staffs %}
+                                        <option value="{{staff.id}}">{{staff.full_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <div class="card bg-light border-0 mb-3">
+                                <div class="card-body p-3">
+                                    <div class="row align-items-end">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold text-primary">1. Choose Category</label>
+                                            <select class="form-select test__cat__type" name="test_category_id" required>
+                                                <option value="" selected disabled>Select Category</option>
+                                                {% for test_cat in test_categories %}
+                                                <option value="{{test_cat.id}}, {{test_cat.category_name}}">{{test_cat.category_name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mt-3 mt-md-0">
+                                            <label class="form-label fw-semibold text-primary">2. Search Investigation</label>
+                                            
+                                            <div class="dropdown is_cat_table_hidden bac__hidden" id="bacteria-test">
+                                                <button type="button" class="btn btn-white border w-100 d-flex justify-content-between align-items-center dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                                    <span><i class="ti ti-microscope me-2"></i>Select Radiology</span>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end p-3 shadow-lg" style="width: 300px;">
+                                                    <div class="input-group input-group-sm mb-2">
+                                                        <span class="input-group-text"><i class="ti ti-search"></i></span>
+                                                        <input type="text" class="form-control search__bact" placeholder="Filter radiology...">
+                                                    </div>
+                                                    <ul class="list-unstyled mb-0 bac__search__results" style="max-height: 200px; overflow-y: auto;">
+                                                        </ul>
+                                                </div>
+                                            </div>
+
+                                            <div class="dropdown is_cat_table_hidden chem__hidden" id="chemistry-test">
+                                                <button type="button" class="btn btn-white border w-100 d-flex justify-content-between align-items-center dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                                    <span><i class="ti ti-flask me-2"></i>Select Investigation</span>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end p-3 shadow-lg" style="width: 300px;">
+                                                    <div class="input-group input-group-sm mb-2">
+                                                        <span class="input-group-text"><i class="ti ti-search"></i></span>
+                                                        <input type="text" class="form-control search__chem" placeholder="Filter tests...">
+                                                    </div>
+                                                    <ul class="list-unstyled mb-0 chem__search__results" style="max-height: 200px; overflow-y: auto;">
+                                                        </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12 mb-3">
+                            <div class="accordion border rounded overflow-hidden" id="selectedTestsAccordion">
+                                <div class="accordion-item border-0">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button bg-white text-dark py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSelectedTests">
+                                            <div class="d-flex justify-content-between w-100 align-items-center pe-3">
+                                                <span><i class="ti ti-checklist me-2 text-success"></i>Selected Investigations</span>
+                                                <span class="badge bg-dark-light text-dark fs-6">
+                                                    Total Price: <span class="text-primary ms-1">GH₵ <b class="total__price">0</b></span>
+                                                </span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapseSelectedTests" class="accordion-collapse collapse show" data-bs-parent="#selectedTestsAccordion">
+                                        <div class="accordion-body bg-white p-0">
+                                            <ol class="list-group list-group-flush list-group-numbered selected__accordion">
+                                                <li class="list-group-item text-muted small text-center py-3 empty-msg">No tests selected yet.</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Quick Notes</label>
+                                <textarea class="form-control" placeholder="Any clinical notes or special instructions..." rows="2" name="notes"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Payment Mode <span class="text-danger">*</span></label>
+                                <select class="form-select select" name="payment_mode" required>
+                                    <option value="" selected disabled>Select Mode</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="momo">Mobile Money (Momo)</option>
+                                    <option value="hybrid">Hybrid (Cash/Momo)</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="modal-footer d-flex align-items-center gap-1">
-                        <button type="button" class="btn btn-light appointment__cancel__btn" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Appointment</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-outline-secondary px-4 appointment__cancel__btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                        <i class="ti ti-circle-check me-1"></i> Confirm Appointment
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
     <!-- End add Modal -->
 
 

@@ -95,29 +95,34 @@ settings_body %}
 
           <tbody id="template-fields-container"></tbody>
 
-
-          <form id="test__add__form">
-            <!-- Test Type Selection -->
-            <div class="row mb-4">
-              <label class="col-sm-2 col-form-label">Select Test Type</label>
-              <div class="col-sm-10">
-                <select id="test_type" class="form-select">
-                  <option value="">Choose...</option>
-                </select>
+      <form id="test__add__form">
+          <div class="row mb-4">
+              <label class="col-sm-3 col-form-label fw-bold">Select Lab Test</label>
+              <div class="col-sm-9">
+                  <select id="test_id_select" class="form-select" required>
+                      <option value="">-- Choose a Test (e.g. Full Blood Count) --</option>
+                  </select>
               </div>
-            </div>
+          </div>
 
-            <hr />
+          <h6 class="text-muted border-bottom pb-2">Test Parameters (Template Fields)</h6>
+          
+          <div id="dynamic-fields-container">
+              </div>
 
-            <!-- Dynamic Fields Container -->
-            <div id="dynamic-fields"></div>
-          </form>
-
+          <!-- <div class="mt-3">
+              <button type="button" class="btn btn-success" id="add-new-parameter-row">
+                  + Add another Parameter
+              </button>
+          </div> -->
+      </form>
           <!-- FORM ENDS HERE -->
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-success">Add Field</button>
+          <button type="button" class="btn btn-success" id="add-new-parameter-row">
+                  + Add another Parameter
+              </button>
           <button
             type="button"
             class="btn btn-secondary"

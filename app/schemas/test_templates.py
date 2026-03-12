@@ -16,8 +16,8 @@ class TestTemplatesResponse(BaseModel):
     test_name: str
     result: float | None
     unit: str
-    min_reference_range: float
-    max_reference_range: float
+    min_reference_range: float | None
+    max_reference_range: float | None
     comment: str | None = None
     created_on: datetime
     short_code: str | None
