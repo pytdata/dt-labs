@@ -56,6 +56,12 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style" />
+
+
+    <style>
+      .bg-light-success { background-color: rgba(40, 199, 111, 0.12) !important; }
+.bg-light-danger { background-color: rgba(234, 84, 85, 0.12) !important; }
+    </style>
   </head>
 
   <body>
@@ -867,6 +873,22 @@
                       </button>
                     </div>
                   </form>
+<!-- NOTIFICATION MODAL -->
+                  <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                      <div class="modal-body text-center p-4">
+                        <div id="feedbackIconContainer" class="mb-3">
+                          </div>
+                        <h4 id="feedbackTitle" class="fw-bold mb-2"></h4>
+                        <p id="feedbackMessage" class="text-muted mb-4"></p>
+                        <div class="d-grid gap-2">
+                          <button type="button" id="feedbackCloseBtn" class="btn btn-primary py-2" data-bs-dismiss="modal">Continue</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                   <!-- intl-tel-input -->
                   <link

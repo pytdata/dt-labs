@@ -1,642 +1,364 @@
-{% extends "base/main.html" %} {% block title %}Create Appointment | DT-Labs{%
-endblock %}
+{% extends "base/main.html" %} 
+{% block title %}Create Appointment | DT-Labs{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
+  <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-      <h3 class="mb-0">Create Appointment</h3>
-      <div class="text-muted">
-        Patient: <strong>{{ patient.full_name }}</strong> ({{ patient.patient_no
-        }})
-      </div>
+      <h3 class="fw-bold mb-1">Create Appointment</h3>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{{ request.url_for('patients') }}">Patients</a></li>
+          <li class="breadcrumb-item active">{{ patient.full_name }}</li>
+        </ol>
+      </nav>
     </div>
-    <a
-      class="btn btn-outline-secondary"
-      href="{{ request.url_for('patients') }}"
-      >Back to Patients</a
-    >
+    <a class="btn btn-outline-secondary btn-sm" href="{{ request.url_for('patients') }}">
+      <i class="ti ti-arrow-left me-1"></i>Back
+    </a>
   </div>
 
-  <div class="card">
-    <div class="card-body">
-      <form
-        id="add_new_appointment"
-        method="post"
-        action="{{ request.url_for('appointment_add_post', patient_id=patient.id) }}"
-      >
-        <!-- <div class="mb-3">
-          <label class="form-label">Appointment Date & Time</label>
-          <input
-            type="text"
-            name="appointment_at"
-            class="form-control"
-            id="appt_dt"
-            placeholder="YYYY-MM-DD HH:MM"
-            required
-          />
-          <div class="form-text">
-            This will be used for reminders/alerts later.
-          </div>
-        </div> -->
-        
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <form id="add_new_appointment">
+            <div class="row">
+              <div class="col-md-6 mb-4">
+                <label class="form-label fw-semibold">Requesting Staff <span class="text-danger">*</span></label>
+                <select class="form-select border-2" required name="staff_id">
+                  <option value="">Choose Staff...</option>
+                  {% for staff in staffs %}
+                  <option value="{{staff.id}}">{{staff.full_name}}</option>
+                  {% endfor %}
+                </select>
+              </div>
 
-        <div class="mb-3">
-          <label class="form-label"
-            >Select Staff<span class="text-danger ms-1">*</span></label
-          >
-          <select class="form-select" required name="staff_id">
-            <!-- <option>Select</option> -->
-            {% for staff in staffs %}
-            <option value="{{staff.id}}">{{staff.full_name}}</option>
-            {% endfor %}
-          </select>
-        </div>
+              <div class="col-md-6 mb-4">
+                <label class="form-label fw-semibold">Payment Mode</label>
+                <select class="form-select border-2" name="payment_mode">
+                  <option value="cash">Cash</option>
+                  <option value="momo">Mobile Money</option>
+                  <option value="hybrid">Hybrid (Cash + Momo)</option>
+                </select>
+              </div>
+            </div>
 
-        <div class="mb-3">
-          <label class="form-label"
-            >Select Test Category<span class="text-danger ms-1">*</span></label
-          >
-          <select
-            class="form-select add_test__cat__type"
-            required
-            name="test_category_id"
-          >
-            <option>Select</option>
-            {% for test_cat in test_categories %}
-            <option value="{{test_cat.id}}, {{test_cat.category_name}}">
-              {{test_cat.category_name}}
-            </option>
-            {% endfor %}
-          </select>
-        </div>
+            <hr class="my-4 opacity-25">
 
-        <div class="mb-3">
-          <div
-            class="dropdown mb-3 bac__hidden"
-            id="bacteria-test"
-            data-test-type="bacteria"
-          >
-            <a
-              href="javascript:void(0);"
-              class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center"
-              data-bs-toggle="dropdown"
-              data-bs-auto-close="outside"
-              aria-expanded="false"
-            >
-              <i class="ti ti-stethoscope me-1"></i>BACTERIOLOGY TEST
-            </a>
-            <ul class="dropdown-menu dropdown-menu-md p-2 bac__search__results">
-              <li>
-                <div class="mb-2">
-                  <div class="input-icon-start input-icon position-relative">
-                    <span class="input-icon-addon">
-                      <i class="ti ti-search"></i>
-                    </span>
-                    <input
-                      type="text"
-                      class="form-control form-control-md search__bacteriology"
-                      placeholder="Search"
-                    />
-                  </div>
-                </div>
-              </li>
-              <!-- <li>
-                      <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                          <input class="form-check-input m-0 me-2" type="checkbox">
-                          <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                      </label>
-                  </li> -->
-            </ul>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <div
-            class="dropdown mb-3 chem__hidden"
-            id="chemistry-test"
-            data-test-type="chemistry"
-          >
-            <a
-              href="javascript:void(0);"
-              class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center"
-              data-bs-toggle="dropdown"
-              data-bs-auto-close="outside"
-              aria-expanded="false"
-            >
-              <i class="ti ti-stethoscope me-1"></i>ULTRASOUND SCAN TEST
-            </a>
-            <ul
-              class="dropdown-menu dropdown-menu-md p-2 chem__search__results"
-            >
-              <li>
-                <div class="mb-2">
-                  <div class="input-icon-start input-icon position-relative">
-                    <span class="input-icon-addon">
-                      <i class="ti ti-search"></i>
-                    </span>
-                    <input
-                      type="text"
-                      class="form-control form-control-md search__chem"
-                      placeholder="Search"
-                    />
-                  </div>
-                </div>
-              </li>
-              <!-- <li>
-                    <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                        <input class="form-check-input m-0 me-2" type="checkbox">
-                        <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                    </label>
-                </li> -->
-            </ul>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <div class="col-lg-12 mb-3">
-            <div class="accordion" id="accordionFlushExample">
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button
-                    class="accordion-button collapsed"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#flush-collapseOne"
-                    aria-expanded="false"
-                    aria-controls="flush-collapseOne d-flex justify-content-center align-items-center"
-                  >
-                    SELECTED TESTS
-                    <span
-                      class="ps-5 fs-5"
-                      style="
-                        padding-left: 6.5rem !important;
-                        font-size: 1.1rem !important;
-                      "
-                      >Total Price: GH₵ ‎<b class="total__price">0</b></span
-                    >
+            <h5 class="mb-3">Investigations Selection</h5>
+            
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="dropdown" id="radiology-test">
+                  <button class="btn btn-light border w-100 d-flex justify-content-between align-items-center py-2" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                    <span><i class="ti ti-box-margin me-2 text-primary"></i>Radiology</span>
+                    <i class="ti ti-chevron-down small"></i>
                   </button>
-                </h2>
-                <div
-                  id="flush-collapseOne"
-                  class="accordion-collapse collapse"
-                  data-bs-parent="#accordionFlushExample"
-                >
-                  <div class="accordion-body">
-                    <ol
-                      class="list-group list-group-numbered .list-group-flush selected__accordion"
-                    ></ol>
-                  </div>
+                  <ul class="dropdown-menu dropdown-menu-end p-3 shadow-lg border-0 bac__search__results" style="width: 300px;">
+                    <li class="mb-2">
+                      <input type="text" 
+                             class="form-control form-control-sm search__bacteriology" 
+                             placeholder="Search scans..." 
+                             data-prefix="bac"
+                             data-category-id="{% for cat in test_categories %}{% if 'radiology' in cat.category_name|lower %}{{ cat.id }}{% endif %}{% endfor %}">
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="dropdown" id="lab-test">
+                  <button class="btn btn-light border w-100 d-flex justify-content-between align-items-center py-2" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                    <span><i class="ti ti-flask me-2 text-info"></i>Lab Investigations</span>
+                    <i class="ti ti-chevron-down small"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end p-3 shadow-lg border-0 chem__search__results" style="width: 300px;">
+                    <li class="mb-2">
+                      <input type="text" 
+                             class="form-control form-control-sm search__chem" 
+                             placeholder="Search tests..." 
+                             data-prefix="chem"
+                             data-category-id="{% for cat in test_categories %}{% if 'lab' in cat.category_name|lower %}{{ cat.id }}{% endif %}{% endfor %}">
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="mb-3">
-          <label class="form-label">Notes (optional)</label>
-          <textarea class="form-control" name="notes" rows="3"></textarea>
-        </div>
+            <div class="mt-4 mb-4">
+                <label class="form-label fw-semibold">Clinical Notes</label>
+                <textarea class="form-control border-2" name="notes" rows="2" placeholder="Relevant clinical history..."></textarea>
+            </div>
 
-        <div class="mb-3">
-        <label class="form-label">Mode of Payment</label>
-            <select class="form-select" name="payment_mode">
-                <option value="cash">Cash</option>
-                <option value="momo">Momo</option>
-                  <option value="hybrid">Hybrid</option>
-            </select>
+            <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm mt-2">
+               <i class="ti ti-check me-1"></i>Confirm & Save Appointment
+            </button>
+          </form>
         </div>
-        <button type="submit" class="btn btn-primary">Save Appointment</button>
-      </form>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 sticky-top" style="top: 20px; z-index: 10;">
+            <div class="card-header bg-primary text-white py-3">
+                <h6 class="mb-0 text-white">Appointment Summary</h6>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush selected__accordion" style="max-height: 400px; overflow-y: auto;">
+                    <li class="list-group-item text-center py-4 text-muted small">No tests selected yet</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-light p-3 border-top">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Total Payable:</span>
+                    <h4 class="mb-0 text-primary fw-bold">GH₵ <span class="total__price">0.00</span></h4>
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 </div>
 
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-body text-center p-4">
+          <div id="feedbackIconContainer" class="mb-3"></div>
+          <h4 id="feedbackTitle" class="fw-bold mb-2"></h4>
+          <p id="feedbackMessage" class="text-muted mb-4"></p>
+          <div class="d-grid">
+            <button type="button" id="feedbackCloseBtn" class="btn btn-primary py-2" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block include_js %}
-
-
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    if (window.flatpickr) {
-      flatpickr("#appt_dt", { enableTime: true, dateFormat: "Y-m-d H:i" });
-    }
-  });
-</script>
+  // 1. FEEDBACK MODAL
+  function showFeedback({ title, message, type = 'success', redirectUrl = null }) {
+      const modalEl = document.getElementById('feedbackModal');
+      const titleEl = document.getElementById('feedbackTitle');
+      const messageEl = document.getElementById('feedbackMessage');
+      const iconContainer = document.getElementById('feedbackIconContainer');
+      const closeBtn = document.getElementById('feedbackCloseBtn');
 
-<script>
-  const appointmentFormEl = document.querySelector("#add_new_appointment");
-  const searchBactEL = document.querySelector(".search__bacteriology");
-  const searchUltraEL = document.querySelector(".search__chem");
+      titleEl.innerText = title;
+      messageEl.innerText = message;
 
-  // ACCORDION
-  const selectedTestAccordionListEl = document.querySelector(
-    ".selected__accordion",
-  );
-  // urls
-  let testCategoryURL = "/api/v1/test-categories/";
+      if (type === 'success') {
+          iconContainer.innerHTML = `<div class="bg-light-success text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; font-size: 2rem;"><i class="ti ti-circle-check"></i></div>`;
+          closeBtn.className = 'btn btn-success';
+      } else {
+          iconContainer.innerHTML = `<div class="bg-light-danger text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; font-size: 2rem;"><i class="ti ti-alert-circle"></i></div>`;
+          closeBtn.className = 'btn btn-danger';
+      }
 
-  // search
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+
+      if (redirectUrl) {
+          modalEl.addEventListener('hidden.bs.modal', () => { window.location.href = redirectUrl; }, { once: true });
+      }
+  }
+
+  // 2. STATE
+  let selectedTestOrderList = [];
   let searchTimeout = null;
   let activeController = null;
-
-  // form data
-  // Form data
-  const selectedTests = {
-    bacteriology: [],
-    chemistry: [],
-  };
-
-  let selectedTestOrderList = [];
-
-  // TOTAL PRICE
+  
   const totalPriceEL = document.querySelector(".total__price");
+  const selectedTestAccordionListEl = document.querySelector(".selected__accordion");
+  const appointmentFormEl = document.querySelector("#add_new_appointment");
 
-  // get category name and id for fetching tests
-  // document.querySelector(".add_test__cat__type").addEventListener("input", (e) => {
-  //   const [id, catName] = e.target.value.split(",").map((v) => v.trim());
+  // 3. UI UPDATER
+  function updateUI() {
+      // Get unique items based on ID
+      const uniqueTests = Array.from(new Map(selectedTestOrderList.map(item => [item.id, item])).values());
+      
+      if (uniqueTests.length === 0) {
+          selectedTestAccordionListEl.innerHTML = `<li class="list-group-item text-center py-4 text-muted small">No tests selected yet</li>`;
+          totalPriceEL.textContent = "0.00";
+          return;
+      }
 
-  //   if (catName.toLowerCase() == "bacteriology") {
-  //     console.log("bacteriology")
-  //   }
+      selectedTestAccordionListEl.innerHTML = uniqueTests.map(test => `
+          <li class="list-group-item d-flex justify-content-between align-items-center py-3 border-start-0 border-end-0">
+              <div class="d-flex align-items-center">
+                  <button type="button" class="btn btn-link text-danger p-0 me-2" onclick="removeTest(${test.id})">
+                      <i class="ti ti-circle-x fs-5"></i>
+                  </button>
+                  <span class="fw-semibold small">${test.name}</span>
+              </div>
+              <span class="badge bg-light text-dark border">GH₵ ${test.price.toFixed(2)}</span>
+          </li>
+      `).join('');
 
-  //   if (catName.toLowerCase() === "ultra-scan") {
-  //     console.log("ultra")
-  // }
-  // })
+      const total = uniqueTests.reduce((sum, item) => sum + item.price, 0);
+      totalPriceEL.textContent = total.toFixed(2);
+  }
 
-  // search bacteriology
-  searchBactEL.addEventListener("input", (e) => {
-    buildDynamicTestCategoryURLParam("test_category_type", 2);
-
-    //
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(async () => {
-      const value = e.target.value;
-      buildDynamicTestCategoryURLParam("name", value);
-      const data = await performSearch(value);
-      renderBacteriaSearchResults(data);
-    }, 300);
-  });
-
-  // clear search input
-  searchBactEL.addEventListener("blur", (e) => {
-    buildDynamicTestCategoryURLParam("test_category_type");
-    searchBactEL.value = "";
-    console.log(testCategoryURL);
-  });
-
-  // search urltra
-
-  searchUltraEL.addEventListener("input", (e) => {
-    buildDynamicTestCategoryURLParam("test_category_type", 3);
-
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(async () => {
-      const value = e.target.value;
-      buildDynamicTestCategoryURLParam("name", value);
-      const data = await performSearch(value);
-      console.log(data);
-      renderUltraScanSearchResults(data);
-    }, 300);
-  });
-
-  searchUltraEL.addEventListener("blur", (e) => {
-    buildDynamicTestCategoryURLParam("test_category_type");
-    searchUltraEL.value = "";
-    console.log(testCategoryURL);
-  });
-
-  // submit form
-  appointmentFormEl.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const data = new FormData(appointmentFormEl);
-    const patient_id = "{{patient.id}}";
-    console.log(patient_id);
-    const payload = {
-      patient_id: Number(patient_id),
-      doctor_id: Number(data.get("staff_id")),
-      notes: data.get("notes"),
-      mode_of_payment: data.get("payment_mode"),
-      total_price: Number(data.get("total__price")),
-      test_ids: [
-        ...new Set([...selectedTests.bacteriology, ...selectedTests.chemistry]),
-      ],
-    };
-
-    console.log(payload)
-
-    try {
-      const res = await fetch("/api/v1/appointments/v2/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+  // GLOBAL REMOVE FUNCTION
+window.removeTest = function(id) {
+      selectedTestOrderList = selectedTestOrderList.filter(t => t.id !== id);
+      // Uncheck ANY checkbox that matches this ID
+      document.querySelectorAll(`.test-option-checkbox`).forEach(cb => {
+          if (Number(cb.dataset.id) === id) {
+              cb.checked = false;
+          }
       });
-
-      if (!res.ok) throw new Error("Failed to book appointment.: ", res);
-
-      const data = await res.json();
-
-      // navigate back to the patients page
-      window.location.replace("/patients")
-    } catch (error) {
-      console.log(error);
-    }
-
-    // reset form
-    selectedTests["bacteriology"] = [];
-    selectedTests["chemistry"] = [];
-    appointmentFormEl.reset();
-
-  });
-
-  document
-    .querySelector(".chem__search__results")
-    .addEventListener("change", (e) => {
-      const checkbox = e.target.closest(".chem_option");
-      if (!checkbox) return;
-
-      const id = Number(checkbox.dataset.chemId);
-      const price = Number(checkbox.dataset.chemPrice);
-      const name = checkbox.dataset.chemName;
-
-      if (checkbox.checked) {
-        selectedTests.chemistry.push(id);
-        selectedTestOrderList.push({ id, price, name });
-      } else {
-        selectedTests.chemistry = selectedTests.chemistry.filter(
-          (x) => x !== id,
-        );
-
-        // selectedTestOrderList = selectedTestOrderList.filter((x) => x.id !== id);
-      }
-
-      console.log(selectedTestOrderList);
-
-      computeTotalPrice(selectedTestOrderList);
-      accordionListRender(selectedTestOrderList);
-    });
-
-  document
-    .querySelector(".bac__search__results")
-    .addEventListener("change", (e) => {
-      const checkbox = e.target.closest(".bac__option");
-      console.log(checkbox);
-      if (!checkbox) return;
-
-      const id = Number(checkbox.dataset.bacId);
-      const price = Number(checkbox.dataset.bacPrice);
-      const name = checkbox.dataset.bacName;
-
-      if (checkbox.checked) {
-        selectedTests.bacteriology.push(id);
-        selectedTestOrderList.push({ id, price, name });
-        console.log(selectedTestOrderList);
-      } else {
-        selectedTests.bacteriology = selectedTests.bacteriology.filter(
-          (x) => x !== id,
-        );
-        console.log(selectedTestOrderList);
-      }
-
-      computeTotalPrice(selectedTestOrderList);
-      accordionListRender(selectedTestOrderList);
-    });
-
-  function add(acc, cur) {
-    return acc + cur;
+      updateUI();
   }
 
-  /**
-   * Takes a Map with values of int and retuns the total
-   * @param {object} data
-   */
-  function computeTotalPrice(data) {
-    if (data.length == 0) return 0;
-
-    const results = data.reduce((acc, currrent) => {
-      const x = acc.find((item) => item.id == currrent.id);
-      if (!x) {
-        return acc.concat([currrent]);
-      } else {
-        return acc;
-      }
-    }, []);
-    const totalPrice = results.map((ord) => ord.price).reduce(add);
-
-    showComputedAmount(totalPrice);
-
-    return totalPrice;
-  }
-
-  /**
-   * render ultra-scan search results
-   * @param {object} data
-   */
-  function renderUltraScanSearchResults(data) {
-    const searchResultsHTML = data
-      .map((chem) => {
-        const htmlElement = `
-             <li>
-                <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                    <input class="form-check-input m-0 me-2 chem_option" type="checkbox" data-chem-id=${chem.id} data-chem-price=${chem.price_ghs} data-chem-name=${chem.name}>
-                    <span class="avatar avatar-xs rounded-circle me-2"></span>${chem.name}
-                </label>
-            </li>
-        `;
-        return htmlElement;
-      })
-      .join("");
-
-    const resultUlEl = document.querySelector(".chem__search__results");
-
-    // Remove all li elements except the first one (search input)
-    while (resultUlEl.children.length > 1) {
-      resultUlEl.removeChild(resultUlEl.children[1]);
-    }
-
-    // Insert new results after the first li
-    resultUlEl.insertAdjacentHTML("beforeend", searchResultsHTML);
-  }
-
-  /**
-   * Display computed total on the form
-   * @param {Number} totalAmount
-   */
-  function showComputedAmount(totalAmount) {
-    totalPriceEL.textContent = `${totalAmount}`;
-  }
-
-  // VIEW:
-  /**
-   * Render a list of selected Tests to the DOM when the client selects a list of tests
-   * @param {Array[object]} selectedTestList
-   */
-  function accordionListRender(selectedTestList) {
-    console.log(selectedTestList);
-    if (selectedTestList.length === 0) {
-      selectedTestAccordionListEl.innerHTML = `<p class="p-4 fs-4 text-align-center">No test selected</p>`;
-    } else {
-      const filterDuplicate = selectedTestList.reduce((acc, currrent) => {
-        const x = acc.find((item) => item.id == currrent.id);
-        if (!x) {
-          return acc.concat([currrent]);
-        } else {
-          return acc;
-        }
-      }, []);
-
-      const accordionListHTML = filterDuplicate
-        .map((selectedTest) => {
-          return `
-      <li class="list-group-item d-flex justify-content-between align-items-start selected__accordion">
-        <div class="ms-2 me-auto">
-       ${selectedTest.name}
-        </div>
-        <span class="badge text-bg-primary rounded-pill">${selectedTest.price}</span>
-      </li>
-      `;
-        })
-        .join("");
-
-      selectedTestAccordionListEl.innerHTML = accordionListHTML;
-    }
-  }
-
-  function renderBacteriaSearchResults(data) {
-    const searchResultsHTML = data
-      .map((bac) => {
-        const bac_exits = selectedTests["bacteriology"].includes(bac.id);
-
-        const htmlElement = `
-             <li>
-                <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                    <input data-bac-id=${bac.id} data-bac-price=${bac.price_ghs} data-bac-name="${bac.name}" class="form-check-input m-0 me-2 bac__option" type="checkbox" ${bac_exits ? "checked" : ""}>
-                    <span class="avatar avatar-xs rounded-circle me-2"></span>${bac.name}
-                </label>
-            </li>
-        `;
-        return htmlElement;
-      })
-      .join("");
-
-    const resultUlEl = document.querySelector(".bac__search__results");
-
-    // Remove all li elements except the first one (search input)
-    while (resultUlEl.children.length > 1) {
-      resultUlEl.removeChild(resultUlEl.children[1]);
-    }
-
-    // Insert new results after the first li
-    resultUlEl.insertAdjacentHTML("beforeend", searchResultsHTML);
-  }
-
-  // function to perform search
-  /**
-   *
-   * @param {string} query
-   * @param {bool} useAppointment
-   * @returns
-   */
-  async function performSearch(query) {
-    // cancel previous request
-    if (query.length < 3) return [];
-
-    if (activeController) {
-      activeController.abort();
-    }
-
+  // 4. SEARCH & RENDER
+  async function performSearch(query, categoryId) {
+    if (query.length < 2) return [];
+    if (activeController) activeController.abort();
     activeController = new AbortController();
 
     try {
-      let url = testCategoryURL;
-      // set url to appointment url if the useAppointment is set
+        const url = new URL("/api/v1/test-categories/", window.location.origin);
+        url.searchParams.set("name", query);
+        if (categoryId && categoryId.trim() !== "" && categoryId !== "None") {
+            url.searchParams.set("test_category_type", categoryId);
+        }
 
-      const res = await fetch(url, {
-        signal: activeController.signal,
-      });
-
-      const data = await res.json();
-
-      return data;
+        const res = await fetch(url, { signal: activeController.signal });
+        if (!res.ok) throw new Error("Search failed");
+        return await res.json();
     } catch (err) {
-      // TODO: Add model to show error
-      if (err.name !== "AbortError") {
-        alert("Failed to search data")
-        console.error("Search error:", err);
-      }
+        if (err.name !== "AbortError") console.error("Search error:", err);
+        return [];
     }
   }
 
-  function buildDynamicTestCategoryURLParam(key, value, state) {
-    const url = new URL(testCategoryURL, window.location.origin);
 
-    // patient filtering parameter
-    if (key === "test_category_type") {
-      if (value && value) {
-        url.searchParams.set("test_category_type", value);
-      } else {
-        url.searchParams.delete("test_category_type");
-      }
 
-      testCategoryURL = url.pathname + url.search;
-      return;
-    }
+  // 4. RENDER SEARCH RESULTS
+  function renderSearchResults(data, containerSelector, typePrefix) {
+      const container = document.querySelector(containerSelector);
+      while (container.children.length > 1) { container.removeChild(container.lastChild); }
 
-    // test name filtering parameter
-    if (key === "name") {
-      if (value && value.trim()) {
-        url.searchParams.set("name", value.trim());
-      } else {
-        url.searchParams.delete("name");
-      }
+      const html = data.map(test => {
+          const isChecked = selectedTestOrderList.some(t => t.id === test.id);
+          // IMPORTANT: We use data-id, data-price, data-name for both prefixes to simplify the listener
+          return `
+            <li>
+                <label class="dropdown-item px-2 d-flex align-items-center rounded-1 py-2 cursor-pointer">
+                    <input class="form-check-input m-0 me-2 test-option-checkbox" 
+                           type="checkbox" 
+                           data-id="${test.id}" 
+                           data-price="${test.price_ghs}" 
+                           data-name="${test.name}"
+                           ${isChecked ? 'checked' : ''}>
+                    <span class="small">${test.name}</span>
+                </label>
+            </li>`;
+      }).join('');
 
-      testCategoryURL = url.pathname + url.search;
-      return;
-    }
-
-    // department filtering parameter
-    if (key === "department") {
-      if (value && value.trim()) {
-        url.searchParams.set("department", value.trim());
-      } else {
-        url.searchParams.delete("department");
-      }
-
-      testCategoryURL = url.pathname + url.search;
-      return;
-    }
-
-    // search parameter
-    if (key === "search") {
-      if (value && value.trim()) {
-        url.searchParams.set("search", value.trim());
-      } else {
-        url.searchParams.delete("search");
-      }
-
-      testCategoryURL = url.pathname + url.search;
-      return;
-    }
-
-    // filter params
-    const currentValues = url.searchParams.getAll(key);
-
-    if (state) {
-      if (!currentValues.includes(value)) {
-        url.searchParams.append(key, value);
-      }
-    } else {
-      url.searchParams.delete(key);
-      currentValues
-        .filter((v) => v !== value)
-        .forEach((v) => url.searchParams.append(key, v));
-    }
-
-    testCategoryURL = url.pathname + url.search;
+      container.insertAdjacentHTML("beforeend", html || '<li><span class="dropdown-item disabled small text-center">No results</span></li>');
   }
+
+  // 5. IMPROVED CHECKBOX TOGGLE
+  document.addEventListener('change', (e) => {
+      // Look for the generic class instead of specific prefix classes
+      if (e.target.classList.contains('test-option-checkbox')) {
+          const cb = e.target;
+          const testData = {
+              id: Number(cb.dataset.id),
+              price: Number(cb.dataset.price),
+              name: cb.dataset.name
+          };
+
+          if (cb.checked) {
+              // Add only if not already present
+              if (!selectedTestOrderList.some(t => t.id === testData.id)) {
+                  selectedTestOrderList.push(testData);
+              }
+          } else {
+              selectedTestOrderList = selectedTestOrderList.filter(t => t.id !== testData.id);
+          }
+          updateUI();
+      }
+  });
+
+
+  // 5. EVENT LISTENERS
+  const setupSearchListener = (selector, prefix) => {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      el.addEventListener("input", (e) => {
+          clearTimeout(searchTimeout);
+          const catId = e.target.dataset.categoryId;
+          searchTimeout = setTimeout(async () => {
+              const results = await performSearch(e.target.value, catId);
+              renderSearchResults(results, `.${prefix}__search__results`, prefix);
+          }, 300);
+      });
+  };
+
+  setupSearchListener(".search__bacteriology", "bac");
+  setupSearchListener(".search__chem", "chem");
+
+  document.addEventListener('change', (e) => {
+      if (e.target.classList.contains('bac__option') || e.target.classList.contains('chem_option')) {
+          const cb = e.target;
+          const prefix = cb.classList.contains('bac__option') ? 'bac' : 'chem';
+          const testData = {
+              id: Number(cb.dataset[prefix + 'Id']),
+              price: Number(cb.dataset[prefix + 'Price']),
+              name: cb.dataset[prefix + 'Name']
+          };
+
+          if (cb.checked) {
+              selectedTestOrderList.push(testData);
+          } else {
+              selectedTestOrderList = selectedTestOrderList.filter(t => t.id !== testData.id);
+          }
+          updateUI();
+      }
+  });
+
+  // 6. SUBMIT
+  appointmentFormEl.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const uniqueIds = [...new Set(selectedTestOrderList.map(t => t.id))];
+      
+      if (uniqueIds.length === 0) {
+          showFeedback({ title: "Selection Required", message: "Please select at least one investigation.", type: 'error' });
+          return;
+      }
+
+      const formData = new FormData(appointmentFormEl);
+      const payload = {
+          patient_id: parseInt("{{ patient.id }}"),
+          doctor_id: Number(formData.get("staff_id")),
+          notes: formData.get("notes"),
+          mode_of_payment: formData.get("payment_mode"),
+          total_price: Number(totalPriceEL.textContent),
+          test_ids: uniqueIds
+      };
+
+      try {
+          const res = await fetch("/api/v1/appointments/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error("Could not save appointment.");
+
+          showFeedback({
+              title: "Success",
+              message: "Appointment and lab orders created.",
+              type: 'success',
+              redirectUrl: "/appointments"
+          });
+      } catch (error) {
+          showFeedback({ title: "Error", message: error.message, type: 'error' });
+      }
+  });
 </script>
-
 {% endblock %}

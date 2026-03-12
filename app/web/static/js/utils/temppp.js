@@ -44,72 +44,8 @@ const selectedTests = {
 
 // selected test data for required tests
 let selectedTestForSample = [];
+
 let selectedTestOrderList = [];
-
-function showToast(message, type = 'success') {
-    const toastEl = document.getElementById('appCustomToast');
-    const toastMessageElement = document.getElementById('appCustomToastText');
-
-    if (!toastEl || !toastMessageElement) return;
-
-    // Move to body to prevent clipping by parent containers
-    document.body.appendChild(toastEl.parentElement);
-
-    // Set content and style
-    toastMessageElement.innerText = message;
-    toastEl.classList.remove('bg-success', 'bg-danger', 'text-white');
-    toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger', 'text-white');
-
-    // Initialize and show
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-    toast.show();
-}
-
-
-
-function showFeedback({ title, message, type = 'success', redirectUrl = null }) {
-    const modalEl = document.getElementById('feedbackModal');
-    if (!modalEl) {
-        alert(`${title}: ${message}`);
-        return;
-    }
-
-    const titleEl = document.getElementById('feedbackTitle');
-    const messageEl = document.getElementById('feedbackMessage');
-    const iconContainer = document.getElementById('feedbackIconContainer');
-    const closeBtn = document.getElementById('feedbackCloseBtn');
-
-    if (titleEl) titleEl.innerText = title;
-    if (messageEl) messageEl.innerText = message;
-
-    if (iconContainer && closeBtn) {
-        if (type === 'success') {
-            iconContainer.innerHTML = `<div class="bg-light-success text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; font-size: 2rem;"><i class="ti ti-circle-check"></i></div>`;
-            closeBtn.className = 'btn btn-success';
-        } else {
-            iconContainer.innerHTML = `<div class="bg-light-danger text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; font-size: 2rem;"><i class="ti ti-alert-circle"></i></div>`;
-            closeBtn.className = 'btn btn-danger';
-        }
-    }
-
-const modal = new bootstrap.Modal(modalEl);
-    modal.show();
-
-   // FIX: Adjust z-index after the modal is shown to ensure it's on top
-    modalEl.addEventListener('shown.bs.modal', () => {
-        const backdrop = document.querySelector('.modal-backdrop:last-child');
-        if (backdrop) {
-            backdrop.style.zIndex = '1090'; // Just below the modal
-        }
-        modalEl.style.zIndex = '1100'; // On very top
-    }, { once: true });
-
-    if (redirectUrl) {
-        modalEl.addEventListener('hidden.bs.modal', () => { 
-            window.location.href = redirectUrl; 
-        }, { once: true });
-    }
-}
 
 (async function init() {
   const res = await getRemoteData(appointmentsURL);
@@ -245,7 +181,7 @@ appointmentForm.addEventListener("submit", async (e) => {
   // appointmentForm.reset();
 });
 
-// TODO: DONE show appointment details
+// show appointment details
 appointmentsTableEL.addEventListener("click", async (e) => {
   const button = e.target.closest(".view__appointment__btn");
   if (!button) return;
@@ -257,26 +193,18 @@ appointmentsTableEL.addEventListener("click", async (e) => {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-
-    if (!res.ok) throw new Error("Failed to fetch appointment");
-    
+    if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
     const appointment = await res.json();
-    populateAppointmentDetailModal(appointment);
 
+    populateAppointmentDetailModal(appointment);
   } catch (error) {
     console.error(error);
-    
-    // REPLACED ALERT WITH MODAL
-    showFeedback({ 
-      title: "Error", 
-      message: "Failed to load appointment details. Please try again.", 
-      type: 'error' 
-    });
+    alert("Failed to load appointment");
+    // TODO: app toast notification
   }
 });
 
-
-// TODO: DONE show edit appointment form with requested data
+// show edit appointment form with requested data
 appointmentsTableEL.addEventListener("click", async (e) => {
   const button = e.target.closest(".edit__appointment__btn");
   if (!button) return;
@@ -288,28 +216,21 @@ appointmentsTableEL.addEventListener("click", async (e) => {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    
-    if (!res.ok) throw new Error("Failed to fetch appointment");
-    
+    if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
     const appointment = await res.json();
+
     console.log("DEBUG: appointment detail", appointment);
 
     populateEditModal(appointment);
 
   } catch (error) {
     console.error(error);
-    
-    // REPLACED ALERT WITH MODAL
-    showFeedback({ 
-      title: "Error", 
-      message: "Failed to load appointment details for editing. Please try again.", 
-      type: 'error' 
-    });
+    alert("Failed to load appointment");
+    // TODO: app toast notification
   }
 });
 
-
-// TODO: DONE submit the edit made to the appointment
+// submit the edit made to the appointment
 document.querySelector(".edit__appointment__form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -324,39 +245,27 @@ document.querySelector(".edit__appointment__form").addEventListener("submit", as
         notes: document.getElementById("edit_note").value,
         status: document.getElementById("edit_status").value,
         mode_of_payment: document.getElementById("edit_mode_of_payment").value,
+        // Inside your submit listener:
         test_ids: currentSelectedTests.map(t => t.id) 
     };
 
     try {
         const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
-            method: "PATCH",
+            method: "PATCH", // Use PATCH for partial updates
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
         });
 
         if (res.ok) {
-            // 1. Hide the Edit Modal
-            const editModalEl = document.getElementById('edit_modal');
-            const modalInstance = bootstrap.Modal.getInstance(editModalEl);
-            if (modalInstance) modalInstance.hide();
-
-            // 2. Show the Toast
-            showToast("Appointment updated successfully!", "success");
-
-            // 3. Optional: Reload or refresh the table data
-            setTimeout(() => {
-                location.reload(); 
-            }, 1500); // Small delay so they can actually read the toast
+            alert("Appointment updated successfully");
+            location.reload();
         } else {
-            showToast("Failed to update appointment.", "error");
+            alert("Failed to update appointment");
         }
     } catch (error) {
         console.error("Update Error:", error);
-        showToast("Network error. Please try again.", "error");
     }
 });
-
-
 // document
 //   .querySelector(".edit__appointment__form")
 //   .addEventListener("submit", async function (e) {
@@ -402,90 +311,62 @@ document
     if (!button) return;
 
     const status = button.dataset.status;
-    const appointmentId = Number(button.dataset.appointmentId);
+    const appointmentId = Number(button.dataset.appointmentId); // get appointment id from the parent (ul)
 
-    const payload = { status: status };
-
+    // make patch/put request to update status
+    const payload = {
+      status: status,
+    };
     try {
       const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      if (!res.ok) throw new Error("Failed to update appointment status");
+      if (!res.ok) throw new Error("Failed to update appointment.: ", res);
 
       const data = await res.json();
+
       populateAppointmentDetailModal(data);
-
-      // REPLACED ALERT WITH SUCCESS MODAL
-      showFeedback({
-        title: "Status Updated",
-        message: `The appointment has been successfully marked as ${status.replace('_', ' ')}.`,
-        type: 'success'
-      });
-
+      // document.querySelector("#current_status").innerText = "loading....";
     } catch (error) {
       console.error(error);
-      showFeedback({
-        title: "Update Error",
-        message: "Could not update the appointment status. Please try again.",
-        type: 'error'
-      });
     }
   });
 
-// delete appointment - setting the ID for the confirmation modal
+// delete appointment
 appointmentsTableEL.addEventListener("click", async (e) => {
   const button = e.target.closest(".delete__appointment__btn");
   if (!button) return;
 
   const appointmentId = button.dataset.appointmentid;
-  document.querySelector(".delete__appointment").dataset.appointmentid = appointmentId;
+  document.querySelector(".delete__appointment").dataset.appointmentid =
+    appointmentId;
 });
 
-// delete appointment - actual execution
 document
   .querySelector(".delete__appointment")
   .addEventListener("click", async (e) => {
+    // send delete request to delete resources
     e.preventDefault();
     const button = e.target;
     if (!button) return;
 
     const appointmentId = button.dataset.appointmentid;
+    console.log("del", appointmentId);
 
     try {
       const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
-
-      if (!res.ok) throw new Error("Failed to delete appointment");
-
-      // REPLACED ALERT WITH SUCCESS MODAL + RELOAD
-      showFeedback({
-        title: "Deleted",
-        message: "The appointment record has been permanently removed.",
-        type: 'success',
-        redirectUrl: window.location.href // Refresh the table list
-      });
-
+      if (!res.ok) throw new Error("Failed to delete appointment: ", res);
     } catch (error) {
       console.error(error);
-      // REPLACED ALERT(error) WITH MODAL
-      showFeedback({
-        title: "Deletion Failed",
-        message: "An error occurred while trying to delete the record.",
-        type: 'error'
-      });
+      alert(error);
     }
   });
 
-
-
-
-
-// TODO: DONE
 // Get appointment data for sample
 appointmentsTableEL.addEventListener("click", async (e) => {
   const button = e.target.closest(".add__sample__btn");
@@ -499,9 +380,7 @@ appointmentsTableEL.addEventListener("click", async (e) => {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    
-    if (!res.ok) throw new Error("Failed to fetch appointment");
-    
+    if (!res.ok) throw new Error("Failed to fetch appointment: ", res);
     const appointment = await res.json();
     console.log(appointment);
 
@@ -515,6 +394,8 @@ appointmentsTableEL.addEventListener("click", async (e) => {
     document
       .querySelector("#test__requested")
       .addEventListener("click", (e) => {
+        console.log("target is: ", e.target.closest(".test__required__choice"));
+
         let selectedInputEl = e.target.closest(".test__required__choice");
         if (!selectedInputEl) return;
 
@@ -527,32 +408,20 @@ appointmentsTableEL.addEventListener("click", async (e) => {
         } else {
           selectedTestForSample.push(inputValue);
         }
+
+        console.log(selectedTestForSample);
       });
-      
   } catch (error) {
     console.error(error);
-    // REPLACED ALERT WITH MODAL
-    showFeedback({
-      title: "Loading Error",
-      message: "Could not retrieve appointment tests. Please try again.",
-      type: 'error'
-    });
+    alert("Failed to load appointment");
+    // TODO: app toast notification
   }
 });
+
 
 // add sample
 addSampleForm.addEventListener("submit", async function (e) {
   e.preventDefault();
-
-  // Basic validation: ensure at least one test is selected
-  if (selectedTestForSample.length === 0) {
-    showFeedback({
-      title: "Selection Required",
-      message: "Please select at least one test for this sample.",
-      type: 'error'
-    });
-    return;
-  }
 
   const formData = new FormData(addSampleForm);
   const patientId = this.dataset.patientId;
@@ -569,39 +438,30 @@ addSampleForm.addEventListener("submit", async function (e) {
     sample_condition: formData.get("add__sample__condition"),
   };
 
+  // post data to backend
   try {
     const res = await fetch("/api/v1/samples/", {
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       method: "POST",
       body: JSON.stringify(payload),
     });
+    if (!res.ok) throw new Error("Failed to post sample data: ", res);
 
-   if (res.ok) {
-            // 1. Hide the Add Sample Modal
-            const sampleModalEl = document.getElementById('add_sample_modal');
-            const sampleModalInstance = bootstrap.Modal.getInstance(sampleModalEl);
-            if (sampleModalInstance) sampleModalInstance.hide();
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
 
-            // 2. Show Success
-            showFeedback({
-                title: "Sample Recorded",
-                message: "The lab sample has been successfully added.",
-                type: 'success'
-            });
-
-            addSampleForm.reset();
-            selectedTestForSample = [];
-        } else {
-            throw new Error("Failed to post sample");
-        }
-    } catch (error) {
-        showFeedback({ title: "Error", message: "Could not save sample.", type: 'error' });
-    }
+  // reset form
+  addSampleForm.reset();
+  selectedTestForSample = []
 });
 
 
 
-// TODO: DONE
 // Add new sample category
 addSampleCategoryForm.addEventListener("submit", async function(e) {
   e.preventDefault();
@@ -609,98 +469,89 @@ addSampleCategoryForm.addEventListener("submit", async function(e) {
   const formData = new FormData(addSampleCategoryForm);
   const payload =  {
     category_name: formData.get("sample_name")
+    // category_description: formData.get("category_description")
   };
   
   try {
     const res = await fetch("/api/v1/samples/sample-categories/", {
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       method: "POST",
       body: JSON.stringify(payload)
     });
 
-    if (!res.ok) throw new Error("Failed to save sample category");
+    if (!res.ok) throw new Error("Failed to save sample data: ", res.statusText);
 
     const data = await res.json();
     console.log(data);
 
-    // SUCCESS MODAL + RELOAD
-    showFeedback({
-      title: "Category Created",
-      message: "New sample category has been added successfully.",
-      type: 'success',
-      redirectUrl: window.location.href 
-    });
-
+      location.reload()
+    // TODO: Add notification
   } catch (error) {
     console.error(error);
-    showFeedback({
-      title: "Creation Failed",
-      message: "An error occurred while saving the new category.",
-      type: 'error'
-    });
+    // TODO: Add notification
+
   }
 
   addSampleCategoryForm.reset();
-});
+})
 
 // Search patients by staff
 searchStaff.addEventListener("input", (e) => {
+  console.log(e.target.value);
   clearTimeout(searchTimeout);
 
   searchTimeout = setTimeout(async () => {
-    try {
-      let value = e.target.value;
-      buildAppointmentDynamicURLParam("doctor", value);
-      const data = await performSearch(value, true);
-      renderStaffSearchResults(data);
-    } catch (error) {
-      console.error("Staff search error:", error);
-      // Optional: showFeedback here if you want to notify of search failures
-    }
-  }, 300); // Added slight delay for better performance
+    let value = e.target.value;
+    buildAppointmentDynamicURLParam("doctor", value);
+    console.log(appointmentsURL);
+    const data = await performSearch(value, true);
+
+    renderStaffSearchResults(data);
+  });
+});
+
+// clear text from searchStaff input
+searchStaff.addEventListener("blur", (e) => {
+  searchStaff.value = "";
+  buildAppointmentDynamicURLParam("doctor");
 });
 
 // Search patients by patient name
 patientSearch.addEventListener("input", (e) => {
+  console.log(e.target.value);
   clearTimeout(searchTimeout);
 
   searchTimeout = setTimeout(async () => {
-    try {
-      let value = e.target.value;
-      buildAppointmentDynamicURLParam("patient", value);
-      const data = await performSearch(value, true);
-      renderPatientsSearchResults(data);
-    } catch (error) {
-      console.error("Patient search error:", error);
-    }
-  }, 300);
+    let value = e.target.value;
+    buildAppointmentDynamicURLParam("patient", value);
+    const data = await performSearch(value, true);
+
+    renderPatientsSearchResults(data);
+  });
+});
+
+// clear text from patientsearch input
+patientSearch.addEventListener("blur", (e) => {
+  patientSearch.value = "";
+  buildAppointmentDynamicURLParam("patient");
 });
 
 // FILTERING BY STATUS
 statusFilter.forEach((statusOption) =>
   statusOption.addEventListener("change", async (e) => {
-    try {
-      buildAppointmentDynamicURLParam(
-        "status",
-        e.currentTarget.dataset.status,
-        e.currentTarget.checked,
-      );
+    buildAppointmentDynamicURLParam(
+      "status",
+      e.currentTarget.dataset.status,
+      e.currentTarget.checked,
+    );
 
-      const data = await getRemoteData(appointmentsURL);
-      render(data);
-    } catch (error) {
-      console.error("Filter error:", error);
-      showFeedback({
-        title: "Filter Error",
-        message: "Could not refresh the list with the selected filters.",
-        type: 'error'
-      });
-    }
+    // make request to backend
+    const data = await getRemoteData(appointmentsURL);
+    render(data);
   }),
 );
-
-
-
 
 /**
  * render patient search results (search by patient name)
@@ -1241,18 +1092,17 @@ function buildAppointmentDynamicURLParam(key, value, state) {
   appointmentsURL = url.pathname + url.search;
 }
 
-
 // function to perform search
 /**
+ *
  * @param {string} query
  * @param {bool} useAppointment
- * @returns {Array}
+ * @returns
  */
 async function performSearch(query, useAppointment) {
-  // Only search if query is at least 3 characters
+  // cancel previous request
   if (query.length < 3) return [];
 
-  // Cancel any ongoing search request
   if (activeController) {
     activeController.abort();
   }
@@ -1260,32 +1110,24 @@ async function performSearch(query, useAppointment) {
   activeController = new AbortController();
 
   try {
-    let url = useAppointment ? appointmentsURL : testCategoriesURL;
+    let url = testCategoriesURL;
+    // set url to appointment url if the useAppointment is set
+    if (useAppointment) {
+      url = appointmentsURL;
+    }
 
     const res = await fetch(url, {
       signal: activeController.signal,
-      headers: { "Content-Type": "application/json" }
     });
-
-    if (!res.ok) throw new Error(`Search failed: ${res.statusText}`);
 
     const data = await res.json();
+
     return data;
-
   } catch (err) {
-    // We ignore AbortError because it happens intentionally when a user keeps typing
-    if (err.name === "AbortError") return;
-
-    console.error("Search error:", err);
-    
-    // NOTIFY USER OF ACTUAL SEARCH ERRORS
-    showFeedback({
-      title: "Search Error",
-      message: "An error occurred while searching. Please check your connection.",
-      type: 'error'
-    });
-    
-    return [];
+    // TODO: Add model to show error
+    if (err.name !== "AbortError") {
+      console.error("Search error:", err);
+    }
   }
 }
 
@@ -1425,26 +1267,20 @@ window.removeTest = function(testId) {
 // 3. Search logic (Debounced)
 let searchTimer;
 
-
 document.getElementById("test_search_input").addEventListener("input", (e) => {
     clearTimeout(searchTimer);
     const query = e.target.value;
-    
-    // Safety check for category filter
-    const categoryFilter = document.getElementById("test_category_filter");
-    const categoryId = categoryFilter ? categoryFilter.value : "";
-
-    const resultsWrapper = document.getElementById("search_results_area");
-    const resultsArea = document.getElementById("test_search_results");
+    const categoryId = document.getElementById("test_category_filter").value;
 
     // Only search if user typed at least 2 characters
     if (query.length < 2) {
-        if (resultsWrapper) resultsWrapper.classList.add("d-none");
+        document.getElementById("search_results_area").classList.add("d-none");
         return;
     }
 
     searchTimer = setTimeout(async () => {
         try {
+            // Updated to match your specific API structure
             const url = `/api/v1/test-categories/?test_category_type=${categoryId}&name=${query}`;
             const res = await fetch(url);
             
@@ -1452,12 +1288,13 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
             
             const tests = await res.json();
             
-            if (!resultsArea || !resultsWrapper) return;
+            const resultsArea = document.getElementById("test_search_results");
+            const resultsWrapper = document.getElementById("search_results_area");
             
             resultsArea.innerHTML = "";
             
             if (tests.length === 0) {
-                resultsArea.innerHTML = '<div class="list-group-item small text-muted text-center">No tests found</div>';
+                resultsArea.innerHTML = '<div class="list-group-item small text-muted">No tests found</div>';
             } else {
                 tests.forEach(test => {
                     const item = document.createElement("button");
@@ -1465,7 +1302,7 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
                     item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center";
                     item.innerHTML = `
                         <div>
-                            <h6 class="mb-0 fs-13">${test.name}</h6>
+                            <h6 class="mb-0">${test.name}</h6>
                             <small class="text-muted">GHS ${parseFloat(test.price_ghs).toFixed(2)}</small>
                         </div>
                         <i class="ti ti-plus text-success"></i>
@@ -1489,15 +1326,8 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
                 });
             }
             resultsWrapper.classList.remove("d-none");
-            
         } catch (err) {
             console.error("Search Error:", err);
-            // REPLACED ALERT WITH MODAL
-            showFeedback({
-                title: "Search Unavailable",
-                message: "We encountered an error while searching for tests. Please try again.",
-                type: 'error'
-            });
         }
-    }, 400); 
+    }, 400); // 400ms debounce to prevent hammering the server
 });
