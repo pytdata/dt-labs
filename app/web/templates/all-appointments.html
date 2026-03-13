@@ -63,6 +63,13 @@
     pointer-events: auto; /* Allows clicking the 'X' button on the toast */
 }
 
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+.modal {
+    z-index: 1050 !important;
+}
+
   </style>
     
 
@@ -1139,6 +1146,77 @@
     <!-- End Delete Modal  -->
 
 
+
+
+<!-- PAYMENT MANAGEMENT MODAL -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Receive Payment - <span id="payInvoiceNo"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3 d-flex justify-content-between">
+          <strong>Patient:</strong> <span id="payPatientName"></span>
+        </div>
+        
+        <table class="table table-sm table-bordered">
+          <thead>
+            <tr>
+              <th style="width: 40px;"><input type="checkbox" id="selectAllTests"></th>
+              <th>Test Name</th>
+              <th class="text-end">Price</th>
+            </tr>
+          </thead>
+          <tbody id="paymentTestList">
+            </tbody>
+        </table>
+
+        <div class="mt-3 p-3 bg-light rounded">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Total Bill:</span>
+            <span class="fw-bold" id="payTotalAmount">GHS 0.00</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2 text-primary">
+            <span>Already Paid:</span>
+            <span class="fw-bold" id="payAmountPaid">GHS 0.00</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2 text-danger border-top pt-2">
+            <span>Balance Due:</span>
+            <span class="fw-bold" id="payBalance">GHS 0.00</span>
+          </div>
+          
+          <hr>
+          
+          <div class="form-group mb-3">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select" id="payMethod">
+              <option value="cash">Cash</option>
+              <option value="momo">MoMo</option>
+              <option value="card">Bank Card</option>
+            </select>
+          </div>
+
+          <div class="form-group mb-0">
+            <label class="form-label">Amount Paying Now</label>
+            <input type="number" class="form-control form-control-lg fw-bold" id="payAmountInput" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div>
+           <button type="button" class="btn btn-primary" id="btnProcessPayment">Process Payment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
      <!-- Start Add Sample Modal  -->
         <div id="add_sample_modal" class="modal fade">
         <div class="modal-dialog modal-dialog-centered modal-md">
@@ -1261,6 +1339,7 @@
 </div>
 
 
+
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999 !important;">
   <div id="appCustomToast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true" style="opacity: 1 !important;">
     <div class="d-flex">
@@ -1268,7 +1347,8 @@
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
-</div>>
+</div>
+
 
 
     <!-- jQuery -->

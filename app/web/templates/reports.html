@@ -427,8 +427,21 @@
                 <div class="card mb-0">
                     <div class="card-body">
                     <div>
-  <canvas id="myChart"></canvas>
-</div>
+                        <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="card-title">System Analysis</h5>
+                            <select id="reportType" class="form-select w-auto">
+                                <option value="revenue">Financial: Revenue vs Collection</option>
+                                <option value="workload">Clinical: Departmental Workload</option>
+                                <option value="status">Operations: Lab Completion Rates</option>
+                            </select>
+                        </div>
+                        
+                        <div style="height: 400px;">
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+                </div>
 
                     </div>
 
@@ -490,31 +503,10 @@
 <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
 <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-  const ctx = document.getElementById('myChart');
+<script src="{{ url_for('static', path='js/utils/render-chart.js') }}" defer></script>
 
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-      datasets: [{
-        label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-</script>
 
 
 </body>

@@ -99,7 +99,69 @@ class LabResultCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+# 1. New Schema for the individual tests on the bill
+class InvoiceItemSummary(BaseModel):
+    id: int
+    test_id: int
+    description: str
+    unit_price: Decimal
+    is_paid: bool  # This is the visibility toggle for the JS checkbox
+    model_config = ConfigDict(from_attributes=True)
+
+
+# 2. Updated Invoice Summary to include the items
+class InvoiceSummary(BaseModel):
+    id: int
+    invoice_no: str
+    status: str
+    total_amount: Decimal
+    amount_paid: Decimal  # Added this for the modal header
+    balance: Decimal
+    items: List[InvoiceItemSummary] = []  # <--- THIS IS KEY
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InvoiceSummaryMini(BaseModel):
+    id: int
+    invoice_no: str | None
+    status: str | None
+    model_config = ConfigDict(from_attributes=True)
+
+
 class AppointmentResponse(BaseModel):
+    id: int
+    patient: PatientOut
+    doctor: UserResponse
+    # Add this to track which staff member handled the booking
+    # created_by_user: UserResponse | None = None
+
+    appointment_at: datetime
+    start_time: time
+    end_time: time | None = None
+    invoice: InvoiceSummaryMini | None = None
+
+    preffered_mode: PrefferedModeOfAppointment | None = None
+    notes: str | None = None
+    status: str | None = "pending"
+
+    # Use Decimal for money to match your DB Numeric(12,2)
+    total_price: Decimal = Decimal("0.00")
+    mode_of_payment: PaymentMode
+
+    # This matches the Relationship in your Appointment model
+    tests: List[TestResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LabOrderSummary(BaseModel):
+    id: int
+    status: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+# 3. The Main Response
+class AppointmentDetailResponse(AppointmentResponse):
     id: int
     patient: PatientOut
     doctor: UserResponse
@@ -123,29 +185,8 @@ class AppointmentResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-# Summary schemas to keep the response clean
-class InvoiceSummary(BaseModel):
-    id: int
-    invoice_no: str
-    status: str  # paid, unpaid, partial
-    total_amount: Decimal
-    balance: Decimal
-    model_config = ConfigDict(from_attributes=True)
-
-
-class LabOrderSummary(BaseModel):
-    id: int
-    status: str  # pending, in_progress, completed
-    # You could even add a count of items
-    model_config = ConfigDict(from_attributes=True)
-
-
-# The Main Response
-class AppointmentDetailResponse(AppointmentResponse):
     invoice: Optional[InvoiceSummary] = None
     lab_order: Optional[LabOrderSummary] = None
-
     model_config = ConfigDict(from_attributes=True)
 
 

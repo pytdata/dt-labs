@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import String, DateTime, ForeignKey, Numeric, Text
+from sqlalchemy import Boolean, String, DateTime, ForeignKey, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -73,6 +73,12 @@ class InvoiceItem(Base):
     unit_price: Mapped[float] = mapped_column(Numeric(12, 2))
     qty: Mapped[int] = mapped_column(default=1)
     line_total: Mapped[float] = mapped_column(Numeric(12, 2))
+    is_paid: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )  # The Visibility Toggle
+    lab_order_item_id: Mapped[int | None] = mapped_column(
+        ForeignKey("lab_order_items.id"), nullable=True
+    )
 
     # invoice = relationship("Invoice", backref="items")
     test = relationship("Test")
@@ -81,6 +87,8 @@ class InvoiceItem(Base):
         "Invoice",
         back_populates="items",
     )
+    lab_order_item = relationship("LabOrderItem")
+    invoice: Mapped["Invoice"] = relationship("Invoice", back_populates="items")
 
 
 class Payment(Base):
@@ -103,6 +111,10 @@ class Payment(Base):
     received_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    # 
     # This identifies the staff member who confirmed the cash was in hand or Momo was received
     verified_by: Mapped["User"] = relationship(back_populates="verified_payments")
     invoice: Mapped["Invoice"] = relationship(

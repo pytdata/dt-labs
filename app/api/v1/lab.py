@@ -98,29 +98,30 @@ async def get_radiology_queue(db: AsyncSession = Depends(get_db)):
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
-        .outerjoin(Test.test_category)  # JOIN CATEGORY HERE
+        .outerjoin(Test.test_category)
         .join(LabOrderItem.order)
         .join(LabOrder.appointment)
         .join(Appointment.patient)
         .outerjoin(Appointment.doctor)
         .where(
             Test.requires_phlebotomy == False,
-            # Use the Enum members directly if your model uses Enum types
+            # 1. Status Check: Must be past payment
             LabOrderItem.status.in_(
                 [
                     LabStatus.AWAITING_RESULTS,
                     LabStatus.AWAITING_APPROVAL,
                 ]
             ),
+            # 2. Stage Check: Include BOOKING so it shows up immediately after payment
             LabOrderItem.stage.in_(
                 [
+                    LabStage.BOOKING,  # <--- Added this
                     LabStage.RUNNING,
                     LabStage.ANALYZING,
                 ]
             ),
         )
         .options(
-            # Eagerly load the category to satisfy Pydantic
             contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
             contains_eager(LabOrderItem.order)
             .contains_eager(LabOrder.appointment)
@@ -274,14 +275,14 @@ async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
-        # We need to join the category so contains_eager can see it
         .outerjoin(Test.test_category)
         .join(LabOrderItem.order)
         .join(LabOrder.appointment)
         .join(Appointment.patient)
+        # Use outerjoin here because phlebotomy/radiology records
+        # aren't created until AFTER the scientist starts work
         .outerjoin(Appointment.phlebotomy)
         .options(
-            # Use contains_eager for everything since you joined them manually
             contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
             contains_eager(LabOrderItem.order)
             .contains_eager(LabOrder.appointment)
@@ -298,6 +299,7 @@ async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
             LabOrderItem.status == LabStatus.AWAITING_SAMPLE,
         )
     else:
+        # Radiology / Others
         stmt = stmt.where(
             Test.requires_phlebotomy == False,
             LabOrderItem.status.in_(
@@ -306,6 +308,7 @@ async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
         )
 
     result = await db.execute(stmt)
+    # .unique() is necessary when using joined loads/contains_eager
     return result.unique().scalars().all()
 
 

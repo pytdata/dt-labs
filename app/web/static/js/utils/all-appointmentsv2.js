@@ -357,41 +357,6 @@ document.querySelector(".edit__appointment__form").addEventListener("submit", as
 });
 
 
-// document
-//   .querySelector(".edit__appointment__form")
-//   .addEventListener("submit", async function (e) {
-//     e.preventDefault();
-
-//     const appointmentId = this.dataset.appointmentId;
-
-//     const payload = {
-//       patient_id: document.getElementById("patient").value,
-//       // patient_type: document.getElementById("patient_type").value,
-//       doctor_id: document.getElementById("staff").value,
-//       notes: document.getElementById("note").value,
-//       mode_of_payment: document.getElementById("mode_of_payment").value,
-//     };
-
-//     try {
-//       const res = await fetch(`/api/v1/appointments/${appointmentId}/`, {
-//         method: "PUT",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(payload),
-//       });
-
-//       if (!res.ok) throw new Error("Failed to update appointment");
-
-//       const data = await res.json();
-//       console.log(data);
-
-//       // reset the form
-//       document.querySelector(".edit__appointment__form").reset();
-//     } catch (error) {
-//       console.log(error);
-//       alert(error);
-//     }
-//   });
-
 // update appointment status
 document
   .querySelector("#status__container")
@@ -826,7 +791,12 @@ function render(appointmentsList) {
  * @returns htmlement
  */
 function renderData(appointment) {
-  console.log(appointment)
+  console.log("Appointment information: ===", appointment)
+  // Extract invoice ID safely
+  const invoiceId = appointment.invoice ? appointment.invoice.id : null;
+  const isPaid = appointment.invoice && appointment.invoice.status === 'paid';
+  console.log(isPaid, "<<<<<<<<<<==================")
+
   const htmlElement = ` <tr>
         <td>
             <div class="form-check form-check-md">
@@ -865,7 +835,6 @@ function renderData(appointment) {
             </div>
         </td>
        
-       
         <td>${formatDate(appointment.appointment_at)}, ${formatTime(appointment.start_time)}</td>
         ${
           appointment.status == "completed"
@@ -879,7 +848,16 @@ function renderData(appointment) {
         <td class="text-end">
             <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
             <ul class="dropdown-menu p-2">
-            <li>
+                <li>
+                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center pay__appointment__btn" 
+                       data-bs-toggle="modal" data-bs-target="#paymentModal" 
+                       data-invoiceId="${invoiceId}" 
+                       data-appointmentId="${appointment.id}">
+                       <i class="ti ti-cash me-1"></i>${isPaid ? 'View Billing' : 'Receive Payment'}
+                    </a>
+                </li>
+                <hr class="dropdown-divider">
+                <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center add__sample__btn" data-bs-toggle="modal" data-bs-target="#add_sample_modal" data-appointmentId=${appointment.id}><i class="ti ti-plus me-1"></i>Add Sample</a>
                 </li>
                 <li>
@@ -891,15 +869,278 @@ function renderData(appointment) {
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center delete__appointment__btn" data-appointmentId=${appointment.id} data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
                 </li>
-                
             </ul>
         </td>
-    </tr>
-    
-  `;
+    </tr>`;
 
   return htmlElement;
 }
+
+
+document.addEventListener('click', async (e) => {
+    const payBtn = e.target.closest('.pay__appointment__btn');
+    if (payBtn) {
+        // Stop any default behavior
+        e.preventDefault();
+        
+        const appointmentId = payBtn.dataset.appointmentid;
+        
+        // Populate the modal with a loader while fetching
+        document.getElementById('paymentTestList').innerHTML = '<tr><td colspan="3" class="text-center">Loading...</td></tr>';
+        
+        try {
+            const response = await fetch(`/api/v1/appointments/${appointmentId}/`);
+            if (!response.ok) throw new Error("Fetch failed");
+            
+            const appointment = await response.json();
+            populatePaymentModal(appointment);
+            
+            // Note: We don't need modal.show() here because 
+            // data-bs-toggle="modal" on the button handles it!
+        } catch (error) {
+            console.error(error);
+            // If it fails, close the modal so the user isn't stuck with an overlay
+            const modalEl = document.getElementById('paymentModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            showToast("Failed to load billing details", "danger");
+        }
+    }
+});
+
+
+
+/**
+ * Populates the Payment Modal with Invoice and Test data.
+ */
+function populatePaymentModal(appointment) {
+    const invoice = appointment.invoice;
+    const testListBody = document.getElementById('paymentTestList');
+    
+    // Safety check: If no invoice exists, we can't process payment
+    if (!invoice) {
+        showToast("No invoice found for this appointment.", "danger");
+        return;
+    }
+
+    console.log(`FINDING INVOVICE IN APP>>>>>>>>>>>>>>>>>>:}`,appointment)
+    // 1. Set Header Info & Store Invoice ID for the Process button
+    document.getElementById('payInvoiceNo').innerText = invoice.invoice_no;
+    document.getElementById('payInvoiceNo').dataset.invoiceId = invoice.id; // Store raw ID
+    
+    document.getElementById('payPatientName').innerText = 
+        `${appointment.patient.first_name} ${appointment.patient.other_names || ''} ${appointment.patient.surname}`;
+    
+    // Use Number() or parseFloat() to ensure these render nicely if they come as strings
+    document.getElementById('payTotalAmount').innerText = `GHS ${Number(invoice.total_amount).toFixed(2)}`;
+    document.getElementById('payAmountPaid').innerText = `GHS ${Number(invoice.amount_paid).toFixed(2)}`;
+    document.getElementById('payBalance').innerText = `GHS ${Number(invoice.balance).toFixed(2)}`;
+    
+    // 2. Reset the "Select All" checkbox and Amount Input
+    const selectAllBox = document.getElementById('selectAllTests');
+    if (selectAllBox) selectAllBox.checked = false;
+    document.getElementById('payAmountInput').value = "";
+
+    // 3. Clear and populate tests
+    testListBody.innerHTML = '';
+    
+    if (invoice.items && invoice.items.length > 0) {
+        invoice.items.forEach(item => {
+            const isPaid = item.is_paid;
+            
+            // We use 'table-success' or 'table-light' for paid items to distinguish them visually
+            const rowClass = isPaid ? 'table-light text-muted' : '';
+            
+            testListBody.innerHTML += `
+                <tr class="${rowClass}">
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input test-pay-checkbox" 
+                                value="${item.id}" 
+                                data-price="${item.unit_price}"
+                                ${isPaid ? 'checked disabled' : ''}>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="fw-medium">${item.description}</span>
+                        ${isPaid ? '<span class="badge badge-soft-success ms-2"><i class="ti ti-check me-1"></i>Paid</span>' : ''}
+                    </td>
+                    <td class="text-end fw-bold">GHS ${Number(item.unit_price).toFixed(2)}</td>
+                </tr>
+            `;
+        });
+    } else {
+        testListBody.innerHTML = '<tr><td colspan="3" class="text-center">No tests found on this invoice.</td></tr>';
+    }
+
+    // 4. Re-initialize the calculation logic
+    updateAmountOnCheck();
+}
+
+
+function updateAmountOnCheck() {
+    const checkboxes = document.querySelectorAll('.test-pay-checkbox:not(:disabled)');
+    const amountInput = document.getElementById('payAmountInput');
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            let total = 0;
+            document.querySelectorAll('.test-pay-checkbox:not(:disabled):checked').forEach(checkedCb => {
+                total += parseFloat(checkedCb.dataset.price);
+            });
+            amountInput.value = total > 0 ? total.toFixed(2) : "";
+        });
+    });
+}
+
+
+// PROCESSING PAYMENT
+// document.getElementById('btnProcessPayment').addEventListener('click', async () => {
+//     const modalElement = document.getElementById('paymentModal');
+//     const modal = bootstrap.Modal.getInstance(modalElement);
+    
+//     // 1. Get the raw Invoice ID from the dataset we set during populatePaymentModal
+//     const invoiceId = document.getElementById('payInvoiceNo').dataset.invoiceId;
+    
+//     if (!invoiceId) {
+//         showToast("Error: Invoice ID not found. Please reopen the modal.", "danger");
+//         return;
+//     }
+
+//     // 2. Collect IDs of only the NEWLY checked tests
+//     const selectedCheckboxes = document.querySelectorAll('.test-pay-checkbox:not(:disabled):checked');
+//     const selectedTestIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+                                 
+//     // 3. Build Payload
+//     const payload = {
+//         amount: parseFloat(document.getElementById('payAmountInput').value),
+//         method: document.getElementById('payMethod').value,
+//         test_ids_to_clear: selectedTestIds,
+//         description: "Payment received at desk"
+//     };
+
+//     // 4. Validation
+//     if (isNaN(payload.amount) || payload.amount <= 0) {
+//         showToast("Please enter a valid payment amount", "warning");
+//         return;
+//     }
+
+//     // Optional: Warn if they are paying money but haven't checked any tests
+//     if (selectedTestIds.length === 0) {
+//         const confirmAll = confirm("No specific tests selected. Proceed with a general payment towards the balance?");
+//         if (!confirmAll) return;
+//     }
+
+//     try {
+//         // Change button state to prevent double-clicks
+//         const btn = document.getElementById('btnProcessPayment');
+//         btn.disabled = true;
+//         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processing...';
+
+//         const res = await fetch(`/api/v1/billing/${invoiceId}/payments`, {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify(payload)
+//         });
+
+//         const result = await res.json();
+
+//         if (res.ok) {
+//             showToast("Payment Processed! Clinical status updated.", "success");
+//             modal.hide();
+//             // Refresh the table to reflect the new 'Paid' status and balance
+//             location.reload(); 
+//         } else {
+//             showToast(result.detail || "Payment failed", "danger");
+//             btn.disabled = false;
+//             btn.innerText = 'Process Payment';
+//         }
+//     } catch (error) {
+//         console.error("Payment Error:", error);
+//         showToast("Network error. Please check your connection.", "danger");
+//         document.getElementById('btnProcessPayment').disabled = false;
+//     }
+// });
+
+
+
+// SELECT ALL TEST 
+
+// Use a delegated event listener or ensure this runs after DOM is loaded
+document.getElementById('btnProcessPayment').addEventListener('click', async function() {
+    const btn = this;
+    const invoiceId = document.getElementById('payInvoiceNo').dataset.invoiceId;
+    
+    // 1. Get Selected Tests
+    const selectedCheckboxes = document.querySelectorAll('.test-pay-checkbox:checked:not(:disabled)');
+    const testIdsToClear = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+
+    // 2. Get Payment Details
+    const amount = parseFloat(document.getElementById('payAmountInput').value);
+    const method = document.getElementById('payMethod').value;
+
+    console.log("Processing Payment for Invoice:", invoiceId);
+    console.log("Tests to unlock:", testIdsToClear);
+    console.log("Amount:", amount);
+
+    // 3. Simple Validation
+    if (!invoiceId) return alert("Invoice ID missing. Please reload.");
+    if (isNaN(amount) || amount <= 0) return alert("Please enter a valid amount.");
+
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+
+        const response = await fetch(`/api/v1/billing/${invoiceId}/payments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                amount: amount,
+                method: method,
+                test_ids_to_clear: testIdsToClear,
+                description: "Payment received at desk"
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+                
+            const result = await res.json();
+          showToast("Payment Processed!", "success");
+          modal.hide();
+
+          // Instead of a confirm box, just open the print page in a new small window
+          const receiptUrl = `/api/v1/billing/payments/${result.payment_id}/print`;
+          window.open(receiptUrl, 'ReceiptPrint', 'width=600,height=800');
+          
+          // Refresh the background page to show the "Paid" status
+          setTimeout(() => location.reload(), 1000);
+              } else {
+                  alert("Error: " + (result.detail || "Unknown error"));
+                  btn.disabled = false;
+                  btn.innerText = "Process Payment";
+              }
+    } catch (error) {
+        console.error("Payment Request Failed:", error);
+        showToast("Payment Request Failed", "success");
+        modal.hide();
+        btn.disabled = false;
+        btn.innerText = "Process Payment";
+    }
+});
+
+
+document.getElementById('selectAllTests').addEventListener('change', (e) => {
+    const checkboxes = document.querySelectorAll('.test-pay-checkbox:not(:disabled)');
+    checkboxes.forEach(cb => {
+        cb.checked = e.target.checked;
+        cb.dispatchEvent(new Event('change')); // Trigger total calculation
+    });
+});
+
+
+
 
 function populateAppointmentDetailModal(appointment) {
   console.log("status update: ", appointment);
@@ -1375,7 +1616,6 @@ function formatTime(timeStr) {
   });
 }
 
-
 //  <td>15 Jan 2025, 05:30 PM to 06:30 PM</td>
 
 
@@ -1501,3 +1741,5 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
         }
     }, 400); 
 });
+
+

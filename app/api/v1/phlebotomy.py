@@ -8,11 +8,6 @@ from app.models.lab import Appointment
 
 
 from app.schemas.phlebotomy import PhlebotomyResponse
-from app.schemas.sample import (
-    SampleCreate,
-    SampleResponse,
-    SampleTestMiniResponse,
-)
 
 router = APIRouter()
 

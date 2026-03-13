@@ -20,6 +20,7 @@ from app.models.catalog import Phlebotomy, Priority, Sample, SampleStatus, Test
 from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
 from app.models.users import User
+from app.schemas import billing_service
 from app.schemas.appointment import (
     AppointmenCreate,
     AppointmentDetailResponse,
@@ -28,6 +29,7 @@ from app.schemas.appointment import (
     AppointmentUpdate,
     TestResponse,
 )
+from app.schemas.billing import PaymentCreate
 from app.schemas.lab_results import LabResultStatus
 
 
@@ -61,9 +63,8 @@ async def create_appointment(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        # Use begin() for atomic transaction: everything succeeds or everything fails
         async with db.begin():
-            # 1. Fetch Tests
+            # 1. Fetch Tests to calculate totals
             stmt = select(Test).where(Test.id.in_(data.test_ids))
             result = await db.execute(stmt)
             tests = result.scalars().all()
@@ -71,7 +72,7 @@ async def create_appointment(
             if not tests:
                 raise HTTPException(status_code=400, detail="No valid tests selected")
 
-            total_amount = sum(t.price_ghs for t in tests)
+            total_billable_amount = sum(t.price_ghs for t in tests)
 
             # 2. Create Appointment
             appointment = Appointment(
@@ -79,91 +80,75 @@ async def create_appointment(
                 doctor_id=data.doctor_id,
                 notes=data.notes,
                 mode_of_payment=data.mode_of_payment,
-                total_price=total_amount,
+                total_price=total_billable_amount,  # The cost of the appointment
                 tests=tests,
             )
             db.add(appointment)
             await db.flush()
 
-            # 3. Create Lab Order
+            # 3. Create Lab Order (The container for clinical tasks)
             order = LabOrder(
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
-                status="pending",  # This is LabOrder level, separate from items
+                status="pending",
             )
             db.add(order)
             await db.flush()
 
-            # 4. Create Invoice
+            # 4. Create Invoice (Strictly Unpaid at this stage)
             invoice = Invoice(
                 invoice_no=f"INV-{appointment.id}-{datetime.now().strftime('%M%S')}",
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
-                total_amount=total_amount,
-                amount_paid=data.total_price,
-                balance=total_amount - data.total_price,
-                status="unpaid" if (total_amount - data.total_price) > 0 else "paid",
+                total_amount=total_billable_amount,
+                amount_paid=0,  # Always 0 at creation now
+                balance=total_billable_amount,
+                status="unpaid",
                 payment_mode=data.mode_of_payment,
             )
             db.add(invoice)
             await db.flush()
 
-            # 5. Process Tests into Lab Order Items
+            # 5. Process Tests: Create locked clinical tasks and linked billing items
             for test in tests:
-                # A. Billing Item
+                # A. Create the LabOrderItem (Clinical Task)
+                # It starts as AWAITING_PAYMENT, so it won't show in Phlebotomy/Lab yet
+                order_item = LabOrderItem(
+                    order_id=order.id,
+                    test_id=test.id,
+                    status=LabStatus.AWAITING_PAYMENT,
+                    stage=LabStage.BOOKING,
+                )
+                db.add(order_item)
+                await db.flush()  # Flush to get the ID for the link
+
+                # B. Create the InvoiceItem (The Billing record)
+                # Linked to the clinical task so we can "unlock" it later
                 db.add(
                     InvoiceItem(
                         invoice_id=invoice.id,
                         test_id=test.id,
+                        lab_order_item_id=order_item.id,  # The key connection
                         description=test.name,
                         unit_price=test.price_ghs,
                         qty=1,
                         line_total=test.price_ghs,
+                        is_paid=False,  # Must be paid via modal
                     )
                 )
 
-                # B. ENUM LOGIC: Determine clinical flow
-                if test.requires_phlebotomy:
-                    # Blood tests go to Phlebotomy first
-                    item_status = LabStatus.AWAITING_SAMPLE
-                    item_stage = LabStage.SAMPLING
-                else:
-                    # Radiology/Scans skip sampling and go straight to 'analysis' (RUNNING)
-                    item_status = LabStatus.AWAITING_RESULTS
-                    item_stage = LabStage.RUNNING
-
-                # C. The Task Record
-                order_item = LabOrderItem(
-                    order_id=order.id,
-                    test_id=test.id,
-                    status=item_status,
-                    stage=item_stage,
-                )
-                db.add(order_item)
-
-            # 6. Record Initial Payment if any
-            if data.total_price > 0:
-                db.add(
-                    Payment(
-                        invoice_id=invoice.id,
-                        amount=data.total_price,
-                        method=data.mode_of_payment,
-                        description="Initial booking payment",
-                    )
-                )
-
+        # Commit happens automatically here
         return {
             "status": "success",
+            "message": "Appointment created. Please proceed to payment to unlock tests.",
             "appointment_id": appointment.id,
-            "order_id": order.id,
             "invoice_id": invoice.id,
         }
 
     except Exception as e:
-        # Transaction rolls back automatically here
-        print(f"ERROR: {e}")
+        print(f"ERROR during appointment creation: {e}")
         raise HTTPException(
-            status_code=500, detail="Failed to create appointment and orders"
+            status_code=500, detail=f"Failed to create appointment: {str(e)}"
         )
 
 
@@ -179,6 +164,7 @@ async def get_all_appointments(
             selectinload(Appointment.patient),
             selectinload(Appointment.doctor),
             selectinload(Appointment.tests),
+            selectinload(Appointment.invoice),
             # selectinload(LabOrderItem.result),
         )
         .order_by(Appointment.appointment_at.desc())
@@ -279,25 +265,21 @@ async def get_appointment(
     id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    print(id)
     stmt = (
         select(Appointment)
         .where(Appointment.id == id)
         .options(
-            # selectinload is best for 1-to-N (tests)
             selectinload(Appointment.tests),
-            # joinedload is often faster for 1-to-1 (patient, doctor)
             joinedload(Appointment.patient),
             joinedload(Appointment.doctor),
             joinedload(Appointment.created_by_user),
-            joinedload(Appointment.invoice),
+            # Load the invoice AND its items
+            joinedload(Appointment.invoice).selectinload(Invoice.items),
             joinedload(Appointment.lab_order),
         )
     )
 
     result = await db.execute(stmt)
-    # Use .unique() if you have many-to-many relationships (like tests)
-    # to avoid duplicate parent rows in the result set
     appointment = result.unique().scalar_one_or_none()
 
     if not appointment:
