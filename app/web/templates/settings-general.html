@@ -3,23 +3,345 @@
 {% block settings_title %}General{% endblock %}
 {% block settings_breadcrumb %}General{% endblock %}
 
-{% block settings_body %}
-<div class="card">
-  <div class="card-body">
-    <h5 class="mb-3">Organization Profile</h5>
-    <p class="text-muted mb-4">Manage high-level system preferences from this tab. Additional settings are available in the tabs above.</p>
+{% block extra_css %} 
 
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Facility Name</label>
-        <input class="form-control" type="text" value="DT-Labs LIS" readonly>
-        <small class="text-muted">Read-only for now. Connect this to company profile editing when available.</small>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Environment</label>
-        <input class="form-control" type="text" value="{{ settings.ENV | upper }}" readonly>
-      </div>
+<style>
+        .bg-danger-light {
+            background-color: rgba(255, 0, 0, 0.04) !important;
+        }
+        .bg-success-soft {
+            background-color: rgba(40, 199, 111, 0.1);
+        }
+
+
+    /* 1. Position the container at Top Right */
+    .toast-container {
+        z-index: 999999 !important;
+        position: fixed !important;
+        top: 25px !important;
+        right: 25px !important; /* Anchored to the right */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Align multiple toasts to the right edge */
+        width: auto;
+        pointer-events: none;
+    }
+
+    /* 2. Modern "Floating" Toast Styling */
+    .toast {
+        pointer-events: auto;
+        min-width: 320px;
+        max-width: 450px;
+        border: none !important;
+        border-radius: 10px !important; /* Slightly sharper for a professional look */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+        background: white !important;
+        backdrop-filter: blur(8px);
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncy entry */
+        margin-bottom: 10px;
+    }
+
+    /* 3. Animation: Slide in from the Right */
+    .toast.showing {
+        transform: translateX(100%); /* Start off-screen to the right */
+        opacity: 0;
+    }
+    .toast.show {
+        transform: translateX(0); /* Slide into place */
+        opacity: 1;
+    }
+
+    /* 4. High-Attention Borders (Thick Right Edge) */
+    /* We use border-right because it's closest to the screen edge, creating an anchor */
+    .toast.bg-success {
+        border-right: 8px solid #28a745 !important; 
+        border-left: 1px solid #e0e0e0 !important;
+        border-top: 1px solid #e0e0e0 !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        box-shadow: -5px 5px 15px rgba(40, 167, 69, 0.15) !important; /* Green glow */
+    }
+
+    .toast.bg-danger {
+        border-right: 8px solid #dc3545 !important;
+        border-left: 1px solid #e0e0e0 !important;
+        border-top: 1px solid #e0e0e0 !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        box-shadow: -5px 5px 15px rgba(220, 53, 69, 0.15) !important; /* Red glow */
+    }
+
+    /* 5. Text & Icon Colors */
+    .toast.bg-success #appCustomToastText, 
+    .toast.bg-success #toastIcon {
+        color: #1e7e34 !important; /* Slightly darker for better readability */
+    }
+
+    .toast.bg-danger #appCustomToastText, 
+    .toast.bg-danger #toastIcon {
+        color: #bd2130 !important;
+    }
+
+    .toast .btn-close {
+        filter: none !important;
+        opacity: 0.5;
+    }
+
+    .toast .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* VIEW REPORT */
+    .custom-report-table {
+        border: 1px solid #dee2e6;
+    }
+    .custom-report-table thead th {
+        background-color: #000 !important;
+        font-weight: 500;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    .custom-report-table tbody td {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+    .patient-info-bar {
+        border-left: 4px solid #003366;
+    }
+    .italic { font-style: italic; }
+    </style>
+
+{% endblock %}
+
+{% block settings_body %}
+<div class="card shadow-sm border-0">
+  <div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="mb-1 fw-bold">Organization Profile</h5>
+            <p class="text-muted small mb-0">This information will appear on your Lab Reports and Invoices.</p>
+        </div>
+        <span class="badge bg-soft-info text-info border border-info px-3">{{ settings.ENV | upper }} MODE</span>
     </div>
+
+    <form id="companyProfileForm">
+        <div class="row g-4">
+            <div class="col-12">
+                <label class="form-label d-block">Facility Logo</label>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="position-relative">
+                        <img id="logoPreview" src="/static/img/defaults/default-company-proifle.jpeg" 
+                             class="rounded-3 border" style="width: 100px; height: 100px; object-fit: cover;">
+                        <input type="file" id="logoInput" hidden accept="image/*">
+                        <button type="button" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 m-1 shadow" 
+                                onclick="document.getElementById('logoInput').click()">
+                            <i class="ti ti-camera"></i>
+                        </button>
+                    </div>
+                    <div class="small text-muted">
+                        Allowed JPG, PNG. Max size 2MB.<br>
+                        This logo appears on all printed reports.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Facility Name</label>
+                <input name="name" type="text" class="form-control" placeholder="e.g. YKG Lab & Diagnostic" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Slogan / Tagline</label>
+                <input name="slogan" type="text" class="form-control" placeholder="e.g. Quality care at your doorstep">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Contact Phone</label>
+                <input name="phone" type="text" class="form-control" placeholder="+233 ...">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Official Email</label>
+                <input name="email" type="email" class="form-control" placeholder="info@clinic.com">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Environment</label>
+                <input class="form-control bg-light" type="text" value="{{ settings.ENV | upper }}" readonly>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-bold">Physical Address</label>
+                <textarea name="address" class="form-control" rows="2" placeholder="Street name, City, Country"></textarea>
+            </div>
+
+            <div class="col-12 text-end mt-4">
+                <hr>
+                <button type="submit" id="saveProfileBtn" class="btn btn-primary px-4">
+                    <i class="ti ti-device-floppy me-1"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </form>
   </div>
 </div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container">
+    <div id="appCustomToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex p-2 align-items-center">
+            <div class="toast-body d-flex align-items-center w-100">
+                <i id="toastIcon" class="ti me-2"></i>
+                <span id="appCustomToastText" class="fw-medium"></span>
+            </div>
+            <button type="button" class="btn-close me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+function showToast (message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const form = document.getElementById('companyProfileForm');
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+    const saveBtn = document.getElementById('saveProfileBtn');
+    
+    // Track if profile exists to determine POST vs PUT
+    let profileExists = false;
+
+    // 1. Fetch Current Profile on Page Load
+    async function loadProfile() {
+        try {
+            const res = await fetch('/api/v1/company');
+            
+            if (res.ok) {
+                const data = await res.json();
+                profileExists = true; // Switch to Update mode
+                
+                // Fill form fields dynamically
+                Object.keys(data).forEach(key => {
+                    const input = form.querySelector(`[name="${key}"]`);
+                    if (input && data[key]) {
+                        input.value = data[key];
+                    }
+                });
+
+                // Set logo preview if available
+                if (data.logo) {
+                    logoPreview.src = data.logo;
+                }
+            } else if (res.status === 404) {
+                profileExists = false; // Stay in Create mode
+                console.log("No profile found. Ready to create new.");
+            }
+        } catch (err) {
+            console.error("Failed to load company profile:", err);
+        }
+    }
+
+    loadProfile();
+
+    // 2. Handle Logo Preview (Client Side)
+    logoInput.onchange = evt => {
+        const [file] = logoInput.files;
+        if (file) {
+            // Revoke old URL to avoid memory leaks
+            if (logoPreview.src.startsWith('blob:')) {
+                URL.revokeObjectURL(logoPreview.src);
+            }
+            logoPreview.src = URL.createObjectURL(file);
+        }
+    };
+
+    // 3. Save / Update Profile
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const originalBtnText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Saving...`;
+
+        // Use FormData to handle text + binary file
+        const formData = new FormData();
+        
+        // Append text fields
+        const fields = ['name', 'slogan', 'phone', 'email', 'address'];
+        fields.forEach(field => {
+            const el = form.querySelector(`[name="${field}"]`);
+            if (el && el.value) formData.append(field, el.value);
+        });
+        
+        // Append file if selected
+        const logoFile = logoInput.files[0];
+        if (logoFile) {
+            formData.append('logo', logoFile);
+        }
+
+        try {
+            // Determine Method and URL based on existence
+            const method = profileExists ? 'PUT' : 'POST';
+            
+            const res = await fetch('/api/v1/company', {
+                method: method,
+                // Content-Type is NOT set manually; browser handles multipart boundary
+                body: formData 
+            });
+
+            if (res.ok) {
+                const updatedData = await res.json();
+                profileExists = true; // Ensure next save is a PUT
+                showToast(`Profile ${method === 'POST' ? 'created' : 'updated'} successfully!`, "success");
+                
+                // Refresh preview with the new server path (important for cache-busting)
+                if (updatedData.logo) {
+                    logoPreview.src = `${updatedData.logo}?t=${new Date().getTime()}`;
+                }
+            } else {
+                const errorData = await res.json();
+                showToast(errorData.detail || "Save failed", "error");
+            }
+        } catch (err) {
+            console.error("System error:", err);
+            showToast("A system error occurred while saving", "error");
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalBtnText;
+        }
+    };
+});
+
+</script>
 {% endblock %}

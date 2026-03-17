@@ -16,6 +16,13 @@ class CompanyProfile(Base):
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     slogan: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    logo: Mapped[str | None] = mapped_column(nullable=True)
+
+    @property
+    def profile_image(self) -> str:
+        if self.logo:
+            return self.logo
+        return "/static/img/defaults/default-company-proifle.jpeg"
 
 
 class InsuranceType(str, enum.Enum):

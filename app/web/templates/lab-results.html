@@ -119,6 +119,25 @@
     .toast .btn-close:hover {
         opacity: 1;
     }
+
+    /* VIEW REPORT */
+    .custom-report-table {
+        border: 1px solid #dee2e6;
+    }
+    .custom-report-table thead th {
+        background-color: #000 !important;
+        font-weight: 500;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    .custom-report-table tbody td {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+    .patient-info-bar {
+        border-left: 4px solid #003366;
+    }
+    .italic { font-style: italic; }
     </style>
 
 </head>
@@ -339,7 +358,7 @@
                         <h4 class="mb-1">Lab Results</h4>
                         <div class="text-end">
                             <ol class="breadcrumb m-0 py-0">
-                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
                                 <li class="breadcrumb-item active">Lab Results</li>
                             </ol>
                         </div>
@@ -956,70 +975,60 @@
 
 <!-- View modal -->
 <div class="modal fade" id="viewReportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered"> 
-        <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-dark text-white py-3">
-                <div class="d-flex align-items-center">
-                    <i class="ti ti-report-medical fs-2 me-2 text-primary"></i>
-                    <h5 class="modal-title fw-bold" id="view_test_name">Investigation Report</h5>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark">View Final Report</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
-            <div class="modal-body p-4 bg-light-subtle">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body py-3">
-                        <div class="row text-center text-md-start">
-                            <div class="col-md-4 border-end-md">
-                                <label class="text-uppercase small fw-bold text-muted mb-1 d-block">Report For</label>
-                                <span id="header_patient_name" class="h5 fw-bold text-dark">-</span>
-                            </div>
-                            <div class="col-md-4 border-end-md">
-                                <label class="text-uppercase small fw-bold text-muted mb-1 d-block">Investigation Type</label>
-                                <span id="header_test_type" class="h6 fw-medium text-primary">-</span>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="text-uppercase small fw-bold text-muted mb-1 d-block">Generated On</label>
-                                <span id="header_date" class="h6 fw-medium text-dark">-</span>
-                            </div>
+
+            <div class="modal-body p-4" id="report_print_area">
+                <div class="d-flex justify-content-between align-items-start mb-4 pb-3 border-bottom">
+                    <div class="d-flex align-items-start">
+                        <img id="report_company_logo" src="/static/img/logo-small.png" alt="Logo" style="height: 45px; width: 45px; object-fit: contain;" class="me-3 rounded">
+                        <div>
+                            <h4 class="mb-0 fw-bold text-uppercase" style="color: #003366;" id="report_company_name">Dreams EMR</h4>
+                            <p class="text-muted small mb-0" id="report_company_contact">Loading address...</p>
                         </div>
+                    </div>
+                    <div class="text-end">
+                        <p class="mb-1 small"><strong>Test:</strong> <span id="header_test_type">--</span></p>
+                        <p class="mb-0 small text-muted"><strong>Reported:</strong> <span id="header_reported_on">--</span></p>
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="fw-bold m-0"><i class="ti ti-list-details me-1 text-primary"></i> Findings & Observations</h6>
-                    </div>
-                    <div class="card-body p-0"> <div id="lab_result_display" style="display:none;">
-                            </div>
-
-                        <div id="rad_result_display" class="p-4" style="display:none;">
-                            <div class="mb-4">
-                                <label class="fw-bold text-muted small text-uppercase">Clinical Findings</label>
-                                <p id="view_rad_findings" class="mt-2 p-3 bg-light rounded border" style="white-space: pre-wrap; min-height: 100px;">-</p>
-                            </div>
-                            <div>
-                                <label class="fw-bold text-muted small text-uppercase">Impression</label>
-                                <div id="view_rad_impression" class="mt-2 fw-bold text-dark h6">-</div>
-                            </div>
-                        </div>
+                <div class="patient-info-bar rounded-1 p-2 mb-4 d-flex justify-content-between align-items-center px-3" style="background-color: #f8fafc; border-left: 4px solid #003366;">
+                    <span class="fw-bold text-dark fs-6" id="header_patient_name">--</span>
+                    <div class="small text-muted">
+                        <span id="header_patient_age_sex">--</span> | 
+                        <span>Blood: <strong class="text-dark" id="header_blood_group">--</strong></span>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-12">
-                        <label class="fw-bold text-muted small text-uppercase">Clinical Remarks</label>
-                        <div id="view_remarks" class="p-3 bg-white border rounded text-muted italic">
-                            No additional remarks.
-                        </div>
+                <div id="lab_result_display"></div>
+                <div id="rad_result_display" style="display:none;">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3">Findings</h6>
+                    <p id="view_rad_findings" class="text-dark mb-4" style="white-space: pre-wrap;"></p>
+                    <h6 class="fw-bold border-bottom pb-2 mb-3">Impression</h6>
+                    <p id="view_rad_impression" class="text-dark fst-italic fw-bold"></p>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-end mt-5 pt-4 border-top">
+                    <div>
+                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=report_verified" alt="QR" style="width: 70px; opacity: 0.8;">
+                         <p class="text-muted" style="font-size: 10px; margin-top: 5px;">Scan to verify report integrity</p>
+                    </div>
+                    <div class="text-center" style="width: 200px;">
+                        <h5 class="mb-0 fst-italic fw-bold text-primary" style="font-family: 'cursive', sans-serif;" id="report_signature_brand">Dreams EMR</h5>
+                        <p class="small text-dark border-top border-dark pt-1 fw-bold">Authorized Signatory</p>
                     </div>
                 </div>
             </div>
 
-            <div class="modal-footer bg-light p-3">
+            <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary px-4 shadow-sm" onclick="printFromModal()">
-                    <i class="ti ti-printer me-1"></i> Print Official Report
+                <button type="button" class="btn btn-primary px-4" onclick="printFromModal()">
+                    <i class="ti ti-printer me-1"></i> Print
                 </button>
             </div>
         </div>

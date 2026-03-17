@@ -244,7 +244,7 @@ document.getElementById('fill_results_form').addEventListener('submit', async fu
         }
     } catch (err) {
         // alert("Error: " + err.message);
-        showToast(err.message);
+        showToast(err.message, "error");
         submitBtn.disabled = false;
         submitBtn.innerText = "Save & Finalize Results";
     }

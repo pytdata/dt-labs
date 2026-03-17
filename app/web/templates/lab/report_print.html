@@ -1,125 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Lab Report - {{ item.order.appointment.patient.full_name }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
     <style>
+        :root {
+            --primary-dark: #003366;
+            --report-bg: #f0f4f8;
+            --accent-red: #dc3545;
+        }
+
         @media print {
-            @page { margin: 1cm; }
+            @page { margin: 0.8cm; }
             body { margin: 0; -webkit-print-color-adjust: exact; }
             .no-print { display: none !important; }
-            .table-light { background-color: #f8f9fa !important; }
+            .patient-info-bar { background-color: #f0f4f8 !important; -webkit-print-color-adjust: exact; border-left: 5px solid #003366 !important; }
+            .table-dark-header th { background-color: #000000 !important; color: #ffffff !important; }
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .report-header { border-bottom: 3px solid #000; margin-bottom: 20px; padding-bottom: 10px; }
-        .patient-info { background: #f8f9fa !important; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; }
-        .results-section { min-height: 300px; margin-top: 30px; }
-        .table thead th { background-color: #f8f9fa !important; text-transform: uppercase; font-size: 0.85rem; }
-        .abnormal-row { color: #dc3545 !important; font-weight: bold; }
-        .flag-badge { font-weight: bold; }
-        .footer-sig { margin-top: 80px; }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            color: #333; 
+            background-color: #fff;
+        }
+        
+        /* Header Styling */
+        .company-logo { 
+            height: 60px; 
+            max-width: 180px; 
+            object-fit: contain; 
+            margin-right: 20px; 
+        }
+        
+        .company-name { 
+            color: var(--primary-dark); 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            font-size: 1.7rem; 
+            margin: 0; 
+            line-height: 1.2;
+        }
+        
+        /* Patient Info Bar */
+        .patient-info-bar { 
+            background-color: var(--report-bg); 
+            border-left: 5px solid var(--primary-dark);
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        /* Table Styling */
+        .table-dark-header th { 
+            background-color: #000; 
+            color: #fff; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            letter-spacing: 1px;
+            border: none;
+            padding: 12px;
+        }
+        
+        .report-table td { 
+            padding: 12px; 
+            border-color: #ececec; 
+            vertical-align: middle; 
+            font-size: 0.95rem;
+        }
+        
+        .parameter-name { color: #555; font-weight: 500; }
+        .result-value { font-weight: 700; color: #000; }
+        
+        /* Footer Styling */
+        .footer-section { 
+            margin-top: 60px; 
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .qr-code { width: 80px; height: 80px; }
+        .signature-font { 
+            font-family: 'Cursive', 'Brush Script MT', sans-serif; 
+            font-size: 1.6rem; 
+            color: var(--primary-dark);
+        }
     </style>
 </head>
 <body onload="window.print()"> 
-    <div class="container mt-4">
+    <div class="container mt-4 mb-5">
         <div class="no-print mb-4 d-flex gap-2">
-            <button onclick="window.print()" class="btn btn-primary shadow-sm">
+            <button onclick="window.print()" class="btn btn-primary btn-sm px-4">
                 <i class="ti ti-printer"></i> Print Report
             </button>
-            <button onclick="window.close()" class="btn btn-outline-secondary">Close</button>
+            <button onclick="window.close()" class="btn btn-light btn-sm px-4">Close</button>
         </div>
 
-        <div class="report-header d-flex justify-content-between align-items-end">
-            <div>
-                <h1 class="fw-bold mb-0" style="color: #0d6efd;">HEALTHCARE CLINIC</h1>
-                <p class="mb-0 text-muted">123 Medical Way, Health City | Tel: +123 456 789</p>
-                <p class="small text-muted">Email: info@healthcareclinic.com</p>
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div class="d-flex align-items-center">
+                {% if company and company.logo %}
+                    <img src="{{ company.logo }}" alt="Logo" class="company-logo">
+                {% else %}
+                    <div class="company-logo bg-light d-flex align-items-center justify-content-center border rounded" style="width: 60px;">
+                        <span class="small fw-bold text-muted">LOGO</span>
+                    </div>
+                {% endif %}
+                <div>
+                    <h1 class="company-name">{{ company.name if company else 'DT-LABS LIS' }}</h1>
+                    {% if company and company.slogan %}
+                        <p class="text-muted small mb-1"><em>{{ company.slogan }}</em></p>
+                    {% endif %}
+                    <p class="text-muted small mb-0">
+                        {{ company.address if company and company.address else 'Set Address in Settings' }}<br>
+                        {% if company and company.phone %}Tel: {{ company.phone }}{% endif %}
+                        {% if company and company.email %} | Email: {{ company.email }}{% endif %}
+                    </p>
+                </div>
             </div>
             <div class="text-end">
-                <h3 class="fw-bold text-uppercase">Laboratory Report</h3>
-                <p class="mb-0"><strong>Order ID:</strong> #ORD-{{ item.id }}</p>
-                <p class="mb-0"><strong>Date:</strong> {{ item.order.appointment.appointment_at.strftime('%d %b %Y') }}</p>
+                <h5 class="fw-bold text-primary mb-2">LABORATORY REPORT</h5>
+                <p class="mb-1 small"><strong>Test Category:</strong> {{ item.test.test_category.category_name if item.test.test_category else 'General' }}</p>
+                <p class="mb-1 small text-muted"><strong>Collected:</strong> {{ item.order.created_at.strftime('%d %b %Y %H:%M') }}</p>
+                <p class="mb-0 small text-muted"><strong>Reported:</strong> {{ now.strftime('%d %b %Y %H:%M') }}</p>
             </div>
         </div>
 
-        <div class="patient-info row mx-0 mb-4">
-            <div class="col-6">
-                <p class="mb-1"><strong>PATIENT NAME:</strong> {{ item.order.appointment.patient.full_name }}</p>
-                <p class="mb-1"><strong>PATIENT ID:</strong> {{ item.order.appointment.patient.patient_no }}</p>
-                <p class="mb-0"><strong>GENDER/AGE:</strong> {{ item.order.appointment.patient.sex }} / {{ item.order.appointment.patient.age }} yrs</p>
+        <div class="patient-info-bar d-flex justify-content-between align-items-center shadow-sm">
+            <div>
+                <div class="fw-bold text-dark fs-5">{{ item.order.appointment.patient.full_name }}</div>
+                <div class="small text-muted">Patient ID: {{ item.order.appointment.patient.patient_no or 'N/A' }}</div>
             </div>
-            <div class="col-6 text-end">
-                <p class="mb-1"><strong>REQUESTING DOCTOR:</strong> Dr. {{ item.order.appointment.doctor.full_name if item.order.appointment.doctor else 'N/A' }}</p>
-                <p class="mb-1"><strong>SAMPLE TYPE:</strong> Blood (EDTA)</p>
-                <p class="mb-0"><strong>COLLECTED AT:</strong> {{ item.order.created_at.strftime('%d %b %Y %H:%M') }}</p>
+            <div class="small d-flex gap-4">
+                <span><strong>Age/Sex:</strong> {{ item.order.appointment.patient.age }}Y / {{ item.order.appointment.patient.sex }}</span>
+                <span><strong>Blood:</strong> <span class="text-dark">{{ item.order.appointment.patient.blood_group or 'N/A' }}</span></span>
+                <span><strong>Order:</strong> <span class="text-dark">#ORD-{{ item.order_id }}</span></span>
             </div>
         </div>
 
-        <h4 class="text-center fw-bold text-decoration-underline mb-4">{{ item.test.name }}</h4>
+        <div class="results-area">
+            <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">{{ item.test.name }}</h5>
 
-        <div class="results-section">
             {% if item.radiology_result %}
                 <div class="mb-4">
-                    <h5 class="fw-bold text-primary">FINDINGS:</h5>
-                    <div class="p-3 border rounded bg-white" style="white-space: pre-line;">{{ item.radiology_result.result_value }}</div>
-                </div>
-                <div>
-                    <h5 class="fw-bold text-primary">IMPRESSION:</h5>
-                    <p class="p-3 border rounded bg-light"><strong>{{ item.radiology_result.comments }}</strong></p>
+                    <h6 class="fw-bold text-muted small text-uppercase">Findings</h6>
+                    <div class="py-2 text-dark" style="white-space: pre-wrap; line-height: 1.6;">{{ item.radiology_result.result_value }}</div>
+                    
+                    <h6 class="fw-bold text-muted small text-uppercase mt-4">Impression</h6>
+                    <p class="py-2 fst-italic fw-bold text-dark">{{ item.radiology_result.comments }}</p>
                 </div>
 
             {% elif item.lab_result and item.lab_result.results %}
-                <table class="table table-bordered align-middle">
-                    <thead class="table-light text-center">
+                <table class="table report-table">
+                    <thead class="table-dark-header">
                         <tr>
-                            <th class="text-start">Parameter</th>
-                            <th>Result</th>
-                            <th>Unit</th>
-                            <th>Flag</th>
-                            <th>Reference Range</th>
+                            <th style="width: 40%;">Investigation</th>
+                            <th class="text-center">Result</th>
+                            <th class="text-center">Reference Value</th>
+                            <th class="text-center">Unit</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for parameter, details in item.lab_result.results.items() %}
-                        {% set is_abnormal = details.flag not in ['N', 'Normal', '-', ''] %}
-                        <tr class="{{ 'abnormal-row' if is_abnormal }}">
-                            <td class="fw-medium">{{ parameter }}</td>
-                            <td class="text-center fw-bold">{{ details.value }}</td>
-                            <td class="text-center">{{ details.unit or '-' }}</td>
-                            <td class="text-center">
-                                {% if is_abnormal %}
-                                    <span class="fw-bold text-danger">{{ details.flag }}</span>
-                                {% else %}
-                                    <span class="text-muted">N</span>
+                        <tr>
+                            <td class="parameter-name">{{ parameter }}</td>
+                            <td class="text-center result-value">
+                                {{ details.value }}
+                                {% if details.flag and details.flag not in ['N', 'Normal', '-', ''] %}
+                                    <span class="text-danger ms-1" title="Abnormal">*</span>
                                 {% endif %}
                             </td>
                             <td class="text-center text-muted small">{{ details.reference_range or '-' }}</td>
+                            <td class="text-center text-muted small">{{ details.unit or '-' }}</td>
                         </tr>
-                    {% endfor %}
+                        {% endfor %}
                     </tbody>
                 </table>
-                <div class="mt-4 p-3 bg-light border-start border-4 border-primary">
-                    <strong>Technician Comments:</strong><br>
-                    {{ item.lab_result.comments or 'Results clinically correlated. No further remarks.' }}
+                
+                {% if item.lab_result.comments %}
+                <div class="mt-4 p-3 bg-light rounded small">
+                    <strong class="text-dark">REMARKS:</strong> {{ item.lab_result.comments }}
                 </div>
+                {% endif %}
 
             {% else %}
-                <div class="alert alert-warning text-center">
-                    No structured results available for this order.
+                <div class="text-center py-5 border rounded bg-light">
+                    <p class="text-muted mb-0">No validated results available for this record.</p>
                 </div>
             {% endif %}
         </div>
 
-        <div class="footer-sig d-flex justify-content-between align-items-end border-top pt-4">
-            <div>
-                <p class="small text-muted mb-0">Report Generated on: {{ now.strftime('%d %b %Y %H:%M') }}</p>
-                <p class="small text-muted">Electronic signature is valid without physical seal.</p>
+        <div class="footer-section d-flex justify-content-between align-items-end">
+            <div class="text-start">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=VERIFIED-ITEM-{{ item.id }}" 
+                     alt="Verification QR" class="qr-code mb-2">
+                <p class="text-muted" style="font-size: 10px;">Electronic Verification Code<br>Ref: #ITEM-{{ item.id }}</p>
             </div>
+            
             <div class="text-center" style="width: 250px;">
-                <p class="mb-0 fw-bold">Validated By:</p>
-                <div class="mt-2 mb-2" style="height: 40px; border-bottom: 1px dashed #000;"></div>
-                <p class="small mb-0">Chief Laboratory Scientist</p>
-                <p class="small text-muted">(Registration No: MLS-GH-4920)</p>
+                <p class="signature-font mb-0">{{ company.name if company else 'Authorized Signatory' }}</p>
+                <div class="border-top border-dark pt-2">
+                    <p class="small fw-bold mb-0">Medical Director / Pathologist</p>
+                    <p class="small text-muted mb-0" style="font-size: 10px;">Generated on: {{ now.strftime('%d %b %Y') }}</p>
+                </div>
             </div>
         </div>
     </div>

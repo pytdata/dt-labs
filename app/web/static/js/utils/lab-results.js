@@ -87,60 +87,115 @@ function renderData(item) {
 </tr>`;
 }
 
+
 window.viewFinalReport = async function(itemId) {
     try {
-        const res = await fetch(`/api/v1/lab/item/${itemId}`);
-        if (!res.ok) throw new Error("Could not fetch report details.");
-        const data = await res.json();
-        
-        const modalEl = document.getElementById('viewReportModal');
-        if (!modalEl) return console.error("viewReportModal missing from HTML");
+        // 1. Concurrent fetch for Report and Company Info
+        const [reportRes, companyRes] = await Promise.all([
+            fetch(`/api/v1/lab/item/${itemId}`),
+            fetch(`/api/v1/company`)
+        ]);
 
+        if (!reportRes.ok) throw new Error("Could not fetch report details.");
+        
+        const data = await reportRes.json();
+        const company = companyRes.ok ? await companyRes.json() : null;
+        
         const safeSet = (selector, value) => {
             const el = document.querySelector(selector);
             if (el) el.innerText = value || "--";
         };
 
-        safeSet("#view_test_name", data.test?.name);
+        // 2. Populate Company Branding
+        if (company) {
+            const logoEl = document.querySelector("#report_company_logo");
+            if (logoEl) logoEl.src = company.logo || "/static/img/logo-small.png";
+            
+            safeSet("#report_company_name", company.name);
+            // Combine address and phone for the header sub-text
+            const contactInfo = `${company.address || ''} ${company.phone ? '| Tel: ' + company.phone : ''}`;
+            safeSet("#report_company_contact", contactInfo);
+            
+            // Update the Signature Branding
+            safeSet("#report_signature_brand", company.name);
+        }
+
+        // 3. Populate Patient & Test Info
         const patient = data.order?.appointment?.patient || data.order?.patient;
-        if (patient) safeSet("#header_patient_name", `${patient.first_name} ${patient.surname}`);
+        safeSet("#header_test_type", data.test?.name);
+        safeSet("#header_collected_on", formatDate(data.order?.created_at)); 
+        safeSet("#header_reported_on", formatDate(data.updated_at));
+        
+        safeSet("#header_patient_name", patient?.full_name || `${patient?.first_name} ${patient?.surname}`);
+        const age = patient?.dob ? calculateAge(patient.dob) : (patient?.age || "--");
+        safeSet("#header_patient_age_sex", `${age}Y / ${patient?.sex || 'N/A'}`);
+        safeSet("#header_blood_group", patient?.blood_group || "N/A");
 
-        safeSet("#header_test_type", data.test?.test_category?.category_name);
-        safeSet("#header_date", formatDate(data.order?.created_at));
-        safeSet("#display_order_id", `#ORD-${data.id}`);
-
+        // 4. Handle Lab vs Radiology Displays
         const isRad = data.test?.test_category?.category_name === "Radiology";
         const labDisplay = document.getElementById('lab_result_display');
         const radDisplay = document.getElementById('rad_result_display');
 
         if (isRad) {
-            if(labDisplay) labDisplay.style.display = 'none';
-            if(radDisplay) radDisplay.style.display = 'block';
+            labDisplay.style.display = 'none';
+            radDisplay.style.display = 'block';
             safeSet("#view_rad_findings", data.radiology_result?.result_value);
             safeSet("#view_rad_impression", data.radiology_result?.comments);
         } else {
-            if(labDisplay) labDisplay.style.display = 'block';
-            if(radDisplay) radDisplay.style.display = 'none';
+            labDisplay.style.display = 'block';
+            radDisplay.style.display = 'none';
+            
             const resultsJson = data.lab_result?.results; 
             if (resultsJson && Object.keys(resultsJson).length > 0) {
-                let tableHtml = `<div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light text-uppercase small"><tr><th class="ps-4 py-3">Parameter</th><th class="text-center">Result</th><th class="text-center">Unit</th><th class="text-center">Flag</th><th class="pe-4 text-center">Reference Range</th></tr></thead><tbody>`;
+                let tableHtml = `
+                    <h6 class="fw-bold mb-3 text-dark text-uppercase small" style="letter-spacing:1px;">${data.test?.name}</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered custom-report-table">
+                            <thead class="table-dark text-white">
+                                <tr class="small text-uppercase">
+                                    <th class="py-2">Investigation</th>
+                                    <th class="text-center py-2">Result</th>
+                                    <th class="text-center py-2">Reference Value</th>
+                                    <th class="text-center py-2">Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
                 for (const [parameter, details] of Object.entries(resultsJson)) {
-                    const isAbnormal = details.flag !== 'N' && details.flag !== '-';
-                    const flagBadgeClass = isAbnormal ? 'bg-danger text-white' : 'bg-success-soft text-success';
-                    tableHtml += `<tr class="${isAbnormal ? 'bg-danger-light' : ''}"><td class="ps-4 py-3 fw-bold text-dark">${parameter}</td><td class="text-center h6 mb-0 fw-bold">${details.value}</td><td class="text-center text-muted">${details.unit || '-'}</td><td class="text-center"><span class="badge ${flagBadgeClass} px-3 py-2">${details.flag || 'N'}</span></td><td class="pe-4 text-center text-muted small">${details.reference_range || '-'}</td></tr>`;
+                    const isAbnormal = details.flag && !['N', 'Normal', '-', ''].includes(details.flag);
+                    tableHtml += `
+                        <tr>
+                            <td class="ps-3 text-secondary fw-medium">${parameter}</td>
+                            <td class="text-center fw-bold ${isAbnormal ? 'text-danger' : 'text-dark'}">${details.value}</td>
+                            <td class="text-center text-muted small">${details.reference_range || '-'}</td>
+                            <td class="text-center text-muted small">${details.unit || '-'}</td>
+                        </tr>`;
                 }
                 tableHtml += `</tbody></table></div>`;
-                if(labDisplay) labDisplay.innerHTML = tableHtml;
+                labDisplay.innerHTML = tableHtml;
             } else {
-                if(labDisplay) labDisplay.innerHTML = `<div class="p-5 text-center text-muted">No lab data found.</div>`;
+                labDisplay.innerHTML = `<div class="p-5 text-center text-muted border rounded">No lab data found for this test.</div>`;
             }
         }
-        safeSet("#view_remarks", data.lab_result?.comments || data.radiology_result?.comments);
-        new bootstrap.Modal(modalEl).show();
+
+        const modalEl = document.getElementById('viewReportModal');
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
     } catch (error) {
         console.error("View Report Error:", error);
+        showToast("Error loading report data", "error");
     }
-}; 
+};
+
+
+// Helper function to calculate age
+function calculateAge(dob) {
+    const diff_ms = Date.now() - new Date(dob).getTime();
+    const age_dt = new Date(diff_ms);
+    return Math.abs(age_dt.getUTCFullYear() - 1970) + "Y";
+}
+
+
+
 
 window.printFromModal = function() {
     const orderId = document.querySelector("#display_order_id").innerText.replace('#ORD-', '');

@@ -9,6 +9,7 @@ from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Test
+from app.models.company import CompanyProfile
 from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult
 from app.schemas.appointment import TestResponse
@@ -236,16 +237,18 @@ async def get_radiology_report_data(item_id: int, db: AsyncSession = Depends(get
 
 @router.get("/report/print/{item_id}")
 async def print_lab_report(item_id: int, db: AsyncSession = Depends(get_db)):
-    # Explicitly load EVERY relationship used in the HTML template
+    # 1. Fetch Company Profile first
+    company_stmt = select(CompanyProfile)
+    company_res = await db.execute(company_stmt)
+    company = company_res.scalars().first()
+
+    # 2. Fetch Lab Item with all necessary relationships
     stmt = (
         select(LabOrderItem)
         .options(
             selectinload(LabOrderItem.order)
             .selectinload(LabOrder.appointment)
             .selectinload(Appointment.patient),
-            selectinload(LabOrderItem.order)
-            .selectinload(LabOrder.appointment)
-            .selectinload(Appointment.doctor),  # Fixed: Load the doctor!
             selectinload(LabOrderItem.test).selectinload(Test.test_category),
             selectinload(LabOrderItem.lab_result),
             selectinload(LabOrderItem.radiology_result),
@@ -259,14 +262,9 @@ async def print_lab_report(item_id: int, db: AsyncSession = Depends(get_db)):
     if not item:
         raise HTTPException(status_code=404, detail="Report not found")
 
-    # Safety check for the template
-    is_lab = False
-    if item.test and item.test.test_category:
-        is_lab = item.test.test_category.category_name != "Radiology"
-
     return templates.TemplateResponse(
         "lab/report_print.html",
-        {"request": {}, "item": item, "is_lab": is_lab, "now": datetime.now()},
+        {"request": {}, "item": item, "company": company, "now": datetime.now()},
     )
 
 

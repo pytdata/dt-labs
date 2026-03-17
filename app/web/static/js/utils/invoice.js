@@ -11,7 +11,10 @@ let invoiceURL = "/api/v1/payments/invoices";
 })();
 
 
-/**
+/**cp = CompanyProfile(name="YKG LAB & DIAGNOSTIC CENTER")
+        # db.add(cp)
+        # await db.commit()
+        # await db.refresh(cp)
  * Render a lsit of object as html elements and display in DOM
  * @param {Array[Object]} appointmentsList
  */
@@ -38,53 +41,45 @@ function render(invoiceList) {
  * @returns htmlement
  */
 function renderData(invoice) {
-  console.log(invoice);
-  const htmlElement = `
+  const statusClass = invoice.status.toLowerCase() === "paid" ? "badge-soft-success" : "badge-soft-danger";
+  
+  return `
      <tr>
+        <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
         <td>
-            <div class="form-check form-check-md">
-                <input class="form-check-input" type="checkbox">
-            </div>
-        </td>
-        <td>
-            <a href="invoice-details.html" class="tb-data">INV-1454</a>
+            <a href="javascript:void(0);" onclick="viewInvoiceDetail(${invoice.id})" class="tb-data fw-bold text-primary">#INV-${invoice.id}</a>
         </td>
         <td>
             <div class="d-flex align-items-center">
-                <a href="invoice-details.html" class="avatar avatar-lg me-2">
-                    <img src="${invoice.patient.profile_image}" class="rounded-circle" alt="user">
-                </a>
+                <div class="avatar avatar-md me-2">
+                    <img src="${invoice.patient.profile_image || '/static/img/default-user.png'}" class="rounded-circle" alt="user">
+                </div>
                 <div>
-                    <h6 class="fw-medium mb-1 fs-14"><a href="invoice-details.html">${invoice.patient.full_name}</a>
-                    </h6>
-                    <span class="fs-12"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2c4d4258444342556c49544d415c4049024f4341">${invoice.patient.email}</a></span>
+                    <h6 class="fw-medium mb-0 fs-14">${invoice.patient.full_name}</h6>
+                    <small class="text-muted">${invoice.patient.patient_no}</small>
                 </div>
             </div>
         </td>
-        <td>${formatDate(invoice.created_at)} </td>
-        <td>${invoice.total_amount}</td>
+        <td>${formatDate(invoice.created_at)}</td>
+        <td class="fw-bold">${Number(invoice.total_amount).toLocaleString()}</td>
         <td>$0</td>
-        <td>14 Jan 2024, 04:27 AM</td>
+        <td>${formatDate(invoice.updated_at || invoice.created_at)}</td>
         <td>
-        ${invoice.status == "paid" ? `<span class="badge badge-soft-success d-inline-flex align-items-center">
+            <span class="badge ${statusClass} d-inline-flex align-items-center">
                 <i class="ti ti-point-filled me-1"></i>${invoice.status}
-            </span>` : `<span class="badge badge-soft-danger d-inline-flex align-items-center">
-														<i class="ti ti-point-filled me-1"></i>${invoice.status}
-													</span>`}
-            
+            </span>
         </td>
         <td>
-            <div class="action-icon d-inline-flex">
-                <a href="invoice-details.html" class="me-2"><i class="ti ti-eye"></i></a>
-              <!--  <a href="#delete_modal" class="" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash"></i></a> -->
+            <div class="action-icon">
+                <button class="btn btn-sm btn-light" onclick="viewInvoiceDetail(${invoice.id})">
+                    <i class="ti ti-eye"></i>
+                </button>
             </div>
         </td>
-    </tr>
-
-                                   
-`;
-  return htmlElement;
+    </tr>`;
 }
+
+
 
 /**
  * Fetch remote data
@@ -101,6 +96,91 @@ async function getRemoteData(url) {
     console.error(error)
   }
 }
+
+window.viewInvoiceDetail = async function(invoiceId) {
+    try {
+        // 1. Concurrent Fetch: Invoice + Company Profile
+        const [invRes, compRes] = await Promise.all([
+            fetch(`/api/v1/payments/invoices/${invoiceId}`),
+            fetch(`/api/v1/company`) // Assuming this is your company route
+        ]);
+
+        if (!invRes.ok) throw new Error("Invoice fetch failed");
+        
+        const invoice = await invRes.json();
+        // Fallback object if company profile isn't set yet
+        const company = compRes.ok ? await compRes.json() : { 
+            name: "YKG LAB & DIAGNOSTIC CENTER",
+            address: "Location not set",
+            phone: "",
+            email: ""
+        };
+
+        // 2. Map Company Branding (Invoice From)
+        document.getElementById('modal_from_name').innerText = company.name;
+        document.getElementById('modal_from_details').innerHTML = `
+            ${company.address || ''}<br>
+            ${company.phone || ''}<br>
+            ${company.email || ''}
+        `;
+        
+        // Update Logo dynamically
+        const logoImg = document.querySelector('#invoiceDetailModal img[alt="Logo"]');
+        if (logoImg) {
+            logoImg.src = company.logo || "/static/img/logo.png";
+        }
+
+        // 3. Map Invoice & Patient Info (Bill To)
+        document.getElementById('modal_inv_number').innerText = `#INV-${invoice.id}`;
+        document.getElementById('modal_to_name').innerText = invoice.patient.full_name;
+        
+        const patientDetails = `
+            ID: ${invoice.patient.patient_no}<br>
+            Tel: ${invoice.patient.phone || 'N/A'}<br>
+            Email: ${invoice.patient.email || ''}
+        `;
+        document.getElementById('modal_to_details').innerHTML = patientDetails;
+        
+        // Status Badge
+        const statusBadge = document.getElementById('modal_inv_status_badge');
+        const isPaid = invoice.status.toLowerCase() === 'paid';
+        statusBadge.className = isPaid ? 'badge bg-success px-3' : 'badge bg-danger px-3';
+        statusBadge.innerText = invoice.status.toUpperCase();
+
+        // 4. Populate Items Table
+        const itemsTable = document.getElementById('modal_invoice_items');
+        itemsTable.innerHTML = ''; 
+        
+        if (invoice.items && invoice.items.length > 0) {
+            invoice.items.forEach((item, index) => {
+                const itemName = item.test ? item.test.name : (item.item_description || "Medical Service");
+                itemsTable.innerHTML += `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td>
+                            <h6 class="mb-0 fs-14 fw-bold text-dark">${itemName}</h6>
+                        </td>
+                        <td class="text-center">${item.quantity || 1}</td>
+                        <td class="text-end">${Number(item.unit_price).toLocaleString()}</td>
+                        <td class="text-end fw-bold">${Number(item.total_price).toLocaleString()}</td>
+                    </tr>`;
+            });
+        }
+
+        // 5. Totals
+        const total = Number(invoice.total_amount).toLocaleString();
+        document.getElementById('modal_subtotal').innerText = total;
+        document.getElementById('modal_total').innerText = total;
+
+        // 6. Show Modal
+        const modalEl = document.getElementById('invoiceDetailModal');
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        
+    } catch (err) {
+        console.error("Invoice Modal Error:", err);
+        showToast("Error loading invoice data", "error");
+    }
+};
 
 
 function formatDate(dateStr) {
