@@ -383,7 +383,7 @@ function renderData(appointment) {
         <td>
             <div class="d-flex align-items-center">
                 <a href="patient-details.html" class="avatar avatar-xs me-2">
-                    <img src="/static/img/users/user-39.jpg" alt="img" class="rounded">
+                    <img src="${appointment.patient.profile_image}" alt="img" class="rounded">
                 </a>
                 <div>
                     <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">${
@@ -399,7 +399,7 @@ function renderData(appointment) {
         <td>
             <div class="d-flex align-items-center">
                 <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                    <img src="/static/img/doctors/doctor-11.jpg" alt="img" class="rounded">
+                    <img src="${appointment.doctor.avatar}" alt="img" class="rounded">
                 </a>
                 <div>
                     <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. ${

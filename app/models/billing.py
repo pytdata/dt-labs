@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime
 
 from sqlalchemy import Boolean, String, DateTime, ForeignKey, Numeric, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -114,10 +115,55 @@ class Payment(Base):
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-    # 
+    #
     # This identifies the staff member who confirmed the cash was in hand or Momo was received
     verified_by: Mapped["User"] = relationship(back_populates="verified_payments")
     invoice: Mapped["Invoice"] = relationship(
         "Invoice",
         back_populates="payments",
     )
+
+
+class Billing(Base):
+    """The financial record holder.
+    Tracks every test requested in an appointment for auditing/reporting.
+    """
+
+    __tablename__ = "billings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    bill_no: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    appointment_id: Mapped[int] = mapped_column(
+        ForeignKey("appointments.id"), index=True
+    )
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+
+    total_billed: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    # Relationships
+    appointment = relationship("Appointment")
+    patient = relationship("Patient")
+    items: Mapped[list["BillingItem"]] = relationship(
+        back_populates="billing", cascade="all, delete-orphan"
+    )
+
+
+class BillingItem(Base):
+    """Line items for the Billing record."""
+
+    __tablename__ = "billing_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    billing_id: Mapped[int] = mapped_column(ForeignKey("billings.id"), index=True)
+    test_id: Mapped[int] = mapped_column(ForeignKey("tests.id"))
+
+    test_name: Mapped[str] = mapped_column(String(255))
+    price_at_booking: Mapped[float] = mapped_column(Numeric(12, 2))
+    is_paid: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false", nullable=False
+    )
+
+    billing = relationship("Billing", back_populates="items")

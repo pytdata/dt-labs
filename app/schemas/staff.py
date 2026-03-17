@@ -22,6 +22,7 @@ class StaffResponse(BaseModel):
     phone_number: str | None
     gender: Gender | None
     is_active: bool
+    avatar: str
 
     model_config = ConfigDict(from_attributes=True)
 

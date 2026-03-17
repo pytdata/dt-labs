@@ -4,6 +4,45 @@ const laboratoryURL = "/api/v1/lab/active-appointments/";
 const labTestsContainerEl = document.querySelector(".labtest__container");
 const totalLabTestsEl = document.querySelector("#total__test__count");
 
+
+
+function showToast (message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};
+
+
+
 (async function init() {
   const res = await getRemoteData(laboratoryURL);
   render(res);

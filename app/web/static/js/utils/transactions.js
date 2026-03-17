@@ -76,7 +76,7 @@ function renderData(transaction) {
         <td>
             <div class="d-flex align-items-center">
                 <a href="patient-details.html" class="avatar avatar-xs me-2">
-                    <img src="/static/img/users/avatar-5.jpg" alt="img" class="rounded">
+                    <img src="${transaction.invoice.patient.profile_image}" alt="img" class="rounded">
                 </a>
                 <div>
                     <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">${transaction.invoice.patient.full_name}</a></h6>
@@ -84,16 +84,6 @@ function renderData(transaction) {
             </div>
         </td>
         <td>${formatDate(transaction.transaction_date)}</td>
-        <td>
-            <div class="d-flex align-items-center">
-                <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                    <img src="/static/img/doctors/doctor-01.jpg" alt="img" class="rounded">
-                </a>
-                <div>
-                    <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. Andrew Clark</a></h6>
-                </div>
-            </div>
-        </td>
         <td><p class="text-truncate mb-0">${transaction.description ? transaction.description : `Not description`}</p></td>
         <td>${transaction.invoice.amount_paid}</td>
         <td>${transaction.method}</td>

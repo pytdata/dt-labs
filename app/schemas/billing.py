@@ -22,3 +22,55 @@ class PaymentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class BillingItemRead(BaseModel):
+    id: int
+    test_name: str
+    price_at_booking: Decimal
+    is_paid: bool
+
+    class Config:
+        from_attributes = True
+
+
+class InvoiceStatusRead(BaseModel):
+    status: str
+    balance: Decimal
+    amount_paid: Decimal
+
+    class Config:
+        from_attributes = True
+
+
+class AppointmentSummaryRead(BaseModel):
+    id: int
+    appointment_at: datetime
+    invoice: InvoiceStatusRead | None
+
+    class Config:
+        from_attributes = True
+
+
+class PatientSummaryRead(BaseModel):
+    id: int
+    first_name: str
+    surname: str
+    patient_no: str
+    profile_image: str | None
+
+    class Config:
+        from_attributes = True
+
+
+class BillingRead(BaseModel):
+    id: int
+    bill_no: str
+    total_billed: Decimal
+    created_at: datetime
+    patient: PatientSummaryRead
+    appointment: AppointmentSummaryRead
+    items: list[BillingItemRead]
+
+    class Config:
+        from_attributes = True

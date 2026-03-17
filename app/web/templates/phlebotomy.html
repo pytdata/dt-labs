@@ -55,6 +55,102 @@
             border: none;
             border-radius: 8px;
         }
+
+
+        /* Target the range list in the daterangepicker */
+        .daterangepicker .ranges ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the "Custom Range" (which is the last <li>) to the top */
+        .daterangepicker .ranges ul li:last-child {
+            order: -1; 
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+    /* 1. Position the container at Top Right */
+    .toast-container {
+        z-index: 999999 !important;
+        position: fixed !important;
+        top: 25px !important;
+        right: 25px !important; /* Anchored to the right */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Align multiple toasts to the right edge */
+        width: auto;
+        pointer-events: none;
+    }
+
+    /* 2. Modern "Floating" Toast Styling */
+    .toast {
+        pointer-events: auto;
+        min-width: 320px;
+        max-width: 450px;
+        border: none !important;
+        border-radius: 10px !important; /* Slightly sharper for a professional look */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+        background: white !important;
+        backdrop-filter: blur(8px);
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncy entry */
+        margin-bottom: 10px;
+    }
+
+    /* 3. Animation: Slide in from the Right */
+    .toast.showing {
+        transform: translateX(100%); /* Start off-screen to the right */
+        opacity: 0;
+    }
+    .toast.show {
+        transform: translateX(0); /* Slide into place */
+        opacity: 1;
+    }
+
+    /* 4. High-Attention Borders (Thick Right Edge) */
+    /* We use border-right because it's closest to the screen edge, creating an anchor */
+    .toast.bg-success {
+        border-right: 8px solid #28a745 !important; 
+        border-left: 1px solid #e0e0e0 !important;
+        border-top: 1px solid #e0e0e0 !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        box-shadow: -5px 5px 15px rgba(40, 167, 69, 0.15) !important; /* Green glow */
+    }
+
+    .toast.bg-danger {
+        border-right: 8px solid #dc3545 !important;
+        border-left: 1px solid #e0e0e0 !important;
+        border-top: 1px solid #e0e0e0 !important;
+        border-bottom: 1px solid #e0e0e0 !important;
+        box-shadow: -5px 5px 15px rgba(220, 53, 69, 0.15) !important; /* Red glow */
+    }
+
+    /* 5. Text & Icon Colors */
+    .toast.bg-success #appCustomToastText, 
+    .toast.bg-success #toastIcon {
+        color: #1e7e34 !important; /* Slightly darker for better readability */
+    }
+
+    .toast.bg-danger #appCustomToastText, 
+    .toast.bg-danger #toastIcon {
+        color: #bd2130 !important;
+    }
+
+    .toast .btn-close {
+        filter: none !important;
+        opacity: 0.5;
+    }
+
+    .toast .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* Ensure Feedback Modal stays on top of other elements, but below Toasts */
+    #feedbackModal {
+        z-index: 2000 !important;
+    }
+    </style>
     </style>
 </head>
 
@@ -121,50 +217,51 @@
                             <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
 
                                 <!-- Item-->
-                                <a href="all-appointments.html" class="dropdown-item">
+                                <a href="{{ request.url_for('appointments') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
                                             <span class="fs-13">View All the Appointments</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a>
 
                                 <!-- Item-->
-                                <a href="all-doctors.html" class="dropdown-item">
+                                <a href="{{ request.url_for('staff_list') }}"  class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Doctors</span>
                                             <span class="fs-13">View All the Doctors</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a>
 
                                 <!-- Item-->
-                                <a href="add-patient.html" class="dropdown-item">
+                                <a href="{{ request.url_for('patient_add') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
                                             <span class="fs-13">Add New Patient</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a>
 
                                 <!-- Item-->
-                                <a href="pharmacy.html" class="dropdown-item">
+                                <!-- <a href="pharmacy.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
                                             <span class="fs-13">View All the Medicines</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a> -->
 
-                         </div>
+                            </div>
+
 
                      </div>
                  </div>
@@ -177,168 +274,7 @@
                  </div>
                     <!-- Minimize -->
 
-                    <!-- Language Dropdown -->
-					<div class="header-item">
-						<div class="dropdown me-2">
-                            <button class="topbar-link btn" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-                                <img src="/static/img/flags/us.svg" alt="Language" height="16">
-                         </button>
-
-							<div class="dropdown-menu dropdown-menu-end p-2">
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/us.svg" alt="" class="me-1" height="16"> <span class="align-middle">English</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/de.svg" alt="" class="me-1" height="16"> <span class="align-middle">German</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/fr.svg" alt="" class="me-1" height="16"> <span class="align-middle">French</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/ae.svg" alt="" class="me-1" height="16"> <span class="align-middle">Arabic</span>
-								</a>
-
-							</div>
-						</div>
-                 </div>
-
-					<!-- Notification Dropdown -->
-                    <div class="header-item">
-						<div class="dropdown me-2">
-
-							<button class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-								<i class="ti ti-bell-check fs-16 animate-ring"></i>
-								<span class="notification-badge"></span>
-							</button>
-
-							<div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg" style="min-height: 300px;">
-
-								<div class="p-2 border-bottom">
-									<div class="row align-items-center">
-										<div class="col">
-											<h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
-										</div>
-									</div>
-								</div>
-
-								<!-- Notification Body -->
-								<div class="notification-body position-relative z-2 rounded-0" data-simplebar="">
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-1">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-01.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">John Doe</p>
-												<p class="mb-1 text-wrap">
-													added new  patient <span class="fw-medium text-dark">appointment booking.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>4 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-1">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-2">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Thomas William</p>
-												<p class="mb-1 text-wrap">
-                                                    booked a new appointment
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>8 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-2">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-3">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Sarah Anderson</p>
-												<p class="mb-1 text-wrap">
-                                                    has been successfully booked for <span class="fw-medium text-dark">April 5 at 10:00 AM.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>15 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-3">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap" id="notification-4">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-08.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Ann McClure</p>
-												<p class="mb-1 text-wrap">
-                                                    cancelled her appointment scheduled for <span class="fw-medium text-dark">February 5, 2024</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>20 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-4">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-								</div>
-
-								<!-- View All-->
-								<div class="p-2 rounded-bottom border-top text-center">
-									<a href="notifications.html" class="text-center text-decoration-underline fs-14 mb-0">
-										View All Notifications
-									</a>
-								</div>
-
-							</div>
-						</div>
-					</div>
+				
 
                     <!-- Light/Dark Mode Button -->
                     <div class="header-item d-none d-sm-flex me-2">
@@ -471,9 +407,10 @@
                         <div class="d-flex align-items-center flex-wrap gap-2">
 
                             <!-- date picker -->
-                            <div id="reportrange" class="reportrange-picker d-flex align-items-center">
-                                <i class="ti ti-calendar text-body fs-14 me-1"></i><span class="reportrange-picker-field">21 May 25 - 21 May 25</span>
-                         </div>
+                            <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
+                                <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                                <span class="reportrange-picker-field">Select Date Range</span>
+                            </div>
 
                             <!-- test name dropdown -->
                              <div class="dropdown">
@@ -979,6 +916,19 @@
     </div>
     <!-- End Delete Modal  -->
 
+    <!-- TOAST CONTAINER -->
+<div class="toast-container">
+    <div id="appCustomToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex p-2 align-items-center">
+            <div class="toast-body d-flex align-items-center w-100">
+                <i id="toastIcon" class="ti me-2"></i>
+                <span id="appCustomToastText" class="fw-medium"></span>
+            </div>
+            <button type="button" class="btn-close me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
     <!-- Add sample collection modal -->
 
     <div class="modal fade" id="addSamplesModal" tabindex="-1" aria-labelledby="addSamplesModalLabel" aria-hidden="true">
@@ -1162,6 +1112,7 @@
 
     <script src="{{ url_for('static', path='js/utils/phlebotomy.js') }}" defer></script>
 
+    
     <script>
     async function openSampleModal(phlebotomyId, appointmentId, patientId) {
 
@@ -1219,61 +1170,59 @@
     }
     </script>
 
+
+
     
 
 <script>
-    document.getElementById("addSampleForm").addEventListener("click", function() {
-    document.getElementById("sampleForm").requestSubmit();
-});
+//     document.getElementById("addSampleForm").addEventListener("click", function() {
+//     document.getElementById("sampleForm").requestSubmit();
+// });
 
-    document.getElementById("sampleForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+//     document.getElementById("sampleForm").addEventListener("submit", async function(e) {
+//     e.preventDefault();
 
 
-const payload = {
-    phlebotomy_id: parseInt(document.getElementById("phlebotomy_id").value),
-    sample_type: parseInt(document.getElementById("sample_type").value),
-    test_ids: Array.from(document.getElementById("test_ids").selectedOptions)
-                         .map(opt => parseInt(opt.value)),
-    priority: document.getElementById("priority").value,
-    collection_site: document.getElementById("collection_site").value,
-    storage_location: document.getElementById("storage_location").value,
-    sample_condition: document.getElementById("sample_condition").value,
-    appointment_id: parseInt(document.getElementById("sampleForm").dataset.appointmentId),
-    patient_id: parseInt(document.getElementById("sampleForm").dataset.patientId),
-};
+// const payload = {
+//     phlebotomy_id: parseInt(document.getElementById("phlebotomy_id").value),
+//     sample_type: parseInt(document.getElementById("sample_type").value),
+//     test_ids: Array.from(document.getElementById("test_ids").selectedOptions)
+//                          .map(opt => parseInt(opt.value)),
+//     priority: document.getElementById("priority").value,
+//     collection_site: document.getElementById("collection_site").value,
+//     storage_location: document.getElementById("storage_location").value,
+//     sample_condition: document.getElementById("sample_condition").value,
+//     appointment_id: parseInt(document.getElementById("sampleForm").dataset.appointmentId),
+//     patient_id: parseInt(document.getElementById("sampleForm").dataset.patientId),
+// };
 
-console.log(payload, "this is ht payloads ==================")
+//     try {
+//         const response = await fetch("/api/v1/phlebotomy/add-sample", {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify(payload)
+//         });
 
-    try {
-        const response = await fetch("/api/v1/phlebotomy/add-sample", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+//         if (!response.ok) {
+//             const err = await response.json();
+//             console.error(err);
+//             alert("Failed to submit sample");
+//             return;
+//         }
 
-        if (!response.ok) {
-            const err = await response.json();
-            console.error(err);
-            alert("Failed to submit sample");
-            return;
-        }
+//         const data = await response.json();
+//         alert("Sample submitted successfully!");
+//         document.getElementById("sampleForm").reset();
 
-        const data = await response.json();
-        alert("Sample submitted successfully!");
-        document.getElementById("sampleForm").reset();
+//         // const modalEl = document.getElementById("addSamplesModal");
+//         // const modal = bootstrap.Modal.getInstance(modalEl);
+//         // modal.hide();
 
-        // const modalEl = document.getElementById("addSamplesModal");
-        // const modal = bootstrap.Modal.getInstance(modalEl);
-        // modal.hide();
-
-        console.log(payload ,"=====================")
-
-    } catch (error) {
-        console.error(error);
-        alert("Something went wrong.");
-    }
-});
+//     } catch (error) {
+//         console.error(error);
+//         alert("Something went wrong.");
+//     }
+// });
 </script>
 
 <script>
@@ -1319,6 +1268,30 @@ async function loadSampleTypes() {
 
     <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
     <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+
+
+    <!-- <script>
+        $('#reportrange').daterangepicker({
+            showCustomRangeLabel: true,
+            alwaysShowCalendars: true, // This keeps the calendar view visible
+            opens: 'right',
+            ranges: {
+                // To force Custom at the top, some versions require 
+                // defining it as an empty range or handling via CSS (see below)
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            startDate: moment().subtract(29, 'days'),
+            endDate: moment()
+        }, function(start, end, label) {
+            $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        });
+    </script> -->
+
+
     <script>
         $(document).on('select2:open', function(e) {
             document.querySelector('.select2-search__field').focus();

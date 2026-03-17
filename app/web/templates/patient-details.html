@@ -98,7 +98,7 @@
                             <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
 
                                 <!-- Item-->
-                                <a href="all-appointments.html" class="dropdown-item">
+                                <a href="{{ request.url_for('appointments') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
@@ -109,7 +109,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="all-doctors.html" class="dropdown-item">
+                                <a href="{{ request.url_for('staff_list') }}"  class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Doctors</span>
@@ -120,7 +120,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="add-patient.html" class="dropdown-item">
+                                <a href="{{ request.url_for('patient_add') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
@@ -131,7 +131,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="pharmacy.html" class="dropdown-item">
+                                <!-- <a href="pharmacy.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
@@ -139,7 +139,7 @@
                                         </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
                                     </div>
-                                </a>
+                                </a> -->
 
                             </div>
 
@@ -153,169 +153,6 @@
                         </div>
                     </div>
                     <!-- Minimize -->
-
-                    <!-- Language Dropdown -->
-					<div class="header-item">
-						<div class="dropdown me-2">
-                            <button class="topbar-link btn" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-                                <img src="/static/img/flags/us.svg" alt="Language" height="16">
-                            </button>
-
-							<div class="dropdown-menu dropdown-menu-end p-2">
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/us.svg" alt="" class="me-1" height="16"> <span class="align-middle">English</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/de.svg" alt="" class="me-1" height="16"> <span class="align-middle">German</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/fr.svg" alt="" class="me-1" height="16"> <span class="align-middle">French</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/ae.svg" alt="" class="me-1" height="16"> <span class="align-middle">Arabic</span>
-								</a>
-
-							</div>
-						</div>
-                    </div>
-
-					<!-- Notification Dropdown -->
-                    <div class="header-item">
-						<div class="dropdown me-2">
-
-							<button class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-								<i class="ti ti-bell-check fs-16 animate-ring"></i>
-								<span class="notification-badge"></span>
-							</button>
-
-							<div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg" style="min-height: 300px;">
-
-								<div class="p-2 border-bottom">
-									<div class="row align-items-center">
-										<div class="col">
-											<h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
-										</div>
-									</div>
-								</div>
-
-								<!-- Notification Body -->
-								<div class="notification-body position-relative z-2 rounded-0" data-simplebar="">
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-1">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-01.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">John Doe</p>
-												<p class="mb-1 text-wrap">
-													added new  patient <span class="fw-medium text-dark">appointment booking.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>4 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-1">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-2">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Thomas William</p>
-												<p class="mb-1 text-wrap">
-                                                    booked a new appointment
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>8 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-2">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-3">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Sarah Anderson</p>
-												<p class="mb-1 text-wrap">
-                                                    has been successfully booked for <span class="fw-medium text-dark">April 5 at 10:00 AM.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>15 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-3">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap" id="notification-4">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-08.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Ann McClure</p>
-												<p class="mb-1 text-wrap">
-                                                    cancelled her appointment scheduled for <span class="fw-medium text-dark">February 5, 2024</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>20 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-4">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-								</div>
-
-								<!-- View All-->
-								<div class="p-2 rounded-bottom border-top text-center">
-									<a href="notifications.html" class="text-center text-decoration-underline fs-14 mb-0">
-										View All Notifications
-									</a>
-								</div>
-
-							</div>
-						</div>
-					</div>
 
                     <!-- Light/Dark Mode Button -->
                     <div class="header-item d-none d-sm-flex me-2">
@@ -426,123 +263,9 @@
             </div>
             <!-- End Logo -->
 
-            <!-- Sidenav Menu -->
-            <div class="sidebar-inner" data-simplebar="">
-                <div id="sidebar-menu" class="sidebar-menu">
-                    <ul>
-                        <li class="menu-title"><span>MAIN</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="index.html">
-                                        <i class="ti ti-layout-board"></i><span>Dashboard</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>Healthcare</span></li>
-                        <li>
-                            <ul>
-                                <li class="active">
-                                    <a href="all-patients.html">
-                                        <i class="ti ti-users"></i><span>Patients</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="all-doctors.html">
-                                        <i class="ti ti-stethoscope"></i><span>Lab Technicians</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="visits.html">
-                                        <i class="ti ti-e-passport"></i><span>Visits</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="all-appointments.html">
-                                        <i class="ti ti-e-passport"></i><span>Appointments</span>
-                                    </a>
-                                </li>
-                                <li class="submenu">
-                                    <a href="javascript:void(0);">
-                                        <i class="ti ti-test-pipe"></i><span>Laboratory</span><span class="menu-arrow"></span>
-                                    </a>
-                                    <ul>
-                                        <li>
-                                            <a href="laboratory.html">Main Lab</a>
-                                        </li>
-                                        <li>
-                                            <a href="lab-results.html">Lab Results
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="medical-records.html">Medical Results</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <!-- </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-hospital"></i><span>Hospitals <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li>
-                                </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-list"></i><span>Inventory <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li>
-                                </li>
-                                    <li>
-                                        <a href="javascript:void(0)">
-                                            <i class="ti ti-users"></i><span>PRM (CRM) <span class="btn btn-sm btn-danger">PRO</span></span>
-                                    </a>
-                                </li> -->
-                            </ul>
-                        </li>
-                        <li class="menu-title"><span>MANAGE</span></li>
-                        <li>
-                            <ul>
-                                <li>
-                                    <a href="tasks.html">
-                                        <i class="ti ti-users-group"></i><span>Tasks</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="staffs.html">
-                                        <i class="ti ti-users-group"></i><span>Staff</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="transactions.html">
-                                        <i class="ti ti-briefcase"></i><span>Payments Transactions</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="notifications.html">
-                                        <i class="ti ti-bell"></i><span>Notifications</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="messages.html">
-                                        <i class="ti ti-message-circle-2"></i><span>Messages</span><span class="count">5</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="invoice.html">
-                                        <i class="ti ti-file-invoice"></i><span>Invoice</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="general-settings.html">
-                                        <i class="ti ti-settings"></i><span>Settings</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            <!-- Sidenav Menu Start -->
+      {% include "partials/sidebar.html" %}
+      <!-- Sidenav Menu End -->
 
         </div>
         <!-- Sidenav Menu End -->
@@ -573,11 +296,11 @@
 
                 <!-- tabs start -->
                  <ul class="nav nav-pills patients-details-tab border-bottom pb-4 mb-4 d-flex align-items-center gap-2">
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a href="patient-details.html" class="nav-link border rounded fw-semibold active">
                             Patient Profile
                         </a>
-                    </li>
+                    </li> -->
                     <!-- <li class="nav-item">
                         <a href="patient-details-appointments.html" class="nav-link border rounded fw-semibold">
                             Appointments
@@ -629,7 +352,7 @@
                         <div class="card shadow">
                             <div class="card-body">
                                 <div class="d-flex align-items-center pb-3 mb-3 border-bottom">
-                                    <a href="javascript:void(0);" class="avatar avatar-xxl me-2">
+                                    <a href="javascript:void(0);" class="avatar avatar-xxl me-2" id="profile_img">
                                         <img src="/static/img/profiles/avatar-03.jpg" alt="img" class="rounded">
                                     </a>
                                     <div>
@@ -647,7 +370,7 @@
                                 <p class="mb-3">Phone Number <span class="float-end text-dark phone__number">+1 75964 25493</span></p>
                                 <p class="mb-3">Email <span class="float-end text-dark"><a href="#" class="patient__email" data-cfemail="7a1903140e1213031b3a1f021b170a161f54191517"></a></span></p>
                                 <!-- <p class="mb-3">Referred By <a href="doctor-details.html" class="float-end text-decoration-underline link-primary">Dr Antonio</a></p> -->
-                                <p class="mb-4">Total No of Bookings <span class="float-end text-dark total__bookings">+12</span></p>
+                                <p class="mb-4">Total No of Bookings <span class="float-end text-dark total__bookings">-</span></p>
                                 <h6 class="mb-2 fw-semibold">Address Information</h6>
                                 <p class="mb-0 patient__address">Loading...</p>
                             </div>
@@ -658,7 +381,7 @@
                     <!-- col start -->
                     <div class="col-lg-8">
 
-                        <div class="d-flex align-items-center pb-4 mb-4 border-bottom justify-content-between flex-wrap gap-2">
+                        <!-- <div class="d-flex align-items-center pb-4 mb-4 border-bottom justify-content-between flex-wrap gap-2">
                             <div class="input-icon input-icon-start position-relative me-2">
                                 <span class="input-icon-addon"><i class="ti ti-search"></i></span>
                                 <input type="text" class="form-control py-1" placeholder="search">
@@ -668,7 +391,7 @@
                                 <a href="javascript:void(0);" class="btn btn-icon btn-outline-light"><i class="ti ti-video"></i></a>
                                 <a href="javascript:void(0);" class="btn btn-icon btn-outline-light"><i class="ti ti-phone"></i></a>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- card start -->
                          <div class="card shadow flex-fill w-100">
@@ -863,83 +586,12 @@
                                 <h5 class="fw-bold mb-0 text-truncate"><i class="ti ti-brand-days-counter me-1"></i>Lab Results</h5>
                                 <a href="lab-results.html" class="btn btn-sm btn-outline-white flex-shrink-0">View All</a>
                             </div>
-                            <div class="card-body pb-0">
-                                <div class="row">
-                                    <div class="col-xl-6">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <div class="mb-3">
-                                                    <span class="badge badge-md badge-soft-success text-success border border-success">Result Out</span>
-                                                </div>
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <a href="javascript:void(0);" class="avatar flex-shrink-0 bg-dark">
-                                                        <i class="ti ti-file-unknown fs-16"></i>
-                                                    </a>
-                                                    <div class="ms-2">
-                                                        <div>
-                                                            <h6 class="fw-semibold fs-14 text-truncate mb-1"><a href="javascript:void(0);">Blood test (for Diabeties)</a></h6>
-                                                            <p class="fs-13 mb-0">12 Dec 2024</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-between gap-3">
-                                                    <div>
-                                                        <h6 class="fw-semibold fs-14 mb-1">Refereed By</h6>
-                                                        <div class="d-flex align-items-center">
-                                                            <span class="avatar avatar-xs flex-shrink-0">
-                                                                <a href="doctor-details.html"><img src="/static/img/doctors/doctor-10.jpg" class="rounded" alt="img"></a>
-                                                            </span>
-                                                            <p class="fs-13 mb-0 ms-2 text-truncate"><a href="doctor-details.html">Dr. Benjamin Harris</a></p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light me-1"><i class="ti ti-download"></i></a>
-                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#view_result"><i class="ti ti-eye"></i></a>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-6">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <div class="mb-3">
-                                                    <span class="badge badge-md badge-soft-warning text-warning border border-warning">Pending Result</span>
-                                                </div>
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <a href="javascript:void(0);" class="avatar flex-shrink-0 bg-dark">
-                                                        <i class="ti ti-file-unknown fs-16"></i>
-                                                    </a>
-                                                    <div class="ms-2">
-                                                        <div>
-                                                            <h6 class="fw-semibold fs-14 text-truncate mb-1"><a href="javascript:void(0);">Hemoglobin A1c (for Diabetes)</a></h6>
-                                                            <p class="fs-13 mb-0">25 Jan 2025</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="d-flex align-items-center justify-content-between gap-3">
-                                                    <div>
-                                                        <h6 class="fw-semibold fs-14 mb-1">Refereed By</h6>
-                                                        <div class="d-flex align-items-center">
-                                                            <span class="avatar avatar-xs flex-shrink-0">
-                                                                <a href="doctor-details.html"><img src="/static/img/doctors/doctor-05.jpg" class="rounded" alt="img"></a>
-                                                            </span>
-                                                            <p class="fs-13 mb-0 ms-2 text-truncate"><a href="doctor-details.html">Dr. Victoria Evans</a></p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light me-1"><i class="ti ti-download"></i></a>
-                                                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-target="#view_result"><i class="ti ti-eye"></i></a>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="card-body pb-0 labresults__container">
+                                
                             </div>
                         </div>
+
+                        
                         <!-- card end -->
 
                         <!-- card start -->

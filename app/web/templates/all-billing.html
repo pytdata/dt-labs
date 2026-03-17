@@ -6,7 +6,7 @@
 	<!-- Meta Tags -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>DT-Labs | Visits | Modern Integrated Laboratory Information System</title>
+    <title>DT-Labs | Billing | Modern Integrated Laboratory Information System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Modern Integrated Laboratory Information System">
     <meta name="keywords" content="dt-labs, laboratory, laboratory information system, web app, desktop app">
@@ -26,19 +26,6 @@
 
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="/static/plugins/flatpickr/flatpickr.min.css">
-
-    <!-- Choices CSS -->
-    <link rel="stylesheet" href="/static/plugins/choices.js/public//static/styles/choices.min.css">
-
-    <!-- Select2 CSS -->
-    <link rel="stylesheet" href="/static/plugins/select2/css/select2.min.css">
-
-    <!-- Slick CSS -->
-    <link rel="stylesheet" href="/static/plugins/slick/slick.css">
-    <link rel="stylesheet" href="/static/plugins/slick/slick-theme.css">
-
-    <!-- Datatable CSS -->
-    <link rel="stylesheet" href="/static/plugins/datatables/css/dataTables.bootstrap5.min.css">
 
     <!-- Tabler Icon CSS -->
     <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
@@ -111,10 +98,10 @@
                         <div class="dropdown me-2">
                             <a href="javascript:void(0);" class="btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false"><i class="ti ti-list-details"></i></a>
 
-                                <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
 
                                 <!-- Item-->
-                                <a href="{{ request.url_for('appointments') }}" class="dropdown-item">
+                                <a href="all-appointments.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
@@ -125,7 +112,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="{{ request.url_for('staff_list') }}"  class="dropdown-item">
+                                <a href="all-doctors.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Doctors</span>
@@ -136,7 +123,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="{{ request.url_for('patient_add') }}" class="dropdown-item">
+                                <a href="add-patient.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
@@ -147,7 +134,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <!-- <a href="pharmacy.html" class="dropdown-item">
+                                <a href="pharmacy.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
@@ -155,9 +142,10 @@
                                         </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
                                     </div>
-                                </a> -->
+                                </a>
 
                             </div>
+
                         </div>
                     </div>
 
@@ -167,7 +155,7 @@
                             <a href="javascript:void(0);" class="btn topbar-link btnFullscreen"><i class="ti ti-minimize"></i></a>
                         </div>
                     </div>
-                    <!-- Minimize -->
+                    <!-- Minimize -->				
 
                     <!-- Light/Dark Mode Button -->
                     <div class="header-item d-none d-sm-flex me-2">
@@ -247,7 +235,7 @@
         </div>
 
         <!-- Sidenav Menu Start -->
-        {% include "partials/sidebar.html" %}
+            {% include "partials/sidebar.html" %}
         <!-- Sidenav Menu End -->
 
         <!-- ========================
@@ -259,30 +247,132 @@
             <!-- Start Content -->
             <div class="content">
 
-                <!-- card start -->
-                <div class="card mb-0">
-                    <div class="card-body">
-                    <div>
-                        <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="card-title">System Analysis</h5>
-                            <select id="reportType" class="form-select w-auto">
-                                <option value="revenue">Financial: Revenue vs Collection</option>
-                                <option value="workload">Clinical: Departmental Workload</option>
-                                <option value="status">Operations: Lab Completion Rates</option>
-                            </select>
-                        </div>
-                        
-                        <div style="height: 400px;">
-                            <canvas id="myChart"></canvas>
+                <!-- Page Header -->
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
+                    <div class="breadcrumb-arrow">
+                        <h4 class="mb-1">Billing</h4>
+                        <div class="text-end">
+                            <ol class="breadcrumb m-0 py-0">
+                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">Applications</a></li>
+                                <li class="breadcrumb-item active">Billing</li>
+                            </ol>
                         </div>
                     </div>
+                   
                 </div>
+				<!-- End Page Header -->
 
-                    </div>
+                <!-- start row -->
+                <div class="row">
+
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="card flex-fill">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center overflow-hidden mb-2">
+                                    <div>
+                                        <p class="mb-1 text-truncate">Total Billing</p>
+                                        <h6>$3,237.94</h6>
+                                    </div>
+                                </div>
+                                <div class="attendance-report-bar mb-2">
+                                    <div class="progress" role="progressbar" aria-label="Success example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="height: 5px;">
+                                        <div class="progress-bar bg-pink" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="d-flex align-items-center text-truncate mb-0"><span class="text-success fs-12 d-flex align-items-center me-1"><i class="ti ti-arrow-wave-right-up me-1"></i>+32.40%</span>from last month</p>
+                                </div>
+                            </div><!-- end card body -->
+                        </div><!-- end card -->
+                    </div><!-- end col -->
+
+                  
 
                 </div>
-                <!-- card start -->
+                <!-- end row -->
+
+                <!-- start row -->
+                <div class="row">
+
+                    <div class="col-sm-12">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3 mb-3">
+                                <h5 class="d-flex align-items-center mb-0">Billing<span class="badge bg-soft-dark ms-2 text-dark fs-12 total__billings">2000 Billing</span></h5>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="input-group w-auto input-group-flat">
+                                        <input type="text" class="form-control py-1 flatpickr-input active" data-provider="flatpickr" data-date-format="d M, Y" readonly="readonly" placeholder="Due Date">
+                                        <span class="input-group-text">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                                            Select Status
+                                        </a>
+                                        <ul class="dropdown-menu  dropdown-menu-end p-1">
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Paid</a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Overdue</a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Pending</a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Draft</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                                            <span class="d-inline-flex me-1">Sort By : </span> Last 7 Days
+                                        </a>
+                                        <ul class="dropdown-menu  dropdown-menu-end p-1">
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Created Date</a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Due Date</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+
+                                <div class="table-responsive table-nowrap">
+                                    <table class="table border">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>
+                                                    <div class="form-check form-check-md">
+                                                        <input class="form-check-input" type="checkbox" id="select-all">
+                                                    </div>
+                                                </th>
+                                                <th>Bill No</th>
+                                                <th>Patient Name</th>
+                                                <th>Appointment Date</th>
+                                                <th>Total Billed</th>
+                                                <th>Tests</th>
+                                                <th>Invoice Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="billing__container">
+                                            </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- end col -->
+
+                </div>
+                <!-- end row -->
 
             </div>
             <!-- End Content -->
@@ -308,43 +398,62 @@
     <!-- End Wrapper -->
 
 
+    <!-- Start Delete Modal  -->
+    <div class="modal fade" id="delete_modal">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center position-relative">
+                    <div class="mb-3 position-relative z-1">
+                        <span class="avatar avatar-xl badge-soft-danger text-danger rounded-circle"><i class="ti ti-trash fs-24"></i></span>
+                    </div>
+                    <h5 class="mb-1">Delete Confirmation</h5>
+                    <p class="mb-3">Are you sure you want to delete?</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="javascript:void(0);" class="btn btn-light position-relative z-1 me-2" data-bs-dismiss="modal">Cancel</a>
+                        <a href="javascript:void(0);" class="btn btn-danger position-relative z-1" data-bs-dismiss="modal">Yes, Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Delete Modal  -->
+
+<!-- View billing -->
+    <div class="modal fade" id="view_bill_modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Billing Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="bill_details_content">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- jQuery -->
     <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
 
     <!-- Bootstrap Core JS -->
     <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
 
-	<!-- Simplebar JS -->
-	<script src="/static/plugins/simplebar/simplebar.min.js" type="d68bd5a759418164f0f0429b-text/javascript"></script>
-
-    <!-- Choices Js -->
-    <script src="/static/plugins/choices.js/public//static/scripts/choices.min.js" type="d68bd5a759418164f0f0429b-text/javascript"></script>
-
     <!-- Flatpickr JS -->
-    <script src="/static/plugins/flatpickr/flatpickr.min.js" type="d68bd5a759418164f0f0429b-text/javascript"></script>
+    <script src="/static/plugins/flatpickr/flatpickr.min.js" type="b21c265bdeecc6d171de6766-text/javascript"></script>
 
-    <!-- Slick Slider -->
-	<script src="/static/plugins/slick/slick.js" type="d68bd5a759418164f0f0429b-text/javascript"></script>
-
-    <!-- Select2 JS -->
-    <script src="/static/plugins/select2/js/select2.min.js" type="d68bd5a759418164f0f0429b-text/javascript"></script>
-
-    <!-- Datatable JS -->
-    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js" type="d68bd5a759418164f0f0429b-text/javascript"></script>
-    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js" type="d68bd5a759418164f0f0429b-text/javascript"></script>
+	<!-- Simplebar JS -->
+	<script src="/static/plugins/simplebar/simplebar.min.js" type="b21c265bdeecc6d171de6766-text/javascript"></script>
 
     <!-- Main JS -->
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
 
-<script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
-<script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+    <!-- Lab results -->
+    <script src="{{ url_for('static', path='js/utils/billings.js') }}" defer></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script src="{{ url_for('static', path='js/utils/render-chart.js') }}" defer></script>
-
-
-
+    <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
+    <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 
 </html>

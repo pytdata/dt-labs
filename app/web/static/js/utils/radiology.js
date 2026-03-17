@@ -2,6 +2,42 @@
  * RADIOLOGY QUEUE MANAGEMENT - MATCHED TO API RESPONSE
  */
 
+function showToast (message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};
+
+
 const radiologyQueueURL = "/api/v1/lab/queue/radiology";
 const containerEl = document.querySelector(".lab__container");
 const totalRadiology = document
@@ -153,12 +189,7 @@ function renderRadiologyTable(items) {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
                             ${dropdownActionHtml}
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item text-danger d-flex align-items-center">
-                                    <i class="ti ti-trash me-2"></i>Cancel Request
-                                </a>
-                            </li>
+                            
                         </ul>
                     </div>
                 </div>
@@ -199,7 +230,8 @@ async function saveRadiologyResult() {
 
     // Validation
     if (!findings.trim()) {
-        alert("Please enter clinical findings before submitting.");
+        // alert("Please enter clinical findings before submitting.");
+        showToast("Please enter clinical findings before submitting.", "error")
         return;
     }
 
@@ -235,11 +267,13 @@ async function saveRadiologyResult() {
             // 3. Optional: Success Notification
             console.log("Success:", result.message);
         } else {
-            alert("Error: " + (result.detail || "Failed to save results"));
+            // alert("Error: " + (result.detail || "Failed to save results"));
+            showToast("Failed to save results. Try again.", "error");
         }
     } catch (error) {
         console.error("Network Error:", error);
-        alert("A network error occurred. Please try again.");
+        // alert("A network error occurred. Please try again.");
+        showToast(error.message || "An error occurred. Try again.", "error")
     } finally {
         // Re-enable button
         submitBtn.disabled = false;
@@ -274,7 +308,8 @@ window.reviewReport = async function(itemId, testName) {
         modal.show();
     } catch (err) {
         console.error("Error loading report for review:", err);
-        alert("Could not load the report findings. Please try again.");
+        // alert("Could not load the report findings. Please try again.");
+        showToast("Could not load the report findings. Please try again.", "error")
     }
 };
 
@@ -310,11 +345,13 @@ window.finalizeReport = async function() {
             console.log("Report finalized successfully");
         } else {
             const errorData = await response.json();
-            alert("Error: " + (errorData.detail || "Could not finalize report"));
+            // alert("Error: " + (errorData.detail || "Could not finalize report"));
+            showToast(errorData || "Could not finalize report", "error");
         }
     } catch (error) {
         console.error("Finalization error:", error);
-        alert("A network error occurred.");
+        // alert("A network error occurred.");
+        showToast(error.message || "Action couldn't be completed. Try again.", "error")
     }
 };
 
@@ -387,6 +424,7 @@ window.viewFinalReport = async function(itemId) {
 
     } catch (error) {
         console.error("Print error:", error);
-        alert("Failed to generate the report. Please ensure the item is finalized.");
+        // alert("Failed to generate the report. Please ensure the item is finalized.");
+        showToast("Failed to generate the report. Please ensure the item is finalized", "error");
     }
 };

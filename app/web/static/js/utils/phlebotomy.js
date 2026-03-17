@@ -1,5 +1,43 @@
 // 1. GLOBAL STATE
-let allQueueItems = []; 
+let allQueueItems = [];
+
+
+
+
+function showToast (message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};
 
 const phlebotomyContainerEl = document.querySelector(".phlebotomy__container");
 const phlebotomyURL = `/api/v1/lab/queue/phlebotomy`;
@@ -17,7 +55,7 @@ async function getRemoteData(url) {
         if (!res.ok) throw new Error("Failed to fetch queue data");
         return await res.json();
     } catch (error) {
-        console.error("Fetch error:", error);
+        throw new Error(error)
     }
 }
 
@@ -158,7 +196,8 @@ window.openSampleModal = async function(itemId, appointmentId) {
 
     } catch (error) {
         console.error("Modal Data Load Error:", error);
-        alert("Failed to load sample data. Check console for details.");
+        showToast("Failed to load sample data. Try again")
+        
     }
 };
 
@@ -191,7 +230,8 @@ document.getElementById("sampleForm").addEventListener("submit", async (e) => {
 
     // Validation check before fetching
     if (payload.test_item_ids.length === 0) {
-        alert("Please select at least one test item.");
+        // alert("Please select at least one test item.");
+        showToast("Please select at least one test item", "error")
         return;
     }
 
@@ -221,7 +261,8 @@ document.getElementById("sampleForm").addEventListener("submit", async (e) => {
 
     } catch (error) {
         console.error("Submission Error:", error);
-        alert("Error: " + error.message);
+        // alert("Error: " + error.message);
+        showToast(error.message, "error")
     } finally {
         // 6. RESET BUTTON STATE
         saveBtn.disabled = false;
@@ -359,7 +400,8 @@ window.deleteSample = async function(sampleId, appointmentId) {
         // Also refresh the background queue if needed
         if (typeof fetchQueue === 'function') fetchQueue(); 
     } catch (error) {
-        alert(error.message);
+        // alert(error.message);
+        showToast(error.message || "Failed to delete sample. Trya again", "error")
     }
 
 };
@@ -371,7 +413,8 @@ window.finalizeCollection = async function() {
     console.log("Finalize triggered for Phleb ID:", currentPhlebId); // Debugging line
 
     if (!currentPhlebId) {
-        alert("No active collection session found to finalize.");
+        // alert("No active collection session found to finalize.");
+        showToast("No active collection session found to finalize.", "error")
         return;
     }
 
@@ -399,14 +442,17 @@ window.finalizeCollection = async function() {
                 window.location.reload(); // Fallback
             }
             
-            alert("Success: Samples sent to Laboratory.");
+            // alert("Success: Samples sent to Laboratory.");
+            showToast("Samples sent to Laboratory", "success");
         } else {
             // Handle the "missing samples" error from FastAPI
-            alert(`⚠️ Error: ${data.detail || "Unable to finalize"}`);
+            // alert(`⚠️ Error: ${data.detail || "Unable to finalize"}`);
+            showToast("Unable to finalize.", "error")
         }
     } catch (err) {
-        console.error("Finalize Error:", err);
-        alert("A network error occurred. Check the console.");
+        // console.error("Finalize Error:", err);
+        // alert("A network error occurred. Check the console.");
+        showToast(err.message, "error")
     }
 };
 

@@ -52,7 +52,7 @@ function renderData(invoice) {
         <td>
             <div class="d-flex align-items-center">
                 <a href="invoice-details.html" class="avatar avatar-lg me-2">
-                    <img src="/static/img/users/user-01.jpg" class="rounded-circle" alt="user">
+                    <img src="${invoice.patient.profile_image}" class="rounded-circle" alt="user">
                 </a>
                 <div>
                     <h6 class="fw-medium mb-1 fs-14"><a href="invoice-details.html">${invoice.patient.full_name}</a>

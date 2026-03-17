@@ -7,11 +7,8 @@ from sqlalchemy import select, func
 from app.db.session import get_db
 from app.models import Patient
 from app.models.lab import LabOrder, LabOrderItem, LabResult, Visit
-from app.models.users import User
 from app.schemas import PatientCreate, PatientOut
 from sqlalchemy import or_
-from sqlalchemy import func, select
-from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 
@@ -21,7 +18,6 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.lab_results import LabResultResponse
-from app.web.dependency import get_current_user
 
 router = APIRouter()
 
@@ -29,9 +25,19 @@ DEFAULT_PREFIX = "YGK"  # can be moved to Settings table later
 
 
 async def _next_patient_no(db: AsyncSession) -> str:
+    # Get the current max ID
     max_id = (await db.execute(select(func.max(Patient.id)))).scalar() or 0
-    nxt = int(max_id) + 1
-    return f"{DEFAULT_PREFIX}-PT-{nxt:06d}"
+
+    # Logic to start from 100
+    # If the database is empty (max_id is 0), start at 100.
+    # Otherwise, increment the current max_id.
+    if max_id == 0:
+        nxt = 100
+    else:
+        nxt = int(max_id) + 1
+
+    # Change :06d to :03d for 3-digit padding (e.g., 101, 102...)
+    return f"{DEFAULT_PREFIX}-PT-{nxt:03d}"
 
 
 class FilterParams(BaseModel):
@@ -180,20 +186,24 @@ async def get_patient_lab_results(
     patient_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    patient = await db.get(Patient, patient_id)
-    if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found")
-
+    # Use a join to find results specifically belonging to this patient
     stmt = (
         select(LabResult)
-        .join(LabOrderItem, LabResult.order_item_id == LabOrderItem.id)
-        .join(LabOrder, LabOrderItem.order_id == LabOrder.id)
+        .join(LabResult.order_item)
+        .join(LabOrderItem.order)
+        .options(
+            # Eagerly load the test name and category so the frontend can display them
+            selectinload(LabResult.order_item).selectinload(LabOrderItem.test)
+        )
         .where(LabOrder.patient_id == patient_id)
         .order_by(LabResult.received_at.desc())
     )
 
     result = await db.execute(stmt)
     lab_results = result.scalars().all()
+
+    # Debugging: Print count to terminal to see if DB is actually returning rows
+    print(f"DEBUG: Found {len(lab_results)} results for patient {patient_id}")
 
     return lab_results
 

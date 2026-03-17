@@ -1,22 +1,14 @@
-from datetime import datetime, timezone
-from enum import Enum
 from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query
 from fastapi import status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
-from sqlalchemy import or_
+from sqlalchemy import select
 
-from passlib.context import CryptContext
 
 from app.core.security import get_password_hash
 from app.db.session import get_db
-from app.models import Patient
-from app.models.catalog import Test
-from app.models.lab import Appointment
 from app.models.users import User
 from app.schemas.staff import Gender, StaffCreate, StaffResponse, StaffUpdate
 

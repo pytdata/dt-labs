@@ -18,6 +18,7 @@ let staffURL = "/api/v1/staffs/";
   try {
     
     const res = await getRemoteData(staffURL);
+
     render(res);
   } catch (error) {
     // TODO: Add toast notification
@@ -348,7 +349,7 @@ function renderStaffSearchResults(data) {
             <li>
               <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                   <input class="form-check-input m-0 me-2" type="checkbox">
-                  <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>${staff.full_name}
+                  <span class="avatar avatar-xs rounded-circle me-2"><img src="${staff.avatar}" class="flex-shrink-0 rounded" alt="img"></span>${staff.full_name}
               </label>
           </li>
         `;
@@ -494,7 +495,7 @@ function renderData(staffData) {
                 <div class="d-flex align-items-center">
                         <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal"
                         data-bs-target="#view_modal">
-                        <img src="/static/img/users/user-30.jpg" alt="img" class="rounded">
+                        <img src="${staffData.avatar}" alt="img" class="rounded">
                     </a>
                     <div>
                         <h6 class="fs-14 mb-0 fw-medium"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">${staffData.full_name}</a></h6>
@@ -502,7 +503,7 @@ function renderData(staffData) {
                 </div>
             </td>
             <td>${staffData.gender ? staffData.gender.toLocaleUpperCase() : "-"}</td>
-            <td>${staffData.role.toLocaleUpperCase()}</td>
+            <td>${staffData.role.toLocaleUpperCase().includes("_") ? staffData.role.split("_").join(" ").toLocaleUpperCase() : staffData.role.toLocaleUpperCase()}</td>
             <td>${staffData.phone_number ? staffData.phone_number : "-"}</td>
             <td><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b2d8dddcd3c6dad3dcf2d7cad3dfc2ded79cd1dddf">${staffData.email}</a></td>
             <td>17 Jun 2025</td>

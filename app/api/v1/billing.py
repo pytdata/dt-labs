@@ -2,13 +2,78 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from app.db.session import get_db
-from app.models.billing import Invoice, InvoiceItem, Payment
+from app.models.billing import Billing, Invoice, InvoiceItem, Payment
+from app.models.lab import Appointment
 from app.schemas import billing_service
-from app.schemas.billing import PaymentCreate
+from app.schemas.billing import BillingRead, PaymentCreate
 
 router = APIRouter()
+
+
+@router.get("/records", response_model=list[BillingRead])
+async def get_all_billing_records(
+    db: AsyncSession = Depends(get_db), limit: int = 100, offset: int = 0
+):
+    try:
+        stmt = (
+            select(Billing)
+            .options(
+                joinedload(Billing.patient),
+                # Nested join: Load the appointment AND its linked invoice
+                joinedload(Billing.appointment).joinedload(Appointment.invoice),
+                selectinload(Billing.items),
+            )
+            .order_by(Billing.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+
+        result = await db.execute(stmt)
+        billings = result.scalars().all()
+
+        return billings
+
+    except Exception as e:
+        # It's helpful to log the specific error for debugging
+        print(f"ERROR fetching billing records: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve billing records: {str(e)}"
+        )
+
+
+@router.get("/records/{bill_id}", response_model=BillingRead)
+async def get_billing_record_details(bill_id: int, db: AsyncSession = Depends(get_db)):
+    try:
+        # We fetch the specific bill and eagerly load all related data
+        stmt = (
+            select(Billing)
+            .options(
+                joinedload(Billing.patient),
+                # We need the invoice status to show if it's paid/unpaid in the modal
+                joinedload(Billing.appointment).joinedload(Appointment.invoice),
+                selectinload(Billing.items),
+            )
+            .where(Billing.id == bill_id)
+        )
+
+        result = await db.execute(stmt)
+        bill = result.scalar_one_or_none()
+
+        if not bill:
+            raise HTTPException(
+                status_code=404, detail=f"Billing record with ID {bill_id} not found"
+            )
+
+        return bill
+
+    except Exception as e:
+        print(f"ERROR fetching bill {bill_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error while retrieving bill details",
+        )
 
 
 @router.post("/{invoice_id}/payments", response_model=None)

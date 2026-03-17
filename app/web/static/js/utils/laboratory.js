@@ -1,5 +1,44 @@
 const fillQueueURL = "/api/v1/lab/phlebotomy-queue/"; // Updated to your dedicated route
 
+
+
+function showToast (message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};
+
+
+
 async function init() {
     const data = await getRemoteData(fillQueueURL);
     if (data) renderQueue(data);
@@ -176,7 +215,9 @@ document.getElementById('fill_results_form').addEventListener('submit', async fu
     });
 
     if (Object.keys(resultsPayload).length === 0) {
-        return alert("Please enter at least one result value.");
+        // return alert("Please enter at least one result value.");
+        showToast("Please enter at least one result value.", "error");
+        return;
     }
 
     // Disable button to prevent double-submission
@@ -194,14 +235,16 @@ document.getElementById('fill_results_form').addEventListener('submit', async fu
         });
 
         if (response.ok) {
-            alert("Results finalized and saved successfully!");
+            // alert("Results finalized and saved successfully!");
+            showToast("Results finalized and saved successfully!")
             location.reload(); // Refresh the queue
         } else {
             const error = await response.json();
             throw new Error(error.detail || "Failed to save");
         }
     } catch (err) {
-        alert("Error: " + err.message);
+        // alert("Error: " + err.message);
+        showToast(err.message);
         submitBtn.disabled = false;
         submitBtn.innerText = "Save & Finalize Results";
     }

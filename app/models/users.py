@@ -19,6 +19,7 @@ class User(Base):
     phone_number: Mapped[str | None] = mapped_column(default="", nullable=True)
     gender: Mapped[str | None] = mapped_column(default=Gender.MALE, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    profile_picture: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     entered_results: Mapped[list["LabResult"]] = relationship(
         "LabResult",
@@ -46,6 +47,12 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"{self.email!r} {self.full_name!r} {self.gender!r}"
+
+    @property
+    def avatar(self) -> str:
+        if self.profile_picture:
+            return self.profile_picture
+        return "/static/img/defaults/default-user-icon.jpeg"
 
 
 class Department(Base):

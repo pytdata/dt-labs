@@ -15,6 +15,7 @@ class PaymentFilterParams(BaseModel):
 class PatientMiniResponse(BaseModel):
     id: int
     full_name: Optional[str] = None
+    profile_image: str
 
     model_config = {"from_attributes": True}
 
@@ -56,6 +57,7 @@ class InvoiceMiniResponse(BaseModel):
 class UserMiniResponse(BaseModel):
     id: int
     full_name: Optional[str] = None
+    avatar: str
 
     model_config = {"from_attributes": True}
 

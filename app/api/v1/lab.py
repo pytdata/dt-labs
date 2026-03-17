@@ -131,7 +131,7 @@ async def get_radiology_queue(db: AsyncSession = Depends(get_db)):
             selectinload(LabOrderItem.radiology_result),
             selectinload(LabOrderItem.lab_result),
         )
-    )
+    ).order_by(LabOrderItem.id.desc())
 
     result = await db.execute(stmt)
     results = result.unique().scalars().all()
@@ -291,7 +291,7 @@ async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
                 contains_eager(Appointment.phlebotomy),
             ),
         )
-    )
+    ).order_by(LabOrderItem.id.desc())
 
     if dept == "phlebotomy":
         stmt = stmt.where(
@@ -317,23 +317,27 @@ async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
     response_model=list[LabOrderItemResponse],
 )
 async def get_pending_lab_items(
-    appointment_id: int,
-    db: AsyncSession = Depends(get_db),
+    appointment_id: int, db: AsyncSession = Depends(get_db)
 ):
     stmt = (
         select(LabOrderItem)
+        .join(LabOrderItem.order)
+        .join(
+            LabOrderItem.test
+        )  # Explicitly join the Test table to filter on its columns
         .options(
             selectinload(LabOrderItem.test).selectinload(Test.test_category),
-            selectinload(LabOrderItem.radiology_result),  # Add this!
-            selectinload(LabOrderItem.lab_result),  # Add this for safety too!
+            selectinload(LabOrderItem.radiology_result),
         )
         .where(
-            LabOrderItem.order.has(appointment_id=appointment_id),
-            LabOrderItem.stage == LabStage.SAMPLING,
+            LabOrder.appointment_id == appointment_id,
+            # Handle both stages to ensure items aren't missed
+            LabOrderItem.stage.in_([LabStage.SAMPLING, LabStage.BOOKING]),
             LabOrderItem.status == LabStatus.AWAITING_SAMPLE,
+            # The boolean filter:
+            Test.requires_phlebotomy == True,
         )
     )
-
     result = await db.execute(stmt)
     return result.scalars().all()
 

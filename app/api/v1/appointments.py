@@ -15,7 +15,7 @@ from sqlalchemy import or_
 
 from app.db.session import get_db
 from app.models import Patient, association
-from app.models.billing import Invoice, InvoiceItem, Payment
+from app.models.billing import Billing, BillingItem, Invoice, InvoiceItem, Payment
 from app.models.catalog import Phlebotomy, Priority, Sample, SampleStatus, Test
 from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
@@ -80,13 +80,13 @@ async def create_appointment(
                 doctor_id=data.doctor_id,
                 notes=data.notes,
                 mode_of_payment=data.mode_of_payment,
-                total_price=total_billable_amount,  # The cost of the appointment
+                total_price=total_billable_amount,
                 tests=tests,
             )
             db.add(appointment)
             await db.flush()
 
-            # 3. Create Lab Order (The container for clinical tasks)
+            # 3. Create Lab Order (Clinical container)
             order = LabOrder(
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
@@ -95,13 +95,24 @@ async def create_appointment(
             db.add(order)
             await db.flush()
 
-            # 4. Create Invoice (Strictly Unpaid at this stage)
+            # --- NEW: 4. Create Billing Record (Master Audit Log) ---
+            billing = Billing(
+                bill_no=f"BIL-{appointment.id}-{datetime.now().strftime('%M%S')}",
+                patient_id=data.patient_id,
+                appointment_id=appointment.id,
+                total_billed=total_billable_amount,
+            )
+            db.add(billing)
+            await db.flush()
+
+            # 5. Create Master Invoice (Transactional record)
             invoice = Invoice(
                 invoice_no=f"INV-{appointment.id}-{datetime.now().strftime('%M%S')}",
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
+                order_id=order.id,  # Link the order to invoice
                 total_amount=total_billable_amount,
-                amount_paid=0,  # Always 0 at creation now
+                amount_paid=0,
                 balance=total_billable_amount,
                 status="unpaid",
                 payment_mode=data.mode_of_payment,
@@ -109,10 +120,9 @@ async def create_appointment(
             db.add(invoice)
             await db.flush()
 
-            # 5. Process Tests: Create locked clinical tasks and linked billing items
+            # 6. Process Tests: Create clinical tasks, billing items, and invoice items
             for test in tests:
                 # A. Create the LabOrderItem (Clinical Task)
-                # It starts as AWAITING_PAYMENT, so it won't show in Phlebotomy/Lab yet
                 order_item = LabOrderItem(
                     order_id=order.id,
                     test_id=test.id,
@@ -120,36 +130,43 @@ async def create_appointment(
                     stage=LabStage.BOOKING,
                 )
                 db.add(order_item)
-                await db.flush()  # Flush to get the ID for the link
+                await db.flush()
 
-                # B. Create the InvoiceItem (The Billing record)
-                # Linked to the clinical task so we can "unlock" it later
+                # --- NEW: B. Create BillingItem (The record holder) ---
+                db.add(
+                    BillingItem(
+                        billing_id=billing.id,
+                        test_id=test.id,
+                        test_name=test.name,
+                        price_at_booking=test.price_ghs,
+                    )
+                )
+
+                # C. Create the InvoiceItem (The visibility/payment toggle)
                 db.add(
                     InvoiceItem(
                         invoice_id=invoice.id,
                         test_id=test.id,
-                        lab_order_item_id=order_item.id,  # The key connection
+                        lab_order_item_id=order_item.id,
                         description=test.name,
                         unit_price=test.price_ghs,
                         qty=1,
                         line_total=test.price_ghs,
-                        is_paid=False,  # Must be paid via modal
+                        is_paid=False,
                     )
                 )
 
-        # Commit happens automatically here
         return {
             "status": "success",
-            "message": "Appointment created. Please proceed to payment to unlock tests.",
+            "message": "Appointment, Billing, and Invoice created successfully.",
             "appointment_id": appointment.id,
+            "bill_id": billing.id,
             "invoice_id": invoice.id,
         }
 
     except Exception as e:
-        print(f"ERROR during appointment creation: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to create appointment: {str(e)}"
-        )
+        print(f"ERROR: {e}")
+        raise HTTPException(status_code=500, detail=f"Transaction failed: {str(e)}")
 
 
 @router.get("/", response_model=list[AppointmentResponse])

@@ -30,6 +30,7 @@ class PatientOut(PatientCreate):
     id: int
     patient_no: str
     full_name: str
+    profile_image: str
     created_at: datetime | None = None
     # last_visit_date: datetime | None
 

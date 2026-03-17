@@ -36,6 +36,88 @@
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
 
+
+
+<style>
+/* 1. Position the container at Top Right */
+.toast-container {
+    z-index: 999999 !important;
+    position: fixed !important;
+    top: 25px !important;
+    right: 25px !important; /* Anchored to the right */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Align multiple toasts to the right edge */
+    width: auto;
+    pointer-events: none;
+}
+
+/* 2. Modern "Floating" Toast Styling */
+.toast {
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 450px;
+    border: none !important;
+    border-radius: 10px !important; /* Slightly sharper for a professional look */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    background: white !important;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncy entry */
+    margin-bottom: 10px;
+}
+
+/* 3. Animation: Slide in from the Right */
+.toast.showing {
+    transform: translateX(100%); /* Start off-screen to the right */
+    opacity: 0;
+}
+.toast.show {
+    transform: translateX(0); /* Slide into place */
+    opacity: 1;
+}
+
+/* 4. High-Attention Borders (Thick Right Edge) */
+/* We use border-right because it's closest to the screen edge, creating an anchor */
+.toast.bg-success {
+    border-right: 8px solid #28a745 !important; 
+    border-left: 1px solid #e0e0e0 !important;
+    border-top: 1px solid #e0e0e0 !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    box-shadow: -5px 5px 15px rgba(40, 167, 69, 0.15) !important; /* Green glow */
+}
+
+.toast.bg-danger {
+    border-right: 8px solid #dc3545 !important;
+    border-left: 1px solid #e0e0e0 !important;
+    border-top: 1px solid #e0e0e0 !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    box-shadow: -5px 5px 15px rgba(220, 53, 69, 0.15) !important; /* Red glow */
+}
+
+/* 5. Text & Icon Colors */
+.toast.bg-success #appCustomToastText, 
+.toast.bg-success #toastIcon {
+    color: #1e7e34 !important; /* Slightly darker for better readability */
+}
+
+.toast.bg-danger #appCustomToastText, 
+.toast.bg-danger #toastIcon {
+    color: #bd2130 !important;
+}
+
+.toast .btn-close {
+    filter: none !important;
+    opacity: 0.5;
+}
+
+.toast .btn-close:hover {
+    opacity: 1;
+}
+
+
+</style>
+    
+
 </head>
 
 <body>
@@ -98,10 +180,10 @@
                         <div class="dropdown me-2">
                             <a href="javascript:void(0);" class="btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false"><i class="ti ti-list-details"></i></a>
 
-                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
+                              <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
 
                                 <!-- Item-->
-                                <a href="all-appointments.html" class="dropdown-item">
+                                <a href="{{ request.url_for('appointments') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
@@ -112,7 +194,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="all-doctors.html" class="dropdown-item">
+                                <a href="{{ request.url_for('staff_list') }}"  class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Doctors</span>
@@ -123,7 +205,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="add-patient.html" class="dropdown-item">
+                                <a href="{{ request.url_for('patient_add') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
@@ -134,7 +216,7 @@
                                 </a>
 
                                 <!-- Item-->
-                                <a href="pharmacy.html" class="dropdown-item">
+                                <!-- <a href="pharmacy.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
@@ -142,7 +224,7 @@
                                         </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
                                     </div>
-                                </a>
+                                </a> -->
 
                             </div>
 
@@ -156,169 +238,6 @@
                         </div>
                     </div>
                     <!-- Minimize -->
-
-                    <!-- Language Dropdown -->
-					<div class="header-item">
-						<div class="dropdown me-2">
-                            <button class="topbar-link btn" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-                                <img src="/static/img/flags/us.svg" alt="Language" height="16">
-                            </button>
-
-							<div class="dropdown-menu dropdown-menu-end p-2">
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/us.svg" alt="" class="me-1" height="16"> <span class="align-middle">English</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/de.svg" alt="" class="me-1" height="16"> <span class="align-middle">German</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/fr.svg" alt="" class="me-1" height="16"> <span class="align-middle">French</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/ae.svg" alt="" class="me-1" height="16"> <span class="align-middle">Arabic</span>
-								</a>
-
-							</div>
-						</div>
-                    </div>
-
-					<!-- Notification Dropdown -->
-                    <div class="header-item">
-						<div class="dropdown me-2">
-
-							<button class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-								<i class="ti ti-bell-check fs-16 animate-ring"></i>
-								<span class="notification-badge"></span>
-							</button>
-
-							<div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg" style="min-height: 300px;">
-
-								<div class="p-2 border-bottom">
-									<div class="row align-items-center">
-										<div class="col">
-											<h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
-										</div>
-									</div>
-								</div>
-
-								<!-- Notification Body -->
-								<div class="notification-body position-relative z-2 rounded-0" data-simplebar="">
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-1">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-01.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">John Doe</p>
-												<p class="mb-1 text-wrap">
-													added new  patient <span class="fw-medium text-dark">appointment booking.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>4 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-1">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-2">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Thomas William</p>
-												<p class="mb-1 text-wrap">
-                                                    booked a new appointment
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>8 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-2">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-3">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Sarah Anderson</p>
-												<p class="mb-1 text-wrap">
-                                                    has been successfully booked for <span class="fw-medium text-dark">April 5 at 10:00 AM.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>15 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-3">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap" id="notification-4">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-08.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Ann McClure</p>
-												<p class="mb-1 text-wrap">
-                                                    cancelled her appointment scheduled for <span class="fw-medium text-dark">February 5, 2024</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>20 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-4">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-								</div>
-
-								<!-- View All-->
-								<div class="p-2 rounded-bottom border-top text-center">
-									<a href="notifications.html" class="text-center text-decoration-underline fs-14 mb-0">
-										View All Notifications
-									</a>
-								</div>
-
-							</div>
-						</div>
-					</div>
 
                     <!-- Light/Dark Mode Button -->
                     <div class="header-item d-none d-sm-flex me-2">
@@ -421,11 +340,7 @@
                             </ol>
                         </div>
                     </div>
-                    <div class="gap-2 d-flex align-items-center flex-wrap">
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh" data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Print" data-bs-original-title="Print"><i class="ti ti-printer"></i></a>
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Download" data-bs-original-title="Download"><i class="ti ti-cloud-download"></i></a>
-                    </div>
+                    
                 </div>
 				<!-- End Page Header -->
 
@@ -528,190 +443,7 @@
                                 </ul>
                             </div>
 
-                            <!-- test name dropdown -->
-                             <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-test-pipe-2 me-1"></i>Test Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Blood Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                           Urinalysis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Throat Culture
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Iron Panel
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Vitamin D Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Liver Function Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Thyroid Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Lipid Panel
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Troponin Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Hepatitis Panel
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
 
-                            <!-- doctor dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-stethoscope me-1"></i>Doctor
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-03.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Katherine Brooks
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-04.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Benjamin Harris
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-05.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Laura Mitchell
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-06.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Christopher Lewis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-07.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Natalie Foster
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-10.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Jonathan Adams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-08.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Rebecca Scott
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-12.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Samuel Turner
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-11.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Victoria Evans
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- status dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-shield-half me-1"></i>Status
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-sm p-2">
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Received
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            In progress
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Pending
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
 
                         </div>
 
@@ -786,6 +518,20 @@
     </div>
     <!-- End Wrapper -->
 
+
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container">
+    <div id="appCustomToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex p-2 align-items-center">
+            <div class="toast-body d-flex align-items-center w-100">
+                <i id="toastIcon" class="ti me-2"></i>
+                <span id="appCustomToastText" class="fw-medium"></span>
+            </div>
+            <button type="button" class="btn-close me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
 
     <!-- Start Delete Modal  -->
     <div class="modal fade" id="delete_modal">
@@ -929,6 +675,8 @@
         </div>
     </div>
     <!-- End view Modal -->
+
+
 
     
 <div class="modal fade" id="radiologyResultModal" tabindex="-1" aria-hidden="true">

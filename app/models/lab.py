@@ -59,6 +59,7 @@ class Patient(Base):
     guardian_phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     guardian_relation: Mapped[str | None] = mapped_column(String(80), nullable=True)
 
+    image_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -78,6 +79,15 @@ class Patient(Base):
     def full_name(self) -> str:
         parts = [self.first_name, self.other_names or "", self.surname]
         return " ".join([p for p in parts if p]).strip()
+
+    @property
+    def profile_image(self) -> str:
+        if self.image_url:
+            return self.image_url
+        # Return a default based on gender if available
+        if self.sex and self.sex.lower() == "female":
+            return "/static/img/defaults/female-patient.jpeg"
+        return "/static/img/defaults/male-patient.jpeg"
 
     def __repr__(self) -> str:
         return f"{self.full_name!r} {self.age!r} {self.email}"

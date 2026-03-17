@@ -79,6 +79,11 @@ async def login(request: Request):
     return _render(request, "login.html")
 
 
+@router.get("/billing", response_class=HTMLResponse, name="billing_list")
+async def billing(request: Request):
+    return _render(request, "all-billing.html")
+
+
 @router.post("/login", name="login_post")
 async def login_post(
     request: Request,

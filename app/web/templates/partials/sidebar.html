@@ -55,11 +55,11 @@
                             </a>
                         </li>
 
-                        <li class="{% if active_page == 'visits' %}active{% endif %}">
+                        <!-- <li class="{% if active_page == 'visits' %}active{% endif %}">
                             <a href="{{ request.url_for('visits') }}">
                                 <i class="ti ti-e-passport"></i><span>Visits</span>
                             </a>
-                        </li>
+                        </li> -->
 
                         <li class="{% if active_page == 'appointments' %}active{% endif %}">
                             <a href="{{ request.url_for('appointments') }}">
@@ -68,11 +68,15 @@
                         </li>
 
                         <li class="{% if active_page == 'phlebotomy' %}active{% endif %}">
-                                    <a href="{{ request.url_for('phlebotomy') }}">Phlebotomy</a>
-                                </li>
+                            <a href="{{ request.url_for('phlebotomy') }}">
+                                <i class="ti ti-needle"></i><span>Phlebotomy</span>
+                            </a>
+                        </li>
 
-                                <li class="{% if active_page == 'radiology' %}active{% endif %}">
-                                    <a href="{{ request.url_for('radiology') }}">Radiology</a>
+                        <li class="{% if active_page == 'radiology' %}active{% endif %}">
+                            <a href="{{ request.url_for('radiology') }}">
+                                <i class="ti ti-device-heart-monitor"></i><span>Radiology</span>
+                            </a>
                         </li>
 
                         <li class="submenu {% if active_group == 'lab' %}active{% endif %}">
@@ -94,26 +98,14 @@
                     </ul>
                 </li>
 
-                <li class="menu-title"><span>MANAGE</span></li>
+                <li class="menu-title"><span>ACCOUNT</span></li>
                 <li>
                     <ul>
-                        <!-- <li class="{% if active_page == 'tasks' %}active{% endif %}">
-                            <a href="{{ request.url_for('tasks') }}">
-                                <i class="ti ti-users-group"></i><span>Tasks</span>
-                            </a>
-                        </li> -->
-                        <li class="{% if active_page == 'reports' %}active{% endif %}">
-                            <a href="{{ request.url_for('reports') }}">
-                                <i class="ti ti-report"></i><span>Reports</span>
+                        <li class="{% if active_page == 'billing' %}active{% endif %}">
+                            <a href="{{ request.url_for('billing_list') }}">
+                                <i class="ti ti-file-invoice"></i><span>Billing</span>
                             </a>
                         </li>
-
-                        <li class="{% if active_page == 'staff' %}active{% endif %}">
-                            <a href="{{ request.url_for('staff_list') }}">
-                                <i class="ti ti-users-group"></i><span>Staff</span>
-                            </a>
-                        </li>
-
                         <li class="{% if active_page == 'invoice' %}active{% endif %}">
                             <a href="{{ request.url_for('invoice_list') }}">
                                 <i class="ti ti-file-invoice"></i><span>Invoice</span>
@@ -125,6 +117,30 @@
                                 <i class="ti ti-briefcase"></i><span>Payments</span>
                             </a>
                         </li>
+                         <li class="{% if active_page == 'reports' %}active{% endif %}">
+                            <a href="{{ request.url_for('reports') }}">
+                                <i class="ti ti-report"></i><span>Reports</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+
+                <li class="menu-title"><span>MANAGE</span></li>
+                <li>
+                    <ul>
+                        <!-- <li class="{% if active_page == 'tasks' %}active{% endif %}">
+                            <a href="{{ request.url_for('tasks') }}">
+                                <i class="ti ti-users-group"></i><span>Tasks</span>
+                            </a>
+                        </li> -->
+                       
+                        <li class="{% if active_page == 'staff' %}active{% endif %}">
+                            <a href="{{ request.url_for('staff_list') }}">
+                                <i class="ti ti-users-group"></i><span>Staff</span>
+                            </a>
+                        </li>
+
 
                         <!-- <li class="{% if active_page == 'notifications' %}active{% endif %}">
                             <a href="{{ request.url_for('notifications') }}">

@@ -46,34 +46,69 @@ const selectedTests = {
 let selectedTestForSample = [];
 let selectedTestOrderList = [];
 
-function showToast(message, type = 'success') {
+
+function showToast (message, type = 'success') {
     const toastEl = document.getElementById('appCustomToast');
-    const toastMessageElement = document.getElementById('appCustomToastText');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
 
-    if (!toastEl || !toastMessageElement) return;
+    if (!toastEl) return;
 
-    // Move to body to prevent clipping by parent containers
-    document.body.appendChild(toastEl.parentElement);
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
 
-    // Set content and style
-    toastMessageElement.innerText = message;
-    toastEl.classList.remove('bg-success', 'bg-danger', 'text-white');
-    toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger', 'text-white');
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
 
-    // Initialize and show
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
     toast.show();
-}
+};
 
 
 
 function showFeedback({ title, message, type = 'success', redirectUrl = null }) {
+    // 1. COMPLETELY PURGE existing modal states
+    // This stops the 'ghost' overlay by removing Bootstrap's internal tracking
+    const existingModalEl = document.getElementById('feedbackModal');
+    if (existingModalEl) {
+        const existingInstance = bootstrap.Modal.getInstance(existingModalEl);
+        if (existingInstance) {
+            existingInstance.dispose(); // Properly destroy the JS instance
+        }
+    }
+
+    // 2. FORCIBLY CLEANUP DOM artifacts
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    
     const modalEl = document.getElementById('feedbackModal');
     if (!modalEl) {
         alert(`${title}: ${message}`);
+        if (redirectUrl) window.location.href = redirectUrl;
         return;
     }
 
+    // 3. Prepare content
     const titleEl = document.getElementById('feedbackTitle');
     const messageEl = document.getElementById('feedbackMessage');
     const iconContainer = document.getElementById('feedbackIconContainer');
@@ -85,31 +120,41 @@ function showFeedback({ title, message, type = 'success', redirectUrl = null }) 
     if (iconContainer && closeBtn) {
         if (type === 'success') {
             iconContainer.innerHTML = `<div class="bg-light-success text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; font-size: 2rem;"><i class="ti ti-circle-check"></i></div>`;
-            closeBtn.className = 'btn btn-success';
+            closeBtn.className = 'btn btn-success w-100';
+            closeBtn.innerText = 'Continue';
         } else {
             iconContainer.innerHTML = `<div class="bg-light-danger text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; font-size: 2rem;"><i class="ti ti-alert-circle"></i></div>`;
-            closeBtn.className = 'btn btn-danger';
+            closeBtn.className = 'btn btn-danger w-100';
+            closeBtn.innerText = 'Dismiss';
         }
     }
 
-const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+    // 4. Initialize and show with a slight delay
+    // The 10ms delay ensures the DOM cleanup above finishes before BS adds a new backdrop
+    setTimeout(() => {
+        const modal = new bootstrap.Modal(modalEl, {
+            backdrop: 'static', // Prevents closing by clicking outside during feedback
+            keyboard: false
+        });
+        
+        modal.show();
 
-   // FIX: Adjust z-index after the modal is shown to ensure it's on top
-    modalEl.addEventListener('shown.bs.modal', () => {
-        const backdrop = document.querySelector('.modal-backdrop:last-child');
-        if (backdrop) {
-            backdrop.style.zIndex = '1090'; // Just below the modal
-        }
-        modalEl.style.zIndex = '1100'; // On very top
-    }, { once: true });
-
-    if (redirectUrl) {
-        modalEl.addEventListener('hidden.bs.modal', () => { 
-            window.location.href = redirectUrl; 
+        // Adjust z-index once shown
+        modalEl.addEventListener('shown.bs.modal', () => {
+            const backdrop = document.querySelector('.modal-backdrop:last-child');
+            if (backdrop) backdrop.style.zIndex = '2040'; 
+            modalEl.style.zIndex = '2050'; 
         }, { once: true });
-    }
+
+        // Handle Redirection/Reloading
+        if (redirectUrl) {
+            modalEl.addEventListener('hidden.bs.modal', () => { 
+                window.location.href = redirectUrl; 
+            }, { once: true });
+        }
+    }, 10);
 }
+
 
 (async function init() {
   const res = await getRemoteData(appointmentsURL);
@@ -201,22 +246,29 @@ chemSearchResultsEl.addEventListener("change", (e) => {
   accordionListRender(selectedTestOrderList);
 });
 
+
 appointmentForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const formData = new FormData(appointmentForm);
+  // 1. Loading State: Disable button and show spinner
+  const submitBtn = appointmentForm.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn.innerHTML;
+  
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = `
+    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    Booking...
+  `;
 
+  const formData = new FormData(appointmentForm);
   const payload = {
     patient_id: Number(formData.get("patient_id")),
     doctor_id: Number(formData.get("staff_id")),
     notes: formData.get("notes"),
     mode_of_payment: formData.get("payment_mode"),
     total_price: Number(totalSelectedPrice),
-    test_ids: [
-      ...new Set([...selectedTests.bacteriology, ...selectedTests.chemistry]),
-    ],
+    test_ids: [...new Set([...selectedTests.bacteriology, ...selectedTests.chemistry])],
   };
-  
 
   try {
     const res = await fetch("/api/v1/appointments/", {
@@ -225,25 +277,42 @@ appointmentForm.addEventListener("submit", async (e) => {
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error("Failed to book appointment.: ", res);
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || "Server error occurred");
+    }
 
-    console.log(res.statusText)
+    // 2. Success Path: Close Modal and show Toast
+    const addModalEl = document.getElementById('add_modal');
+    const modalInstance = bootstrap.Modal.getInstance(addModalEl);
+    if (modalInstance) modalInstance.hide();
 
-    const data = await res.json();
-    // TODO: Add notification 
-    alert("Appointment successfully created")
-    location.reload()
+    showToast("Appointment successfully created!", "success");
+
+    // 3. Reset Local State & Form
+    selectedTests["bacteriology"] = [];
+    selectedTests["chemistry"] = [];
+    totalSelectedPrice = 0;
+    appointmentForm.reset();
+
+    // 4. Page Reload: Wait 2 seconds so they can read the toast
+    setTimeout(() => {
+        location.reload(); 
+    }, 2000);
+
   } catch (error) {
-    alert("Appointment creation failed")
-    console.log(error);
+    console.error("Submission Error:", error);
+    // Show error toast - no reload needed so they can fix the form
+    showToast(error.message || "Appointment creation failed.", "error");
+    
+    // Re-enable button so they can try again
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
   }
-
-  // reset form
-  selectedTests["bacteriology"] = []
-  selectedTests["chemistry"] = []
-  totalSelectedPrice = 0;
-  // appointmentForm.reset();
+  // Note: We don't use 'finally' here because if successful, 
+  // the page reloads, and if failed, we re-enable in the catch block.
 });
+
 
 // TODO: DONE show appointment details
 appointmentsTableEL.addEventListener("click", async (e) => {
@@ -265,13 +334,15 @@ appointmentsTableEL.addEventListener("click", async (e) => {
 
   } catch (error) {
     console.error(error);
+
+     showToast(error.message || "Failed to load appointment details.", "error");
     
     // REPLACED ALERT WITH MODAL
-    showFeedback({ 
-      title: "Error", 
-      message: "Failed to load appointment details. Please try again.", 
-      type: 'error' 
-    });
+    // showFeedback({ 
+    //   title: "Error", 
+    //   message: "Failed to load appointment details. Please try again.", 
+    //   type: 'error' 
+    // });
   }
 });
 
@@ -299,12 +370,13 @@ appointmentsTableEL.addEventListener("click", async (e) => {
   } catch (error) {
     console.error(error);
     
+    showToast(error.message || "Failed to load appointment details for editing.", "error");
     // REPLACED ALERT WITH MODAL
-    showFeedback({ 
-      title: "Error", 
-      message: "Failed to load appointment details for editing. Please try again.", 
-      type: 'error' 
-    });
+    // showFeedback({ 
+    //   title: "Error", 
+    //   message: "Failed to load appointment details for editing. Please try again.", 
+    //   type: 'error' 
+    // });
   }
 });
 
@@ -384,19 +456,22 @@ document
       populateAppointmentDetailModal(data);
 
       // REPLACED ALERT WITH SUCCESS MODAL
-      showFeedback({
-        title: "Status Updated",
-        message: `The appointment has been successfully marked as ${status.replace('_', ' ')}.`,
-        type: 'success'
-      });
+      // showFeedback({
+      //   title: "Status Updated",
+      //   message: `The appointment has been successfully marked as ${status.replace('_', ' ')}.`,
+      //   type: 'success'
+      // });
+
+      showToast(`The appointment has been successfully marked as ${status.replace('_', ' ')}.`, "success");
 
     } catch (error) {
       console.error(error);
-      showFeedback({
-        title: "Update Error",
-        message: "Could not update the appointment status. Please try again.",
-        type: 'error'
-      });
+      showToast(error.message || "Could not update the appointment status. Please try again.", "error")
+      // showFeedback({
+      //   title: "Update Error",
+      //   message: "Could not update the appointment status. Please try again.",
+      //   type: 'error'
+      // });
     }
   });
 
@@ -428,21 +503,24 @@ document
       if (!res.ok) throw new Error("Failed to delete appointment");
 
       // REPLACED ALERT WITH SUCCESS MODAL + RELOAD
-      showFeedback({
-        title: "Deleted",
-        message: "The appointment record has been permanently removed.",
-        type: 'success',
-        redirectUrl: window.location.href // Refresh the table list
-      });
+      // showFeedback({
+      //   title: "Deleted",
+      //   message: "The appointment record has been permanently removed.",
+      //   type: 'success',
+      //   redirectUrl: window.location.href // Refresh the table list
+      // });
+
+      showToast("The appointment record has been permanently removed.", "success");
 
     } catch (error) {
       console.error(error);
       // REPLACED ALERT(error) WITH MODAL
-      showFeedback({
-        title: "Deletion Failed",
-        message: "An error occurred while trying to delete the record.",
-        type: 'error'
-      });
+      showToast(error.message || "An error occurred while trying to delete the record. Try again","error");
+      // showFeedback({
+      //   title: "Deletion Failed",
+      //   message: "An error occurred while trying to delete the record.",
+      //   type: 'error'
+      // });
     }
   });
 
@@ -497,11 +575,12 @@ appointmentsTableEL.addEventListener("click", async (e) => {
   } catch (error) {
     console.error(error);
     // REPLACED ALERT WITH MODAL
-    showFeedback({
-      title: "Loading Error",
-      message: "Could not retrieve appointment tests. Please try again.",
-      type: 'error'
-    });
+    // showFeedback({
+    //   title: "Loading Error",
+    //   message: "Could not retrieve appointment tests. Please try again.",
+    //   type: 'error'
+    // });
+    showToast("Could not retrieve appointment tests. Please try again", "error")
   }
 });
 
@@ -511,11 +590,11 @@ addSampleForm.addEventListener("submit", async function (e) {
 
   // Basic validation: ensure at least one test is selected
   if (selectedTestForSample.length === 0) {
-    showFeedback({
-      title: "Selection Required",
-      message: "Please select at least one test for this sample.",
-      type: 'error'
-    });
+    showToast("Please select at least one test for this sample");
+    // showFeedback({
+    //   title: "Selection Required",
+    //   message: "Please select at least one test for this sample."
+    // });
     return;
   }
 
@@ -548,11 +627,12 @@ addSampleForm.addEventListener("submit", async function (e) {
             if (sampleModalInstance) sampleModalInstance.hide();
 
             // 2. Show Success
-            showFeedback({
-                title: "Sample Recorded",
-                message: "The lab sample has been successfully added.",
-                type: 'success'
-            });
+            // showFeedback({
+            //     title: "Sample Recorded",
+            //     message: "The lab sample has been successfully added.",
+            //     type: 'success'
+            // });
+            showToast("The lab sample has been successfully added", "success")
 
             addSampleForm.reset();
             selectedTestForSample = [];
@@ -560,7 +640,8 @@ addSampleForm.addEventListener("submit", async function (e) {
             throw new Error("Failed to post sample");
         }
     } catch (error) {
-        showFeedback({ title: "Error", message: "Could not save sample.", type: 'error' });
+        // showFeedback({ title: "Error", message: "Could not save sample.", type: 'error' });
+        showToast("Could not save sample", "error")
     }
 });
 
@@ -589,20 +670,23 @@ addSampleCategoryForm.addEventListener("submit", async function(e) {
     console.log(data);
 
     // SUCCESS MODAL + RELOAD
-    showFeedback({
-      title: "Category Created",
-      message: "New sample category has been added successfully.",
-      type: 'success',
-      redirectUrl: window.location.href 
-    });
+    // showFeedback({
+    //   title: "Category Created",
+    //   message: "New sample category has been added successfully.",
+    //   type: 'success',
+    //   redirectUrl: window.location.href 
+    // });
+
+    showToast("New sample category has been added successfully", "success");
 
   } catch (error) {
     console.error(error);
-    showFeedback({
-      title: "Creation Failed",
-      message: "An error occurred while saving the new category.",
-      type: 'error'
-    });
+    showToast(error.message || "An error occurred while saving the new category. Please try again.", "error")
+    // showFeedback({
+    //   title: "Creation Failed",
+    //   message: "An error occurred while saving the new category.",
+    //   type: 'error'
+    // });
   }
 
   addSampleCategoryForm.reset();
@@ -621,6 +705,7 @@ searchStaff.addEventListener("input", (e) => {
     } catch (error) {
       console.error("Staff search error:", error);
       // Optional: showFeedback here if you want to notify of search failures
+      showToast("An error was encountered while searching. Please try again", "error")
     }
   }, 300); // Added slight delay for better performance
 });
@@ -655,11 +740,13 @@ statusFilter.forEach((statusOption) =>
       render(data);
     } catch (error) {
       console.error("Filter error:", error);
-      showFeedback({
-        title: "Filter Error",
-        message: "Could not refresh the list with the selected filters.",
-        type: 'error'
-      });
+      // showFeedback({
+      //   title: "Filter Error",
+      //   message: "Could not refresh the list with the selected filters.",
+      //   type: 'error'
+      // });
+
+      showToast("Could not refresh the list with the selected filter", "error")
     }
   }),
 );
@@ -809,7 +896,7 @@ function renderData(appointment) {
         <td>
             <div class="d-flex align-items-center">
                 <a href="patient-details.html" class="avatar avatar-xs me-2">
-                    <img src="/static/img/users/user-39.jpg" alt="img" class="rounded">
+                    <img src="${appointment.patient.profile_image}" alt="img" class="rounded">
                 </a>
                 <div>
                     <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">${
@@ -825,7 +912,7 @@ function renderData(appointment) {
         <td>
             <div class="d-flex align-items-center">
                 <a href="doctor-details.html" class="avatar avatar-xs me-2">
-                    <img src="/static/img/doctors/doctor-11.jpg" alt="img" class="rounded">
+                    <img src="${appointment.doctor.avatar}" alt="img" class="rounded">
                 </a>
                 <div>
                     <h6 class="fs-14 mb-0 fw-medium"><a href="doctor-details.html">Dr. ${
@@ -903,7 +990,7 @@ document.addEventListener('click', async (e) => {
             const modalEl = document.getElementById('paymentModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             if (modal) modal.hide();
-            showToast("Failed to load billing details", "danger");
+            showToast("Failed to load billing details", "error");
         }
     }
 });
@@ -1102,17 +1189,17 @@ document.getElementById('btnProcessPayment').addEventListener('click', async fun
             })
         });
 
-        const result = await response.json();
+        // const result = await response.json();
 
         if (response.ok) {
                 
-            const result = await res.json();
+            const result = await response.json();
           showToast("Payment Processed!", "success");
-          modal.hide();
+          // modal.hide();
 
           // Instead of a confirm box, just open the print page in a new small window
-          const receiptUrl = `/api/v1/billing/payments/${result.payment_id}/print`;
-          window.open(receiptUrl, 'ReceiptPrint', 'width=600,height=800');
+          // const receiptUrl = `/api/v1/billing/payments/${result.payment_id}/print`;
+          // window.open(receiptUrl, 'ReceiptPrint', 'width=600,height=800');
           
           // Refresh the background page to show the "Paid" status
           setTimeout(() => location.reload(), 1000);
@@ -1124,7 +1211,7 @@ document.getElementById('btnProcessPayment').addEventListener('click', async fun
     } catch (error) {
         console.error("Payment Request Failed:", error);
         showToast("Payment Request Failed", "success");
-        modal.hide();
+        // modal.hide();
         btn.disabled = false;
         btn.innerText = "Process Payment";
     }
@@ -1514,17 +1601,19 @@ async function performSearch(query, useAppointment) {
     return data;
 
   } catch (err) {
-    // We ignore AbortError because it happens intentionally when a user keeps typing
+    // ignore AbortError because it happens intentionally when a user keeps typing
     if (err.name === "AbortError") return;
 
     console.error("Search error:", err);
     
     // NOTIFY USER OF ACTUAL SEARCH ERRORS
-    showFeedback({
-      title: "Search Error",
-      message: "An error occurred while searching. Please check your connection.",
-      type: 'error'
-    });
+    // showFeedback({
+    //   title: "Search Error",
+    //   message: "An error occurred while searching. Please check your connection.",
+    //   type: 'error'
+    // });
+
+    showToast("An error occurred while searching. Please try again.", "error")
     
     return [];
   }
@@ -1733,11 +1822,13 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
         } catch (err) {
             console.error("Search Error:", err);
             // REPLACED ALERT WITH MODAL
-            showFeedback({
-                title: "Search Unavailable",
-                message: "We encountered an error while searching for tests. Please try again.",
-                type: 'error'
-            });
+            // showFeedback({
+            //     title: "Search Unavailable",
+            //     message: "We encountered an error while searching for tests. Please try again.",
+            //     type: 'error'
+            // });
+
+            showToast("Encountered an error while searching for tests. Please try again.", "error")
         }
     }, 400); 
 });

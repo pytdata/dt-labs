@@ -44,6 +44,23 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+
+    <style>
+
+        /* Target the range list in the daterangepicker */
+        .daterangepicker .ranges ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the "Custom Range" (which is the last <li>) to the top */
+        .daterangepicker .ranges ul li:last-child {
+            order: -1; 
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -106,53 +123,53 @@
                         <div class="dropdown me-2">
                             <a href="javascript:void(0);" class="btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,22" aria-haspopup="false" aria-expanded="false"><i class="ti ti-list-details"></i></a>
 
-                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
+                              <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-2">
 
                                 <!-- Item-->
-                                <a href="all-appointments.html" class="dropdown-item">
+                                <a href="{{ request.url_for('appointments') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Appointments</span>
                                             <span class="fs-13">View All the Appointments</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a>
 
                                 <!-- Item-->
-                                <a href="all-doctors.html" class="dropdown-item">
+                                <a href="{{ request.url_for('staff_list') }}"  class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Doctors</span>
                                             <span class="fs-13">View All the Doctors</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a>
 
                                 <!-- Item-->
-                                <a href="add-patient.html" class="dropdown-item">
+                                <a href="{{ request.url_for('patient_add') }}" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">New Patient</span>
                                             <span class="fs-13">Add New Patient</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a>
 
                                 <!-- Item-->
-                                <a href="pharmacy.html" class="dropdown-item">
+                                <!-- <a href="pharmacy.html" class="dropdown-item">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <span class="d-flex mb-1 fw-semibold text-dark">Pharmacy</span>
                                             <span class="fs-13">View All the Medicines</span>
-                                     </div>
+                                        </div>
                                         <i class="ti ti-chevron-right-pipe text-dark"></i>
-                                 </div>
-                             </a>
+                                    </div>
+                                </a> -->
 
-                         </div>
+                            </div>
 
                      </div>
                  </div>
@@ -164,169 +181,6 @@
                      </div>
                  </div>
                     <!-- Minimize -->
-
-                    <!-- Language Dropdown -->
-					<div class="header-item">
-						<div class="dropdown me-2">
-                            <button class="topbar-link btn" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-                                <img src="/static/img/flags/us.svg" alt="Language" height="16">
-                         </button>
-
-							<div class="dropdown-menu dropdown-menu-end p-2">
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/us.svg" alt="" class="me-1" height="16"> <span class="align-middle">English</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/de.svg" alt="" class="me-1" height="16"> <span class="align-middle">German</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/fr.svg" alt="" class="me-1" height="16"> <span class="align-middle">French</span>
-								</a>
-
-                                <!-- item-->
-								<a href="javascript:void(0);" class="dropdown-item">
-									<img src="/static/img/flags/ae.svg" alt="" class="me-1" height="16"> <span class="align-middle">Arabic</span>
-								</a>
-
-							</div>
-						</div>
-                 </div>
-
-					<!-- Notification Dropdown -->
-                    <div class="header-item">
-						<div class="dropdown me-2">
-
-							<button class="topbar-link btn topbar-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" data-bs-offset="0,24" type="button" aria-haspopup="false" aria-expanded="false">
-								<i class="ti ti-bell-check fs-16 animate-ring"></i>
-								<span class="notification-badge"></span>
-							</button>
-
-							<div class="dropdown-menu p-0 dropdown-menu-end dropdown-menu-lg" style="min-height: 300px;">
-
-								<div class="p-2 border-bottom">
-									<div class="row align-items-center">
-										<div class="col">
-											<h6 class="m-0 fs-16 fw-semibold"> Notifications</h6>
-										</div>
-									</div>
-								</div>
-
-								<!-- Notification Body -->
-								<div class="notification-body position-relative z-2 rounded-0" data-simplebar="">
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-1">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-01.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">John Doe</p>
-												<p class="mb-1 text-wrap">
-													added new  patient <span class="fw-medium text-dark">appointment booking.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>4 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-1">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-2">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/users/user-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Thomas William</p>
-												<p class="mb-1 text-wrap">
-                                                    booked a new appointment
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>8 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-2">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap border-bottom" id="notification-3">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-12.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Sarah Anderson</p>
-												<p class="mb-1 text-wrap">
-                                                    has been successfully booked for <span class="fw-medium text-dark">April 5 at 10:00 AM.</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>15 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-3">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<!-- Item-->
-									<div class="dropdown-item notification-item py-3 text-wrap" id="notification-4">
-										<div class="d-flex">
-											<div class="me-2 position-relative flex-shrink-0">
-												<img src="/static/img/profiles/avatar-08.jpg" class="avatar-md rounded-circle" alt="">
-											</div>
-											<div class="flex-grow-1">
-												<p class="mb-0 fw-medium text-dark">Ann McClure</p>
-												<p class="mb-1 text-wrap">
-                                                    cancelled her appointment scheduled for <span class="fw-medium text-dark">February 5, 2024</span>
-												</p>
-												<div class="d-flex justify-content-between align-items-center">
-													<span class="fs-12"><i class="ti ti-clock me-1"></i>20 min ago</span>
-													<div class="notification-action d-flex align-items-center float-end gap-2">
-														<a href="javascript:void(0);" class="notification-read rounded-circle bg-danger" data-bs-toggle="tooltip" title="" data-bs-original-title="Make as Read" aria-label="Make as Read"></a>
-														<button class="btn rounded-circle p-0" data-dismissible="#notification-4">
-															<i class="ti ti-x"></i>
-														</button>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-
-								</div>
-
-								<!-- View All-->
-								<div class="p-2 rounded-bottom border-top text-center">
-									<a href="notifications.html" class="text-center text-decoration-underline fs-14 mb-0">
-										View All Notifications
-									</a>
-								</div>
-
-							</div>
-						</div>
-					</div>
 
                     <!-- Light/Dark Mode Button -->
                     <div class="header-item d-none d-sm-flex me-2">
@@ -455,109 +309,38 @@
                  </div>
 
                     <!-- table header -->
-                    <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                        <div class="d-flex align-items-center flex-wrap gap-2">
+                <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                   <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
+    <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+    <span class="reportrange-picker-field">Select Date Range</span>
+</div>
 
-                            <!-- date picker -->
-                            <div id="reportrange" class="reportrange-picker d-flex align-items-center">
-                                <i class="ti ti-calendar text-body fs-14 me-1"></i><span class="reportrange-picker-field">21 May 25 - 21 May 25</span>
-                            </div>
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                            <i class="ti ti-gender-transgender me-1"></i>Gender
+                        </a>
+                        <ul class="dropdown-menu p-2">
+                            <li><label class="dropdown-item"><input type="checkbox" class="form-check-input me-2" value="Male"> Male</label></li>
+                            <li><label class="dropdown-item"><input type="checkbox" class="form-check-input me-2" value="Female"> Female</label></li>
+                        </ul>
+                    </div>
+                </div>
 
-                            <!-- test name dropdown -->
-                             <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-test-pipe-2 me-1"></i>Gender
-                             </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                             </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                         </div>
-                                     </div>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Blood Test
-                                     </label>
-                                 </li>
-                                  
-                             </ul>
-                         </div>
-
-                            <!-- Staff dropdown -->
-                             <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-user-shield me-1"></i>Staff
-                             </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                             </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                         </div>
-                                     </div>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            BACTERIOLOGY (CULTURES)
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            ULTRASOUND SCAN
-                                     </label>
-                                 </li>
-                             </ul>
-                         </div>
-
-                            <!-- status dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-shield-half me-1"></i>Status
-                             </a>
-                                <ul class="dropdown-menu dropdown-menu-sm p-2">
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Active
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Inactive
-                                     </label>
-                                 </li>
-                             </ul>
-                         </div>
-
-                     </div>
-
-                        <!-- sort by -->
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By :</span>  Newest
-                         </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-2">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
-                             </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
-                             </li>
-                         </ul>
-                     </div>
-                 </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-primary d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i> Export
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2">
+                            <li><a href="javascript:void(0);" class="dropdown-item export-csv"><i class="ti ti-file-type-csv me-2"></i>CSV</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item export-excel"><i class="ti ti-file-spreadsheet me-2"></i>Excel</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item export-pdf"><i class="ti ti-file-type-pdf me-2"></i>PDF</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item export-print"><i class="ti ti-printer me-2"></i>Print</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
                     <!-- table header -->
 
                     <div class="card-body">
@@ -583,35 +366,7 @@
                                  </tr>
                              </thead>
                                 <tbody class="list__patients">
-                                    <tr>
-                                        <td>
-                                            <div class="form-check form-check-md">
-                                                <input class="form-check-input" type="checkbox">
-                                         </div>
-                                     </td>
-                                        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TE0025</a></td>
-                                         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#PTSETD</a></td>
-                                        <td>Blood Test</td>
-                                        <td>20 days</td>
-                                        <td>17 Jun 2025</td>
-                                        <!-- <td>Anaesthesiology</td> -->
-                                        <td>$500</td>
-                                        <td><span class="badge badge-md badge-soft-success border border-success text-success">Active</span></td>
-                                        <td class="text-end">
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                            <ul class="dropdown-menu p-2">
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                                             </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#edit_modal"><i class="ti ti-edit me-1"></i>Edit</a>
-                                             </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                                             </li>
-                                         </ul>
-                                     </td>
-                                 </tr>
+                                 
                                     
                              </tbody>
                          </table>
@@ -667,63 +422,14 @@
                                             <option value="FASTING BLOOD SUGAR">FASTING BLOOD SUGAR</option>
                                             <option value="HAEMOGLOBIN ESTIMATION">HAEMOGLOBIN ESTIMATION</option>
                                             <option value="LIVER FUNCTION TEST">LIVER FUNCTION TEST</option>
-                                            <option value="LIPID PROFILE">LIPID PROFILE</option>
-                                            <option value="KIDNEY FUNCTION TEST">KIDNEY FUNCTION TEST</option>
-                                            <option value="FULL BLOOD COUNT">FULL BLOOD COUNT</option>
-                                            <option value="CHOLESTEROL TEST">CHOLESTEROL TEST</option>
-                                            <option value="BLOOD GROUPING">BLOOD GROUPING</option>
-                                            <option value="MALARIA BF">MALARIA BF</option>
-                                            <option value="MALARIA RDT">MALARIA RDT</option>
-                                            <option value="WIDAL TEST">WIDAL TEST</option>
-                                            <option value="SICKLING TEST">SICKLING TEST</option>
-                                            <option value="GLUCOSE 6 PHOSPHATE DEHYDROGENASE DEFICIENCY">GLUCOSE 6 PHOSPHATE DEHYDROGENASE DEFICIENCY</option>
-                                            <option value="STOOL R/E">STOOL R/E</option>
-                                            <option value="URINE R/E">URINE R/E</option>
-                                            <option value="SERUM PREGNANCY TEST">SERUM PREGNANCY TEST</option>
-                                            <option value="URINE PREGNANCY TEST">URINE PREGNANCY TEST</option>
-                                            <option value="GONORRHOEA">GONORRHOEA</option>
-                                            <option value="H. PYLORI-BLOOD">H. PYLORI-BLOOD</option>
-                                            <option value="H. PYLORI-STOOL">H. PYLORI-STOOL</option>
-                                            <option value="HEPATITIS B SURFACE ANTIGEN">HEPATITIS B SURFACE ANTIGEN</option>
-                                            <option value="HIV (FIRST RESPONSE)">HIV (FIRST RESPONSE)</option>
-                                            <option value="SYPHILIS">SYPHILIS</option>
-                                            <option value="SYPHILIS RPR">SYPHILIS RPR</option>
-                                            <option value="S TYPHI IgG, IgM">S TYPHI IgG, IgM</option>
-                                            <option value="HEPATITIS B PROFILE">HEPATITIS B PROFILE</option>
-                                            <option value="HAEMOGLOBIN GENOTYPE">HAEMOGLOBIN GENOTYPE</option>
-                                            <option value="COVID-19">COVID-19</option>
-                                            <option value="HAEMOGLOBIN A1C">HAEMOGLOBIN A1C</option>
-                                            <option value="ANTENATAL CARE">ANTENATAL CARE</option>
-                                            <option value="ELECTROLYTES">ELECTROLYTES</option>
-                                            <option value="BILIRUBIN TEST">BILIRUBIN TEST</option>
-                                            <option value="ERYTHROCYTE SEDIMENTATION RATE">ERYTHROCYTE SEDIMENTATION RATE</option>
-                                            <option value="PROLACTIN">PROLACTIN</option>
-                                            <option value="PROGESTERONE TEST">PROGESTERONE TEST</option>
-                                            <option value="LUTEINIZING HORMONE">LUTEINIZING HORMONE</option>
-                                            <option value="FOLLICLE STIMULATING HORMONE">FOLLICLE STIMULATING HORMONE</option>
-                                            <option value="ESTROGEN">ESTROGEN</option>
-                                            <option value="TESTOSTERONE TEST">TESTOSTERONE TEST</option>
-                                            <option value="PROSTATE SPECIFIC ANTIGEN">PROSTATE SPECIFIC ANTIGEN</option>
-                                            <option value="THYROID STIMULATING HORMONE">THYROID STIMULATING HORMONE</option>
-                                            <option value="TRIIODOTHYRONINE">TRIIODOTHYRONINE</option>
-                                            <option value="THYROXINE">THYROXINE</option>
-                                            <option value="BLOOD CULTURE">BLOOD CULTURE</option>
-                                            <option value="URINE CULTURE">URINE CULTURE</option>
-                                            <option value="WOUND CULTURE">WOUND CULTURE</option>
-                                            <option value="STOOL CULTURE">STOOL CULTURE</option>
-                                            <option value="EAR SWAB CULTURE">EAR SWAB CULTURE</option>
-                                            <option value="HVS SWAB">HVS SWAB</option>
+                                           
+                                         
                                         </optgroup>
 
                                         <optgroup label="ULTRASOUND SCAN">
                                             <option value="OB SCAN (PREGNANCY)">OB SCAN (PREGNANCY)</option>
                                             <option value="PELVIC SCAN (GYNAECOLOGICAL)">PELVIC SCAN (GYNAECOLOGICAL)</option>
-                                            <option value="UROLOGY">UROLOGY</option>
-                                            <option value="ABDOMINAL SCAN">ABDOMINAL SCAN</option>
-                                            <option value="USMALL PARTS SCAN (SUPERFICIAL) Breast, Testicles, Neck, Thyroid">USMALL PARTS SCAN (SUPERFICIAL) Breast, Testicles, Neck, Thyroid</option>
-                                            <option value="ANY INDICATED PARTS OF THE BODY Lipoma, Buttocks, Neonatal Skull">ANY INDICATED PARTS OF THE BODY Lipoma, Buttocks, Neonatal Skull</option>
-                                            <option value="ABDOMINOPELVIC SCAN">ABDOMINOPELVIC SCAN</option>
-                                            <option value="DOPPLER (DVT)">DOPPLER (DVT)</option>
+                                    
                                         </optgroup>
                                     </select>
                                 </div>
@@ -735,15 +441,7 @@
                                         <option>Select</option>
                                         <option value="BACTERIOLOGY - CULTURES">BACTERIOLOGY (CULTURES)</option>
                                         <option value="ULTRASOUND SCAN">ULTRASOUND SCAN</option>
-                                        <!--
-                                        <option>Dermatology</option>
-                                        <option>ENT Surgery</option>
-                                        <option>General Medicine</option>
-                                        <option>Ophthalmology</option>
-                                        <option>Orthopaedics</option>
-                                        <option>Paediatrics</option>
-                                        <option>Radiology</option>
-                                        <option>Cardiology</option>-->
+                                     
                                     </select>
                                 </div>
                             </div>
@@ -753,15 +451,7 @@
                                     <select class="select">
                                         <option>Select</option>
                                         <option>James Carter</option>
-                                        <option>Emily Davis</option>
-                                        <option>Michael Johnson</option>
-                                        <option>Olivia Miller</option>
-                                        <option>David Smith</option>
-                                        <option>Sophia Wilson</option>
-                                        <option>Daniel Williams</option>
-                                        <option>Isabella Anderson</option>
-                                        <option>William Brown</option>
-                                        <option>Charlotte Taylor</option>
+                                   
                                     </select>
                                 </div>
                             </div>
@@ -986,7 +676,69 @@
     const appointmentAddBaseUrl = "{{ request.url_for('appointment_add', patient_id='__ID__') }}";
  </script>
 
+<script src="/static/js/min/jquery.datatables.min.js"></script>
+
+<script src="/static/js/min/jszip.min.js"></script>
+<script src="/static/js/min/pdfmake.min.js"></script>
+<script src="/static/js/min/vfs_fonts.js"></script> <script src="/static/js/min/datatables.buttons.min.js"></script>
+
+<script src="/static/js/min/buttons.min.js"></script> <script src="/static/js/min/print.min.js"></script>
+
  <script src="{{ url_for('static', path='js/utils/all-patients-list.js') }}"></script>
+
+ <script>
+
+    $(document).ready(function() {
+    // 1. Destroy existing instance if it exists
+    if ($.fn.DataTable.isDataTable('.datatable')) {
+        $('.datatable').DataTable().destroy();
+    }
+
+    // 2. Initialize the table
+    const table = $('.datatable').DataTable({
+        // The 'B' in dom is essential—it tells DataTables to initialize the Buttons extension
+        dom: 'B<"top"f>rt<"bottom"ip><"clear">',
+        buttons: [
+            { extend: 'csv', className: 'buttons-csv d-none' },
+            { extend: 'excel', className: 'buttons-excel d-none' },
+            { 
+                extend: 'pdf', 
+                className: 'buttons-pdf d-none', 
+                title: 'Patient Visit Report',
+                exportOptions: { columns: ':visible:not(.no-sort)' },
+                customize: function (doc) {
+                    doc.content[1].table.widths = Array(doc.content[1].table.body[0].length + 1).join('*').split('');
+                    doc.styles.tableHeader.fillColor = '#4e73df';
+                    doc.styles.tableHeader.color = 'white';
+                }
+            },
+            { extend: 'print', className: 'buttons-print d-none' }
+        ]
+    });
+
+    // 3. FIXED TRIGGER LOGIC
+    // Use the DataTable API instance (.buttons()) correctly
+    $('.export-csv').on('click', function(e) {
+        e.preventDefault();
+        table.buttons('.buttons-csv').trigger();
+    });
+
+    $('.export-excel').on('click', function(e) {
+        e.preventDefault();
+        table.buttons('.buttons-excel').trigger();
+    });
+
+    $('.export-pdf').on('click', function(e) {
+        e.preventDefault();
+        table.buttons('.buttons-pdf').trigger();
+    });
+
+    $('.export-print').on('click', function(e) {
+        e.preventDefault();
+        table.buttons('.buttons-print').trigger();
+    });
+});
+ </script>
 
 
  <script>
@@ -1012,6 +764,27 @@
 
     await getRemoteData();
 
+});
+</script>
+
+<script>
+    $('#reportrange').daterangepicker({
+    showCustomRangeLabel: true,
+    alwaysShowCalendars: true, // This keeps the calendar view visible
+    opens: 'right',
+    ranges: {
+        // To force Custom at the top, some versions require 
+        // defining it as an empty range or handling via CSS (see below)
+        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+        'This Month': [moment().startOf('month'), moment().endOf('month')],
+        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    },
+    startDate: moment().subtract(29, 'days'),
+    endDate: moment()
+}, function(start, end, label) {
+    $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
 });
 </script>
 
