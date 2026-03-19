@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Annotated, Literal
@@ -37,6 +37,8 @@ router = APIRouter()
 
 
 class FilterParams(BaseModel):
+    start_date: date | None = None
+    end_date: date | None = None
     limit: int = Field(100, gt=0, le=100)
     offset: int = Field(0, ge=0)
     sort_by: Literal["newest", "oldest"] = "newest"
@@ -182,16 +184,31 @@ async def get_all_appointments(
             selectinload(Appointment.doctor),
             selectinload(Appointment.tests),
             selectinload(Appointment.invoice),
-            # selectinload(LabOrderItem.result),
         )
-        .order_by(Appointment.appointment_at.desc())
     )
 
-    if filter_query.patient_id:
+    # --- NEW DATE FILTERING LOGIC ---
+    if filter_query.start_date and filter_query.end_date:
+        # We cast the DateTime column to Date to match the incoming YYYY-MM-DD format
         stmt = stmt.where(
-            Appointment.patient.has(Patient.id == filter_query.patient_id)
+            func.date(Appointment.appointment_at).between(
+                filter_query.start_date, filter_query.end_date
+            )
+        )
+    elif filter_query.start_date:
+        stmt = stmt.where(
+            func.date(Appointment.appointment_at) >= filter_query.start_date
+        )
+    elif filter_query.end_date:
+        stmt = stmt.where(
+            func.date(Appointment.appointment_at) <= filter_query.end_date
         )
 
+    # Existing Patient ID filter
+    if filter_query.patient_id:
+        stmt = stmt.where(Appointment.patient_id == filter_query.patient_id)
+
+    # Existing Doctor Name search
     if filter_query.doctor:
         stmt = stmt.where(
             Appointment.doctor.has(
@@ -199,6 +216,7 @@ async def get_all_appointments(
             )
         )
 
+    # Existing Patient Name search
     if filter_query.patient:
         q = f"%{filter_query.patient.strip()}%"
         stmt = stmt.where(
@@ -211,19 +229,22 @@ async def get_all_appointments(
             )
         )
 
+    # Existing Status filter
     if filter_query.status:
-        stmt = stmt.where(Appointment.status.in_([filter_query.status]))
+        # Cleaned up: avoid wrapping a single status in a list unless using .in_()
+        stmt = stmt.where(Appointment.status == filter_query.status)
 
+    # Final Order, Limit, Offset
     stmt = (
-        stmt.limit(filter_query.limit)
+        stmt.order_by(Appointment.appointment_at.desc())
+        .limit(filter_query.limit)
         .offset(filter_query.offset)
-        .order_by(Appointment.appointment_at.desc())
     )
 
     result = await db.execute(stmt)
-    appointment = result.scalars().all()
+    appointments = result.scalars().all()
 
-    return appointment
+    return appointments
 
 
 @router.put(

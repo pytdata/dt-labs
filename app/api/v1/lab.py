@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request
 from fastapi.responses import HTMLResponse
@@ -269,7 +269,12 @@ async def print_lab_report(item_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/queue/{dept}", response_model=list[LabQueueResponse])
-async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
+async def get_lab_queue(
+    dept: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    db: AsyncSession = Depends(get_db),
+):
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
@@ -290,6 +295,11 @@ async def get_lab_queue(dept: str, db: AsyncSession = Depends(get_db)):
             ),
         )
     ).order_by(LabOrderItem.id.desc())
+    if start_date:
+        stmt = stmt.where(LabOrder.created_at >= start_date)
+    if end_date:
+        # We use end_date + 1 day or ensure the comparison includes the full end day
+        stmt = stmt.where(LabOrder.created_at <= end_date)
 
     if dept == "phlebotomy":
         stmt = stmt.where(

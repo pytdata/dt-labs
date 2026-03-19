@@ -434,60 +434,7 @@
                                             Blood Test
                                      </label>
                                  </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                           Urinalysis
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Throat Culture
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Iron Panel
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Vitamin D Test
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Liver Function Test
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Thyroid Test
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Lipid Panel
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Troponin Test
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Hepatitis Panel
-                                     </label>
-                                 </li>
+                                   
                              </ul>
                          </div>
 
@@ -579,7 +526,7 @@
         </div>
         
         <div class="table-responsive">
-            <table class="table table-hover table-nowrap mb-0 datatable">
+            <table class="table table-hover table-nowrap mb-0 custom-phleb-table">
                 <thead class="bg-light">
                     <tr>
                         <th style="width: 40px;">
@@ -1085,13 +1032,13 @@
 
 
 <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/jquery-3.7.1.min.js" ></script>
 
     <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/bootstrap.bundle.min.js" ></script>
     <!-- Daterangepikcer JS -->
-	<script src="/static/js/moment.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
-	<script src="/static/plugins/daterangepicker/daterangepicker.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+	<script src="/static/js/moment.min.js" ></script>
+	<script src="/static/plugins/daterangepicker/daterangepicker.js" ></script>
 
     <!-- Datatable JS -->
     <script src="/static/plugins/datatables/js/jquery.dataTables.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
@@ -1109,206 +1056,269 @@
     <!-- Main JS -->
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
 
-
-    <script src="{{ url_for('static', path='js/utils/phlebotomy.js') }}" defer></script>
-
-    
-    <script>
-    async function openSampleModal(phlebotomyId, appointmentId, patientId) {
-
-        // Set hidden phlebotomy ID
-        document.getElementById("phlebotomy_id").value = phlebotomyId;
-
-        // set appointment id and the patient id as datasets
-        document.querySelector("#sampleForm").dataset.appointmentId =appointmentId;
-        document.querySelector("#sampleForm").dataset.patientId = patientId;
-
-
-        // Load sample types first
-        await loadSampleTypes();
-
-        const select = document.getElementById("test_ids");
-
-        // Clear old options
-        select.innerHTML = "";
-
-        try {
-            const response = await fetch(
-                `/api/v1/appointments/appointments/${appointmentId}/pending-tests`
-            );
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch tests");
-            }
-
-            const tests = await response.json();
-
-            if (tests.length === 0) {
-                const option = document.createElement("option");
-                option.textContent = "No pending tests";
-                option.disabled = true;
-                select.appendChild(option);
-            } else {
-                tests.forEach(test => {
-                    const option = document.createElement("option");
-                    option.value = test.id;
-                    option.textContent = test.name;
-                    select.appendChild(option);
-                });
-            }
-
-            // Open Bootstrap Modal
-            const modal = new bootstrap.Modal(
-                document.getElementById("addSamplesModal")
-            );
-            modal.show();
-
-        } catch (error) {
-            console.error(error);
-            alert("Error loading pending tests.");
-        }
-    }
-    </script>
-
-
-
-    
-
-<script>
-//     document.getElementById("addSampleForm").addEventListener("click", function() {
-//     document.getElementById("sampleForm").requestSubmit();
-// });
-
-//     document.getElementById("sampleForm").addEventListener("submit", async function(e) {
-//     e.preventDefault();
-
-
-// const payload = {
-//     phlebotomy_id: parseInt(document.getElementById("phlebotomy_id").value),
-//     sample_type: parseInt(document.getElementById("sample_type").value),
-//     test_ids: Array.from(document.getElementById("test_ids").selectedOptions)
-//                          .map(opt => parseInt(opt.value)),
-//     priority: document.getElementById("priority").value,
-//     collection_site: document.getElementById("collection_site").value,
-//     storage_location: document.getElementById("storage_location").value,
-//     sample_condition: document.getElementById("sample_condition").value,
-//     appointment_id: parseInt(document.getElementById("sampleForm").dataset.appointmentId),
-//     patient_id: parseInt(document.getElementById("sampleForm").dataset.patientId),
-// };
-
-//     try {
-//         const response = await fetch("/api/v1/phlebotomy/add-sample", {
-//             method: "POST",
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify(payload)
-//         });
-
-//         if (!response.ok) {
-//             const err = await response.json();
-//             console.error(err);
-//             alert("Failed to submit sample");
-//             return;
-//         }
-
-//         const data = await response.json();
-//         alert("Sample submitted successfully!");
-//         document.getElementById("sampleForm").reset();
-
-//         // const modalEl = document.getElementById("addSamplesModal");
-//         // const modal = bootstrap.Modal.getInstance(modalEl);
-//         // modal.hide();
-
-//     } catch (error) {
-//         console.error(error);
-//         alert("Something went wrong.");
-//     }
-// });
-</script>
-
-<script>
-async function loadSampleTypes() {
-
-    const select = document.getElementById("sample_type");
-
-    // Clear existing options
-    select.innerHTML = "";
-
-    try {
-        const response = await fetch(
-            "/api/v1/samples/sample-categories"
-        );
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch sample types");
-        }
-
-        const sampleTypes = await response.json();
-
-        // Default option
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "Select sample type";
-        select.appendChild(defaultOption);
-
-        sampleTypes.forEach(type => {
-            const option = document.createElement("option");
-            option.value = type.id;
-            option.textContent = type.category_name;
-            select.appendChild(option);
-        });
-
-    } catch (error) {
-        console.error(error);
-        select.innerHTML =
-            "<option value=''>Error loading sample types</option>";
-    }
-}
-</script>
-
-
     <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
     <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+   
+   <script data-cfasync="false">
+/**
+ * PHLEBOTOMY QUEUE MANAGEMENT - INTEGRATED VERSION
+ * Includes Rocket Loader Fix, Daterangepicker Callback, and Modal Logic
+ */
 
+(function() {
+    // 1. PRIVATE STATE
+    let allQueueItems = [];
+    let currentPhlebId = null;
+    const phlebotomyURL = `/api/v1/lab/queue/phlebotomy`;
 
-    <!-- <script>
-        $('#reportrange').daterangepicker({
+    // 2. DEPENDENCY CHECK (Waits for jQuery, Moment, and Daterangepicker)
+    const checkDeps = setInterval(() => {
+        if (window.jQuery && window.moment && jQuery.fn.daterangepicker) {
+            clearInterval(checkDeps);
+            console.log("Phlebotomy: Dependencies loaded. Initializing...");
+            initPhlebotomy();
+        }
+    }, 50);
+
+    function initPhlebotomy() {
+        const phlebotomyContainerEl = document.querySelector(".phlebotomy__container");
+        const $picker = $('#reportrange');
+
+        // --- DATA FETCHING & REFRESH ---
+        window.refreshQueue = async function(start, end) {
+            const startStr = (start && start.format) ? start.format('YYYY-MM-DD') : moment().subtract(29, 'days').format('YYYY-MM-DD');
+            const endStr = (end && end.format) ? end.format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
+            
+            console.log(`Fetching Queue: ${startStr} to ${endStr}`);
+
+            if (phlebotomyContainerEl) {
+                phlebotomyContainerEl.innerHTML = `
+                    <tr><td colspan="7" class="text-center py-5">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                        Syncing Lab Queue...
+                    </td></tr>`;
+            }
+
+            try {
+                const params = new URLSearchParams({ start_date: startStr, end_date: endStr });
+                const res = await fetch(`${phlebotomyURL}?${params.toString()}`);
+                if (!res.ok) throw new Error("Fetch failed");
+                const data = await res.json();
+                allQueueItems = data || [];
+                render(allQueueItems);
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                if (phlebotomyContainerEl) phlebotomyContainerEl.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error loading data.</td></tr>`;
+            }
+        };
+
+        // --- DATERANGEPICKER INITIALIZATION ---
+        const start = moment().subtract(29, 'days');
+        const end = moment();
+
+        $picker.daterangepicker({
             showCustomRangeLabel: true,
-            alwaysShowCalendars: true, // This keeps the calendar view visible
+            alwaysShowCalendars: true,
+            autoUpdateInput: false,
             opens: 'right',
+            startDate: start,
+            endDate: end,
             ranges: {
-                // To force Custom at the top, some versions require 
-                // defining it as an empty range or handling via CSS (see below)
+                'Today': [moment(), moment()],
                 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
                 'Last 7 Days': [moment().subtract(6, 'days'), moment()],
                 'Last 30 Days': [moment().subtract(29, 'days'), moment()],
                 'This Month': [moment().startOf('month'), moment().endOf('month')],
                 'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-            },
-            startDate: moment().subtract(29, 'days'),
-            endDate: moment()
-        }, function(start, end, label) {
-            $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-        });
-    </script> -->
-
-
-    <script>
-        $(document).on('select2:open', function(e) {
-            document.querySelector('.select2-search__field').focus();
-        });
-        $(document).ready(function() {
-            // Fix Bootstrap modal input blocking
-            $.fn.modal.Constructor.prototype._enforceFocus = function() {};
-
-            // Proper Select2 initialization with dropdownParent
-            $('.select2').select2({
-                dropdownParent: $('#add_test_modal'),
-                width: '100%' // optional but recommended
-            });
+            }
+        }, function(start, end) {
+            // This callback is the most reliable way to trigger the "Apply" action
+            console.log("Apply Triggered via Callback");
+            const displayDate = start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY');
+            $picker.find('.reportrange-picker-field').text(displayDate);
+            window.refreshQueue(start, end);
         });
 
-    <script>
+        // --- INITIAL STATE ---
+        $picker.find('.reportrange-picker-field').text(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        window.refreshQueue(start, end);
 
+        // --- RENDERING LOGIC ---
+        function render(queueList) {
+            if (!phlebotomyContainerEl) return;
+            if (!queueList.length) {
+                phlebotomyContainerEl.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No pending tests found for this date range.</td></tr>`;
+                return;
+            }
+            phlebotomyContainerEl.innerHTML = queueList.map(item => renderQueueRow(item)).join("");
+        }
+
+        function renderQueueRow(item) {
+            const patient = item.order.appointment.patient;
+            const statusClass = item.status === 'awaiting_sample' ? 'bg-soft-warning text-warning' : 'bg-soft-info text-info';
+            return `
+            <tr class="align-middle">
+                <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
+                <td><span class="fw-bold text-dark">${patient.patient_no}</span></td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span class="fw-medium text-dark">${patient.full_name}</span>
+                        <small class="text-muted">${patient.sex} | ${patient.age} yrs</small>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span class="text-dark">${item.test.name}</span>
+                        <small class="text-primary fw-bold">${item.test.sample_type || 'Blood'}</small>
+                    </div>
+                </td>
+                <td><span class="badge ${statusClass} border-0">${item.status.toUpperCase()}</span></td>
+                <td>${item.priority || 'Normal'}</td>
+                <td class="text-end">
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown">
+                            <i class="ti ti-dots-vertical"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
+                            <li><a href="javascript:void(0);" class="dropdown-item" onclick="openSampleModal(${item.id}, ${item.order.appointment.id})"><i class="ti ti-flask me-2 text-success"></i>Collect</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item" onclick="openManageSamplesModal(${item.order.appointment.id})"><i class="ti ti-layers-subtract me-2 text-warning"></i>Manage</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>`;
+        }
+
+        // --- SAMPLE COLLECTION MODAL ---
+        window.openSampleModal = async function(itemId, appointmentId) {
+            const item = allQueueItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById("modal_patient_name").textContent = item.order.appointment.patient.full_name;
+            document.getElementById("target_appointment_id").value = appointmentId;
+            document.getElementById("target_patient_id").value = item.order.appointment.patient.id;
+            document.getElementById("target_phlebotomy_id").value = item.order.appointment.phlebotomy?.id || "";
+
+            try {
+                const [catRes, testRes] = await Promise.all([
+                    fetch('/api/v1/samples/sample-categories'),
+                    fetch(`/api/v1/lab/appointments/${appointmentId}/pending-items`)
+                ]);
+                const categories = await catRes.json();
+                const pendingItems = await testRes.json();
+
+                document.getElementById("sample_type").innerHTML = '<option value="">Select Category...</option>' + 
+                    categories.map(c => `<option value="${c.id}">${c.category_name.toUpperCase()}</option>`).join("");
+
+                document.getElementById("test_ids").innerHTML = pendingItems.map(p => 
+                    `<option value="${p.id}" ${p.id === itemId ? 'selected' : ''}>${p.test.name}</option>`
+                ).join("");
+
+                bootstrap.Modal.getOrCreateInstance(document.getElementById("addSamplesModal")).show();
+            } catch (e) { showToast("Error loading modal data", "error"); }
+        };
+
+        // --- SAMPLE FORM SUBMISSION ---
+        document.getElementById("sampleForm")?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("saveSampleBtn");
+            const fd = new FormData(e.target);
+            
+            const payload = {
+                patient_id: parseInt(fd.get("patient_id")),
+                appointment_id: parseInt(fd.get("appointment_id")),
+                phlebotomy_id: fd.get("phlebotomy_id") ? parseInt(fd.get("phlebotomy_id")) : null,
+                sample_category_id: parseInt(fd.get("sample_category_id")),
+                test_item_ids: Array.from(document.getElementById("test_ids").selectedOptions).map(o => parseInt(o.value)),
+                priority: fd.get("priority") || "routine",
+                collection_site: fd.get("collection_site") || "clinic",
+                storage_location: fd.get("storage_location") || "ambient",
+                sample_condition: fd.get("sample_condition") || "good"
+            };
+
+            try {
+                btn.disabled = true;
+                const res = await fetch('/api/v1/samples/collect', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error("Save failed");
+                bootstrap.Modal.getInstance(document.getElementById("addSamplesModal")).hide();
+                showToast("Sample Recorded");
+                window.refreshQueue();
+            } catch (e) { showToast(e.message, "error"); } 
+            finally { btn.disabled = false; }
+        });
+
+        // --- MANAGE SAMPLES MODAL ---
+        window.openManageSamplesModal = async function(appId) {
+            const body = document.getElementById("manageSamplesBody");
+            const finalizeBtn = document.getElementById("btnFinalizePhleb");
+            body.innerHTML = '<tr><td colspan="4" class="text-center">Loading...</td></tr>';
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("manageSamplesModal")).show();
+
+            try {
+                const [sRes, pRes] = await Promise.all([
+                    fetch(`/api/v1/samples/appointment/${appId}`),
+                    fetch(`/api/v1/lab/appointments/${appId}/pending-items`)
+                ]);
+                const samples = await sRes.json();
+                const pending = await pRes.json();
+                currentPhlebId = samples[0]?.phlebotomy_id || null;
+                finalizeBtn.disabled = pending.length > 0 || samples.length === 0;
+
+                body.innerHTML = samples.flatMap(s => s.items.map(i => `
+                    <tr>
+                        <td>${i.test.name}</td>
+                        <td><span class="badge bg-soft-primary">${s.category.category_name}</span></td>
+                        <td>${new Date(s.collection_date).toLocaleTimeString()}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-link text-danger" onclick="deleteSample(${s.id}, ${appId})">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`)).join("") || '<tr><td colspan="4" class="text-center">No samples collected.</td></tr>';
+            } catch (e) { body.innerHTML = '<tr><td colspan="4" class="text-center">Error loading.</td></tr>'; }
+        };
+
+        // --- ACTIONS ---
+        window.deleteSample = async function(sampleId, appId) {
+            if (!confirm("Delete sample?")) return;
+            try {
+                const res = await fetch(`/api/v1/samples/${sampleId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast("Sample deleted");
+                    openManageSamplesModal(appId);
+                    window.refreshQueue();
+                }
+            } catch (e) { showToast("Delete failed", "error"); }
+        };
+
+        window.finalizeCollection = async function() {
+            if (!currentPhlebId) return;
+            try {
+                const res = await fetch(`/api/v1/samples/phlebotomy/${currentPhlebId}/complete`, {method: 'POST'});
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById("manageSamplesModal")).hide();
+                    showToast("Sent to Lab");
+                    window.refreshQueue();
+                }
+            } catch (e) { showToast("Finalize failed", "error"); }
+        };
+    } // End initPhlebotomy
+})();
+
+// Helper stays global
+function showToast(msg, type='success') {
+    const tEl = document.getElementById('appCustomToast');
+    const tTxt = document.getElementById('appCustomToastText');
+    if (!tEl) return;
+    tTxt.innerText = msg;
+    tEl.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'}`;
+    const toast = bootstrap.Toast.getOrCreateInstance(tEl);
+    toast.show();
+}
+</script>
 
 </body>
 

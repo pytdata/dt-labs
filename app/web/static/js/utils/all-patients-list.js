@@ -12,87 +12,87 @@ let searchTimeout = null;
 let activeController = null;
 let dataTableInstance = null; // Store the instance globally
 
-document.addEventListener("DOMContentLoaded", init);
+// document.addEventListener("DOMContentLoaded", init);
 
-async function init(e) {
-  // get patient data
+// async function init(e) {
+//   // get patient data
 
-  let patientList = await getVisitsData(patientsURL);
+//   let patientList = await getVisitsData(patientsURL);
 
-  let sortCol = "newest";
+//   let sortCol = "newest";
 
-  let sortState = sortCol == "newest" ? true : false;
+//   let sortState = sortCol == "newest" ? true : false;
 
-  render(patientList);
+//   render(patientList);
 
-  // listen for sort clicks
+//   // listen for sort clicks
 
-  sortOptionsEl.forEach((t) => {
-    t.addEventListener("click", sortPatients);
-  });
+//   sortOptionsEl.forEach((t) => {
+//     t.addEventListener("click", sortPatients);
+//   });
 
-  // sorting
+//   // sorting
 
-  function sortPatients(e) {
-    let thisSort = e.currentTarget.dataset.value;
+//   function sortPatients(e) {
+//     let thisSort = e.currentTarget.dataset.value;
 
-    if (sortCol === thisSort) sortState = !sortState;
+//     if (sortCol === thisSort) sortState = !sortState;
 
-    sortCol = thisSort;
+//     sortCol = thisSort;
 
-    // change sorting algorithm.
+//     // change sorting algorithm.
 
-    patientList.sort((a, b) => {
-      if (a[sortCol] < b[sortCol]) return sortState ? 1 : -1;
+//     patientList.sort((a, b) => {
+//       if (a[sortCol] < b[sortCol]) return sortState ? 1 : -1;
 
-      if (a[sortCol] > b[sortCol]) return sortState ? -1 : 1;
+//       if (a[sortCol] > b[sortCol]) return sortState ? -1 : 1;
 
-      return 0;
-    });
+//       return 0;
+//     });
 
-    return render(patientList);
-  }
+//     return render(patientList);
+//   }
 
-  // FILTERING
+//   // FILTERING
 
-  genderOptionsEl.forEach((genderOption) => {
-    genderOption.addEventListener("change", async (e) => {
-      buildDynamicURLParam(
-        "sex",
+//   genderOptionsEl.forEach((genderOption) => {
+//     genderOption.addEventListener("change", async (e) => {
+//       buildDynamicURLParam(
+//         "sex",
 
-        e.currentTarget.dataset.gender,
+//         e.currentTarget.dataset.gender,
 
-        e.currentTarget.checked,
-      );
+//         e.currentTarget.checked,
+//       );
 
-      // make request to backend
+//       // make request to backend
 
-      patientList = await getVisitsData(patientsURL);
+//       patientList = await getVisitsData(patientsURL);
 
-      render(patientList);
-    });
-  });
+//       render(patientList);
+//     });
+//   });
 
-  // Search fields
+//   // Search fields
 
-  searchEl.forEach((searchField) => {
-    searchField.addEventListener("input", (e) => {
-      clearTimeout(searchTimeout);
+//   searchEl.forEach((searchField) => {
+//     searchField.addEventListener("input", (e) => {
+//       clearTimeout(searchTimeout);
 
-      searchTimeout = setTimeout(async () => {
-        let value = e.target.value;
+//       searchTimeout = setTimeout(async () => {
+//         let value = e.target.value;
 
-        buildDynamicURLParam("search", value);
+//         buildDynamicURLParam("search", value);
 
-        const data = await performSearch(value);
+//         const data = await performSearch(value);
 
-        renderPatientSearchResults(data ?? []);
+//         renderPatientSearchResults(data ?? []);
 
-        return data;
-      });
-    });
-  });
-}
+//         return data;
+//       });
+//     });
+//   });
+// }
 
 function renderPatientSearchResults(data) {
   const searchResultsHtml = data
@@ -206,21 +206,43 @@ function buildDynamicURLParam(key, value, state) {
 
 console.log(",,,,,,,,,,,,.>>>>>>>>>>>>>>>>>>>>>>>");
 
-function render(patientList) {
-  // render patients data into html and join the results into an html string
 
-  const renderedHTML = patientList
+window.render = function(patientList) {
+  if (!patientsEL) return;
 
-    .map((patient) => {
-      return renderData(patient);
-    })
+  // 1. Destroy existing instance safely
+  if ($.fn.DataTable.isDataTable('.datatable')) {
+    $('.datatable').DataTable().clear().destroy();
+  }
 
-    .join("");
+  // 2. Clear HTML
+  patientsEL.innerHTML = "";
 
-  // insert data into DOM
-
+  // 3. Build new HTML
+  const renderedHTML = patientList.map(patient => renderData(patient)).join("");
   patientsEL.innerHTML = renderedHTML;
-}
+
+  // 4. Re-initialize after DOM is ready
+  setTimeout(() => {
+    const table = $('.datatable').DataTable({
+      dom: 'B<"top"f>rt<"bottom"ip><"clear">',
+      pageLength: 25,
+      buttons: [
+        { extend: 'csv', className: 'buttons-csv d-none' },
+        { extend: 'excel', className: 'buttons-excel d-none' },
+        { extend: 'pdf', className: 'buttons-pdf d-none' },
+        { extend: 'print', className: 'buttons-print d-none' }
+      ]
+    });
+
+    // Re-bind Export Buttons
+    $('.export-csv').off('click').on('click', () => table.button('.buttons-csv').trigger());
+    $('.export-excel').off('click').on('click', () => table.button('.buttons-excel').trigger());
+    $('.export-pdf').off('click').on('click', () => table.button('.buttons-pdf').trigger());
+    $('.export-print').off('click').on('click', () => table.button('.buttons-print').trigger());
+  }, 50);
+};
+
 
 /**
 

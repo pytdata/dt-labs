@@ -312,9 +312,9 @@
                 <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
                     <div class="d-flex align-items-center flex-wrap gap-2">
                    <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
-    <i class="ti ti-calendar text-primary fs-14 me-2"></i>
-    <span class="reportrange-picker-field">Select Date Range</span>
-</div>
+                    <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                    <span class="reportrange-picker-field">Select Date Range</span>
+                </div>
 
                     <div class="dropdown">
                         <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
@@ -362,7 +362,7 @@
                                         <!-- <th class="no-sort">Department</th> -->
                                         <th class="no-sort">Last Visit</th>
                                         <th class="no-sort">Status</th>
-                                        <th class="no-sort"></th>
+                                        <th class="no-sort">Action</th>
                                  </tr>
                              </thead>
                                 <tbody class="list__patients">
@@ -646,8 +646,9 @@
     <!-- Bootstrap Core JS -->
     <script src="/static/js/bootstrap.bundle.min.js"></script>
     <!-- Daterangepikcer JS -->
-	<script src="/static/js/moment.min.js"></script>
+	<script src="/static/js/min/moment.min.js"></script>
 	<script src="/static/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="/static/js/utils/lib-core.js"></script>
 
     <!-- Datatable JS -->
     <script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
@@ -686,107 +687,33 @@
 
  <script src="{{ url_for('static', path='js/utils/all-patients-list.js') }}"></script>
 
- <script>
-
-    $(document).ready(function() {
-    // 1. Destroy existing instance if it exists
-    if ($.fn.DataTable.isDataTable('.datatable')) {
-        $('.datatable').DataTable().destroy();
-    }
-
-    // 2. Initialize the table
-    const table = $('.datatable').DataTable({
-        // The 'B' in dom is essential—it tells DataTables to initialize the Buttons extension
-        dom: 'B<"top"f>rt<"bottom"ip><"clear">',
-        buttons: [
-            { extend: 'csv', className: 'buttons-csv d-none' },
-            { extend: 'excel', className: 'buttons-excel d-none' },
-            { 
-                extend: 'pdf', 
-                className: 'buttons-pdf d-none', 
-                title: 'Patient Visit Report',
-                exportOptions: { columns: ':visible:not(.no-sort)' },
-                customize: function (doc) {
-                    doc.content[1].table.widths = Array(doc.content[1].table.body[0].length + 1).join('*').split('');
-                    doc.styles.tableHeader.fillColor = '#4e73df';
-                    doc.styles.tableHeader.color = 'white';
-                }
-            },
-            { extend: 'print', className: 'buttons-print d-none' }
-        ]
-    });
-
-    // 3. FIXED TRIGGER LOGIC
-    // Use the DataTable API instance (.buttons()) correctly
-    $('.export-csv').on('click', function(e) {
-        e.preventDefault();
-        table.buttons('.buttons-csv').trigger();
-    });
-
-    $('.export-excel').on('click', function(e) {
-        e.preventDefault();
-        table.buttons('.buttons-excel').trigger();
-    });
-
-    $('.export-pdf').on('click', function(e) {
-        e.preventDefault();
-        table.buttons('.buttons-pdf').trigger();
-    });
-
-    $('.export-print').on('click', function(e) {
-        e.preventDefault();
-        table.buttons('.buttons-print').trigger();
-    });
-});
- </script>
-
-
- <script>
-   $('#reportrange').on('apply.daterangepicker', async function(ev, picker) {
-    const start = picker.startDate.format('YYYY-MM-DD');
-    const end   = picker.endDate.format('YYYY-MM-DD');
-
-    console.log(start, end);
-
-    async function getRemoteData() {
-        try {
-            const response = await fetch(`/api/v1/patients?start_date=${start}&end_date=${end}`);
+ <script data-cfasync="false">
+        /**
+         * This is the "Hello World" of your new system.
+         * It handles the API call and tells the UI to update.
+         */
+        async function filterPatientsByDate(start, end) {
+            const startStr = start.format('YYYY-MM-DD');
+            const endStr = end.format('YYYY-MM-DD');
             
-            if (!response.ok) throw new Error("Failed to fetch data");
+            console.log("Fetching patients for range:", startStr, "to", endStr);
 
-            const data = await response.json();
-            render(data)
-
-        } catch (error) {
-            alert(error)
+            try {
+                // Reuse your existing helper from all-patients-list.js
+                const url = `/api/v1/patients?start_date=${startStr}&end_date=${endStr}`;
+                const data = await getVisitsData(url);
+                
+                // Call the global render we just updated
+                window.render(data);
+                
+            } catch (error) {
+                console.error("Filter failed:", error);
+            }
         }
-    }
 
-    await getRemoteData();
-
-});
-</script>
-
-<script>
-    $('#reportrange').daterangepicker({
-    showCustomRangeLabel: true,
-    alwaysShowCalendars: true, // This keeps the calendar view visible
-    opens: 'right',
-    ranges: {
-        // To force Custom at the top, some versions require 
-        // defining it as an empty range or handling via CSS (see below)
-        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-        'This Month': [moment().startOf('month'), moment().endOf('month')],
-        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-    },
-    startDate: moment().subtract(29, 'days'),
-    endDate: moment()
-}, function(start, end, label) {
-    $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-});
-</script>
+        // Initialize using the Lib-Core engine
+        initLISFilter('#reportrange', filterPatientsByDate);
+    </script>
 
 
     <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
@@ -806,7 +733,7 @@
             });
         });
 
-    <script>
+    </script>
 
 </body>
 

@@ -156,11 +156,11 @@ function showFeedback({ title, message, type = 'success', redirectUrl = null }) 
 }
 
 
-(async function init() {
-  const res = await getRemoteData(appointmentsURL);
-  totalNumOfAppointments = res.length;
-  render(res);
-})();
+// (async function init() {
+//   const res = await getRemoteData(appointmentsURL);
+//   totalNumOfAppointments = res.length;
+//   render(res);
+// })();
 
 catSelectEl.addEventListener("input", (e) => {
   const [id, catName] = e.target.value.split(",").map((v) => v.trim());
@@ -860,17 +860,49 @@ async function getRemoteData(url) {
  * Render a lsit of object as html elements and display in DOM
  * @param {Array[Object]} appointmentsList
  */
-function render(appointmentsList) {
-  // render patients data into html and join the results into an html string
-  const renderedHTML = appointmentsList
-    .map((appointment) => {
-      return renderData(appointment);
-    })
+window.render = function(appointmentsList) {
+  const tableSelector = '.datatable';
+  const $table = $(tableSelector);
+
+
+  // 1. CLEAR: Destroy the old instance if it exists
+  if ($.fn.DataTable.isDataTable(tableSelector)) {
+    $table.DataTable().clear().destroy();
+  }
+
+  if (appointmentsList.length === 0) {
+    appointmentsTableEL.innerHTML = '<tr><td colspan="7" class="text-center py-4">No appointments found for this period.</td></tr>';
+    return; // Don't try to init DataTable on an empty row with a colspan
+}
+
+  // 2. INJECT: Map your data to the HTML rows
+  if (!appointmentsTableEL) return; // Your tbody selector
+  
+  appointmentsTableEL.innerHTML = appointmentsList
+    .map((appointment) => renderData(appointment)) // Uses your existing template
     .join("");
 
-  // insert data into DOM
-  appointmentsTableEL.innerHTML = renderedHTML;
-}
+  // 3. REBUILD: Initialize DataTables ONLY after the rows are in the DOM
+  setTimeout(() => {
+    const table = $table.DataTable({
+      dom: 'B<"top"f>rt<"bottom"ip><"clear">',
+      pageLength: 10,
+      buttons: [
+        { extend: 'excel', className: 'buttons-excel d-none' },
+        { extend: 'pdf', className: 'buttons-pdf d-none', orientation: 'landscape' }
+      ]
+    });
+
+    // Re-link your Export triggers
+    $('.export-excel').off('click').on('click', () => table.button('.buttons-excel').trigger());
+    $('.export-pdf').off('click').on('click', () => table.button('.buttons-pdf').trigger());
+    
+    console.log("DataTable Re-initialized successfully.");
+  }, 50); // 50ms is enough for the browser to "paint" the new rows
+};
+
+
+
 
 /**
  * Renders the patient data into html.
@@ -882,7 +914,6 @@ function renderData(appointment) {
   // Extract invoice ID safely
   const invoiceId = appointment.invoice ? appointment.invoice.id : null;
   const isPaid = appointment.invoice && appointment.invoice.status === 'paid';
-  console.log(isPaid, "<<<<<<<<<<==================")
 
   const htmlElement = ` <tr>
         <td>
@@ -1079,76 +1110,6 @@ function updateAmountOnCheck() {
         });
     });
 }
-
-
-// PROCESSING PAYMENT
-// document.getElementById('btnProcessPayment').addEventListener('click', async () => {
-//     const modalElement = document.getElementById('paymentModal');
-//     const modal = bootstrap.Modal.getInstance(modalElement);
-    
-//     // 1. Get the raw Invoice ID from the dataset we set during populatePaymentModal
-//     const invoiceId = document.getElementById('payInvoiceNo').dataset.invoiceId;
-    
-//     if (!invoiceId) {
-//         showToast("Error: Invoice ID not found. Please reopen the modal.", "danger");
-//         return;
-//     }
-
-//     // 2. Collect IDs of only the NEWLY checked tests
-//     const selectedCheckboxes = document.querySelectorAll('.test-pay-checkbox:not(:disabled):checked');
-//     const selectedTestIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
-                                 
-//     // 3. Build Payload
-//     const payload = {
-//         amount: parseFloat(document.getElementById('payAmountInput').value),
-//         method: document.getElementById('payMethod').value,
-//         test_ids_to_clear: selectedTestIds,
-//         description: "Payment received at desk"
-//     };
-
-//     // 4. Validation
-//     if (isNaN(payload.amount) || payload.amount <= 0) {
-//         showToast("Please enter a valid payment amount", "warning");
-//         return;
-//     }
-
-//     // Optional: Warn if they are paying money but haven't checked any tests
-//     if (selectedTestIds.length === 0) {
-//         const confirmAll = confirm("No specific tests selected. Proceed with a general payment towards the balance?");
-//         if (!confirmAll) return;
-//     }
-
-//     try {
-//         // Change button state to prevent double-clicks
-//         const btn = document.getElementById('btnProcessPayment');
-//         btn.disabled = true;
-//         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processing...';
-
-//         const res = await fetch(`/api/v1/billing/${invoiceId}/payments`, {
-//             method: "POST",
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify(payload)
-//         });
-
-//         const result = await res.json();
-
-//         if (res.ok) {
-//             showToast("Payment Processed! Clinical status updated.", "success");
-//             modal.hide();
-//             // Refresh the table to reflect the new 'Paid' status and balance
-//             location.reload(); 
-//         } else {
-//             showToast(result.detail || "Payment failed", "danger");
-//             btn.disabled = false;
-//             btn.innerText = 'Process Payment';
-//         }
-//     } catch (error) {
-//         console.error("Payment Error:", error);
-//         showToast("Network error. Please check your connection.", "danger");
-//         document.getElementById('btnProcessPayment').disabled = false;
-//     }
-// });
-
 
 
 // SELECT ALL TEST 
