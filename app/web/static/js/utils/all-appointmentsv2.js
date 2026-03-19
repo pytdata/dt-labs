@@ -856,52 +856,83 @@ async function getRemoteData(url) {
   return data;
 }
 
+
 /**
- * Render a lsit of object as html elements and display in DOM
+ * Render a list of objects as html elements and display in DOM
  * @param {Array[Object]} appointmentsList
  */
 window.render = function(appointmentsList) {
-  const tableSelector = '.datatable';
-  const $table = $(tableSelector);
+    const tableSelector = '.datatable';
+    
+    // 1. Safety check for jQuery and DataTables
+    if (!window.jQuery || !$.fn.DataTable) {
+        setTimeout(() => window.render(appointmentsList), 100);
+        return;
+    }
 
+    const $table = $(tableSelector);
 
-  // 1. CLEAR: Destroy the old instance if it exists
-  if ($.fn.DataTable.isDataTable(tableSelector)) {
-    $table.DataTable().clear().destroy();
-  }
+    // 2. Destroy existing instance if it exists to prevent "Re-initialization" errors
+    if ($.fn.DataTable.isDataTable(tableSelector)) {
+        $table.DataTable().clear().destroy();
+    }
 
-  if (appointmentsList.length === 0) {
-    appointmentsTableEL.innerHTML = '<tr><td colspan="7" class="text-center py-4">No appointments found for this period.</td></tr>';
-    return; // Don't try to init DataTable on an empty row with a colspan
-}
+    // 3. Inject Rows into the DOM
+    const tbody = document.querySelector(".appointments__table");
+    if (tbody) {
+        // Handle empty state gracefully
+        if (appointmentsList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No records found for the selected range.</td></tr>';
+            return; 
+        }
+        tbody.innerHTML = appointmentsList.map(app => renderData(app)).join("");
+    }
 
-  // 2. INJECT: Map your data to the HTML rows
-  if (!appointmentsTableEL) return; // Your tbody selector
-  
-  appointmentsTableEL.innerHTML = appointmentsList
-    .map((appointment) => renderData(appointment)) // Uses your existing template
-    .join("");
-
-  // 3. REBUILD: Initialize DataTables ONLY after the rows are in the DOM
-  setTimeout(() => {
+    // 4. Initialize DataTable with Export Buttons
+    // We explicitly name the buttons so our custom triggers work
     const table = $table.DataTable({
-      dom: 'B<"top"f>rt<"bottom"ip><"clear">',
-      pageLength: 10,
-      buttons: [
-        { extend: 'excel', className: 'buttons-excel d-none' },
-        { extend: 'pdf', className: 'buttons-pdf d-none', orientation: 'landscape' }
-      ]
+        dom: 'Bfrtip', 
+        pageLength: 10,
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                className: 'buttons-excel d-none', // Added explicit class name here
+                title: 'Appointments_Report_' + new Date().toISOString().slice(0, 10),
+                exportOptions: { columns: ':visible:not(:last-child)' } 
+            },
+            {
+                extend: 'pdfHtml5',
+                className: 'buttons-pdf d-none', // Added explicit class name here
+                title: 'Appointments_Report',
+                orientation: 'landscape',
+                pageSize: 'A4',
+                exportOptions: { columns: ':visible:not(:last-child)' }
+            }
+        ],
+        language: {
+            search: " ",
+            searchPlaceholder: "Search records...",
+            paginate: {
+                next: '<i class="ti ti-chevron-right"></i>',
+                previous: '<i class="ti ti-chevron-left"></i>'
+            }
+        }
     });
 
-    // Re-link your Export triggers
-    $('.export-excel').off('click').on('click', () => table.button('.buttons-excel').trigger());
-    $('.export-pdf').off('click').on('click', () => table.button('.buttons-pdf').trigger());
-    
-    console.log("DataTable Re-initialized successfully.");
-  }, 50); // 50ms is enough for the browser to "paint" the new rows
+    // 5. Link Custom UI Buttons to DataTable Actions
+    // .off('click') is crucial to prevent multiple downloads if render is called again
+    $('.export-excel').off('click').on('click', function(e) {
+        e.preventDefault();
+        table.button('.buttons-excel').trigger();
+    });
+
+    $('.export-pdf').off('click').on('click', function(e) {
+        e.preventDefault();
+        table.button('.buttons-pdf').trigger();
+    });
+
+    console.log("DataTable Rendered with " + appointmentsList.length + " records.");
 };
-
-
 
 
 /**
@@ -1782,13 +1813,6 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
             
         } catch (err) {
             console.error("Search Error:", err);
-            // REPLACED ALERT WITH MODAL
-            // showFeedback({
-            //     title: "Search Unavailable",
-            //     message: "We encountered an error while searching for tests. Please try again.",
-            //     type: 'error'
-            // });
-
             showToast("Encountered an error while searching for tests. Please try again.", "error")
         }
     }, 400); 

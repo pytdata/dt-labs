@@ -28,7 +28,7 @@
     <link rel="stylesheet" href="/static/plugins/flatpickr/flatpickr.min.css">
 
     <!-- Choices CSS -->
-    <link rel="stylesheet" href="/static/plugins/choices.js/public/static/styles/choices.min.css">
+    <link rel="stylesheet" href="/static/plugins/choices.js/public/assets/styles/choices.min.css">
 
     <!-- Select2 CSS -->
     <link rel="stylesheet" href="/static/plugins/select2/css/select2.min.css">
@@ -126,6 +126,38 @@
 
 .toast .btn-close:hover {
     opacity: 1;
+}
+
+/* Target the range list and make it a flex container */
+.daterangepicker .ranges ul {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Move the 'Custom Range' (usually the last li) to the top */
+/* Note: DateRangePicker adds 'Custom Range' as a dynamic LI if not explicitly defined */
+.daterangepicker .ranges ul li:last-child {
+    order: -1; 
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Ensure the table header doesn't clip the dropdowns */
+.table-header {
+    overflow: visible !important;
+    position: relative;
+    z-index: 5;
+}
+
+/* Ensure dropdown menus appear above the table body */
+.table-header .dropdown-menu {
+    z-index: 1050 !important;
+}
+
+/* Fix for the DatePicker Z-index conflict */
+.daterangepicker {
+    z-index: 1100 !important;
 }
 
 </style>
@@ -387,6 +419,11 @@
                     <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
                         <div class="d-flex align-items-center flex-wrap gap-2">
 
+                            <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
+                            <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                            <span class="reportrange-picker-field">Select Date Range</span>
+                            </div>
+
                             <!-- doctor dropdown -->
                             <div class="dropdown">
                                 
@@ -467,20 +504,26 @@
 
                         </div>
 
-                        <!-- sort by -->
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By : </span>  Newest
-                            </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-2">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
-                                </li>
-                            </ul>
-                        </div>
+                       <!-- EXPORT BUTTON -->
+                    <div class="dropdown me-2">
+                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i>Export
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2">
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-excel">
+                                    <i class="ti ti-file-spreadsheet me-2 text-success"></i>Excel (.xlsx)
+                                </a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-pdf">
+                                    <i class="ti ti-file-type-pdf me-2 text-danger"></i>PDF (.pdf)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                         
                     </div>
                     <!-- table header -->
 
@@ -1193,8 +1236,14 @@
 <script data-cfasync="false" src="/static/plugins/daterangepicker/daterangepicker.js"></script>
 <script data-cfasync="false" src="/static/js/utils/lib-core.js"></script>
 
-<script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
 <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+
+<script src="/static/js/min/jszip.min.js"></script>
+<script src="/static/js/min/pdfmake.min.js"></script>
+<script src="/static/js/min/vsffonts.min.js"></script> <script src="/static/js/min/datatables.buttons.min.js"></script>
+
+<script src="/static/js/min/buttons.min.js"></script> <script src="/static/js/min/print.min.js"></script>
 
 <script src="/static/js/utils/all-appointmentsv2.js" defer></script>
 
@@ -1228,6 +1277,11 @@
             };
 
             initLISFilter('#reportrange', filterFn);
+
+            const dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+            dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
             
             // Initial load trigger
             filterFn(moment().subtract(6, 'days'), moment());

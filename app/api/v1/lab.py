@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request
 from fastapi.responses import HTMLResponse
@@ -95,7 +96,11 @@ async def submit_lab_results(
 
 
 @router.get("/queue/radiology", response_model=list[LabQueueResponse2])
-async def get_radiology_queue(db: AsyncSession = Depends(get_db)):
+async def get_radiology_queue(
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    db: AsyncSession = Depends(get_db),
+):
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
@@ -104,34 +109,46 @@ async def get_radiology_queue(db: AsyncSession = Depends(get_db)):
         .join(LabOrder.appointment)
         .join(Appointment.patient)
         .outerjoin(Appointment.doctor)
-        .where(
-            Test.requires_phlebotomy == False,
-            # 1. Status Check: Must be past payment
-            LabOrderItem.status.in_(
-                [
-                    LabStatus.AWAITING_RESULTS,
-                    LabStatus.AWAITING_APPROVAL,
-                ]
-            ),
-            # 2. Stage Check: Include BOOKING so it shows up immediately after payment
-            LabOrderItem.stage.in_(
-                [
-                    LabStage.BOOKING,  # <--- Added this
-                    LabStage.RUNNING,
-                    LabStage.ANALYZING,
-                ]
-            ),
-        )
+    )
+
+    # 1. Base Filters (Status and Stage)
+    filters = [
+        Test.requires_phlebotomy == False,
+        LabOrderItem.status.in_(
+            [
+                LabStatus.AWAITING_RESULTS,
+                LabStatus.AWAITING_APPROVAL,
+            ]
+        ),
+        LabOrderItem.stage.in_(
+            [
+                LabStage.BOOKING,
+                LabStage.RUNNING,
+                LabStage.ANALYZING,
+            ]
+        ),
+    ]
+
+    # 2. Dynamic Date Filtering
+    # We use func.date() to ensure we compare only the date part of a timestamp
+    if start_date:
+        filters.append(func.date(LabOrderItem.created_at) >= start_date)
+    if end_date:
+        filters.append(func.date(LabOrderItem.created_at) <= end_date)
+
+    # Apply all filters
+    stmt = stmt.where(*filters)
+
+    # 3. Eager Loading and Ordering
+    stmt = stmt.options(
+        contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
+        contains_eager(LabOrderItem.order)
+        .contains_eager(LabOrder.appointment)
         .options(
-            contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
-            contains_eager(LabOrderItem.order)
-            .contains_eager(LabOrder.appointment)
-            .options(
-                contains_eager(Appointment.patient), contains_eager(Appointment.doctor)
-            ),
-            selectinload(LabOrderItem.radiology_result),
-            selectinload(LabOrderItem.lab_result),
-        )
+            contains_eager(Appointment.patient), contains_eager(Appointment.doctor)
+        ),
+        selectinload(LabOrderItem.radiology_result),
+        selectinload(LabOrderItem.lab_result),
     ).order_by(LabOrderItem.id.desc())
 
     result = await db.execute(stmt)

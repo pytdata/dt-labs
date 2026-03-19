@@ -30,6 +30,9 @@
     <!-- Datatable CSS -->
     <link rel="stylesheet" href="/static/plugins/datatables/css/dataTables.bootstrap5.min.css">
 
+        <!-- Daterangepikcer CSS -->
+	<link rel="stylesheet" href="/static/plugins/daterangepicker/daterangepicker.css">
+
     <!-- Simplebar CSS -->
     <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
 
@@ -114,6 +117,34 @@
     opacity: 1;
 }
 
+.daterangepicker {
+    z-index: 2000 !important; /* Ensure it stays above modals and sticky headers */
+}
+
+/* If the picker is appearing but is "stuck" inside the card */
+.reportrange-picker {
+    position: relative;
+}
+
+/* Force the date picker to the front */
+.daterangepicker {
+    z-index: 9999 !important;
+    display: none; /* Let JS handle showing it */
+}
+
+/* Target the range list in the daterangepicker */
+        .daterangepicker .ranges ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the "Custom Range" (which is the last <li>) to the top */
+        .daterangepicker .ranges ul li:last-child {
+            order: -1; 
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
 
 </style>
     
@@ -364,8 +395,13 @@
                     <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
                         <div class="d-flex align-items-center flex-wrap gap-2">
 
+                            <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
+                    <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                    <span class="reportrange-picker-field">Select Date Range</span>
+                </div>
+
                             <!-- patient dropdown -->
-                            <div class="dropdown">
+                            <!-- <div class="dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-users me-1"></i>Patient
                                 </a>
@@ -441,26 +477,25 @@
                                         </label>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> -->
 
 
 
                         </div>
 
-                        <!-- sort by -->
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By : </span>  Newest
-                            </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-2">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
-                                </li>
+                        <!-- EXPORT -->
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-primary d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i> Export
+                        </a>
+                            <ul class="dropdown-menu dropdown-menu-end p-2">
+                            <li><a href="javascript:void(0);" class="dropdown-item export-csv"><i class="ti ti-file-type-csv me-2"></i>CSV</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item export-excel"><i class="ti ti-file-spreadsheet me-2"></i>Excel</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item export-pdf"><i class="ti ti-file-type-pdf me-2"></i>PDF</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item export-print"><i class="ti ti-printer me-2"></i>Print</a></li>
                             </ul>
-                        </div>
+                    </div>
+
                     </div>
                     <!-- table header -->
 
@@ -468,7 +503,7 @@
                        <!-- table start -->
                         <div class="table-responsive table-nowrap">
                             
-                            <table class="table mb-0 datatable">
+                            <table class="table mb-0 radiology-table" id="radiologyMainTable">
                             <thead>
                                 <tr>
                                     <th class="no-sort">
@@ -712,24 +747,30 @@
 </div>
 
     <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+   <script src="/static/js/jquery-3.7.1.min.js"></script>
 
-    <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
 
-	<!-- Simplebar JS -->
-	<script src="/static/plugins/simplebar/simplebar.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+<script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
 
-    <!-- Datatable JS -->
-    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
-    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+<script src="/static/js/min/moment.min.js"></script>
+<script src="/static/plugins/daterangepicker/daterangepicker.js"></script>
 
-    <!-- Main JS -->
-    <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+<script src="/static/js/min/jszip.min.js"></script>
+<script src="/static/js/min/pdfmake.min.js"></script>
+<script src="/static/js/min/vsffonts.min.js"></script> 
 
-    <!-- Lab results -->
-    <script src="{{ url_for('static', path='js/utils/radiology.js') }}" defer></script>
-        
+<script src="/static/js/min/datatables.buttons.min.js"></script>
+<script src="/static/js/min/buttons.min.js"></script> 
+<script src="/static/js/min/print.min.js"></script>
+
+<script src="/static/plugins/simplebar/simplebar.min.js"></script>
+<script src="/static/js/utils/lib-core.js"></script>
+<script src="/static/js/script.js"></script>
+
+<script src="{{ url_for('static', path='js/utils/radiology.js') }}" defer></script>
+
 <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
 <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>

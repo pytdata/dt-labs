@@ -212,6 +212,9 @@ class LabOrderItem(Base):
     status: Mapped[LabStatus] = mapped_column(
         String(50), default=LabStatus.AWAITING_SAMPLE, nullable=False
     )
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     # Store as String(50), but interact via LabStage Enum
     stage: Mapped[LabStage] = mapped_column(
