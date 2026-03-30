@@ -36,8 +36,29 @@
     <!-- Simplebar CSS -->
     <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
 
+
+    <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css" />
+
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+
+    <style>
+
+/* Target the range list in the daterangepicker */
+        .daterangepicker .ranges ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the "Custom Range" (which is the last <li>) to the top */
+        .daterangepicker .ranges ul li:last-child {
+            order: -1; 
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+    </style>
 
 </head>
 
@@ -339,30 +360,9 @@
                     <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
                         <div class="d-flex align-items-center flex-wrap gap-2">
 
-                            <!-- patient dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-users me-1"></i>Patient
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md search__transaction__patient" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> James Carter
-                                        </label>
-                                    </li>
-                                   
-                                </ul>
+                              <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
+                            <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                            <span class="reportrange-picker-field">Select Date Range</span>
                             </div>
 
                             <!-- payment dropdown -->
@@ -381,85 +381,6 @@
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
                                             <input class="form-check-input m-0 me-2 payment__type" type="checkbox" data-payment-type="momo">
                                             Momo
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- doctor dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-stethoscope me-1"></i>Doctor
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-03.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Katherine Brooks
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-04.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Benjamin Harris
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-05.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Laura Mitchell
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-06.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Christopher Lewis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-07.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Natalie Foster
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-10.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Jonathan Adams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-08.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Rebecca Scott
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-12.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Samuel Turner
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-11.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Victoria Evans
                                         </label>
                                     </li>
                                 </ul>
@@ -488,20 +409,25 @@
 
                         </div>
 
-                        <!-- sort by -->
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By : </span>  Newest
-                            </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-2">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
-                                </li>
-                            </ul>
-                        </div>
+                                 <!-- EXPORT BUTTON -->
+                    <div class="dropdown me-2">
+                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i>Export
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2">
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-excel">
+                                    <i class="ti ti-file-spreadsheet me-2 text-success"></i>Excel (.xlsx)
+                                </a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-pdf">
+                                    <i class="ti ti-file-type-pdf me-2 text-danger"></i>PDF (.pdf)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                     </div>
                     <!-- table header -->
 
@@ -544,7 +470,7 @@
 
             <!-- Start Footer -->
             <footer class="footer d-block d-md-flex justify-content-between text-md-start text-center">
-               <p class="mb-0 text-dark"><script type="b29c1e49a9b80354c45f1fff-text/javascript">document.write(new Date().getFullYear())</script> &copy; <a href="javascript:void(0);" class="link-primary">DreamsEMR</a> All Rights Reserved</p>
+               <p class="mb-0 text-dark"><script>document.write(new Date().getFullYear())</script> &copy; <a href="javascript:void(0);" class="link-primary">DreamsEMR</a> All Rights Reserved</p>
                <p class="mb-0 text-dark">Design & Developed by Dreams Technologies</p>
             </footer>
             <!-- End Footer -->
@@ -722,28 +648,36 @@
     <!-- End view Modal -->
 
     <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/jquery-3.7.1.min.js"></script>
 
     <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
 
 	<!-- Simplebar JS -->
-	<script src="/static/plugins/simplebar/simplebar.min.js" type="b29c1e49a9b80354c45f1fff-text/javascript"></script>
+	<script src="/static/plugins/simplebar/simplebar.min.js"></script>
 
     <!-- ApexChart JS -->
-    <script src="/static/plugins/apexchart/apexcharts.min.js" type="b29c1e49a9b80354c45f1fff-text/javascript"></script>
-    <script src="/static/plugins/apexchart/chart-data.js" type="b29c1e49a9b80354c45f1fff-text/javascript"></script>
+    <script src="/static/plugins/apexchart/apexcharts.min.js"></script>
+    <script src="/static/plugins/apexchart/chart-data.js"></script>
 
     <!-- Datetimepicker JS -->
-    <script src="/static/js/moment.min.js" type="b29c1e49a9b80354c45f1fff-text/javascript"></script>
-    <script src="/static/js/bootstrap-datetimepicker.min.js" type="b29c1e49a9b80354c45f1fff-text/javascript"></script>
+    <script src="/static/js/moment.min.js"></script>
+    <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
 
     <!-- Datatable JS -->
-    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js" type="b29c1e49a9b80354c45f1fff-text/javascript"></script>
-    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js" type="b29c1e49a9b80354c45f1fff-text/javascript"></script>
+    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
+    <script data-cfasync="false" src="/static/plugins/daterangepicker/daterangepicker.js"></script>
 
+    <script src="/static/js/min/jszip.min.js"></script>
+    <script src="/static/js/min/pdfmake.min.js"></script>
+    <script src="/static/js/min/vsffonts.min.js"></script> 
+
+    <script src="/static/js/min/datatables.buttons.min.js"></script>
+    <script src="/static/js/min/buttons.min.js"></script> 
+    <script src="/static/js/min/print.min.js"></script>
     <!-- Main JS -->
-    <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/script.js"></script>
 
     <!-- Lab results -->
     <script src="{{ url_for('static', path='js/utils/transactions.js') }}" defer></script>

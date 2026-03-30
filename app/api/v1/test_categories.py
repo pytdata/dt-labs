@@ -92,3 +92,16 @@ async def create_test_category(
     await db.refresh(test_category)
 
     return test_category
+
+
+@router.get(
+    "/categories",
+    response_model=list[TestCategoryResponse],
+    summary="List all test categories",
+)
+async def list_test_categories(
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(TestCategory).order_by(TestCategory.category_name.asc())
+    result = await db.execute(stmt)
+    return result.scalars().all()

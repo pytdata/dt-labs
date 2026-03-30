@@ -1,7 +1,10 @@
+from datetime import date
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload, selectinload
 from app.db.session import get_db
 from app.models.billing import Billing, Invoice, InvoiceItem, Payment
@@ -14,33 +17,54 @@ router = APIRouter()
 
 @router.get("/records", response_model=list[BillingRead])
 async def get_all_billing_records(
-    db: AsyncSession = Depends(get_db), limit: int = 100, offset: int = 0
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    status: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    limit: int = 100,
+    offset: int = 0,
 ):
     try:
+        # 1. Base query with optimized loading
+        # We use .join() because we need to filter based on Invoice status
         stmt = (
             select(Billing)
+            .join(Appointment, Billing.appointment_id == Appointment.id)
+            .join(Invoice, Appointment.id == Invoice.appointment_id)
             .options(
                 joinedload(Billing.patient),
-                # Nested join: Load the appointment AND its linked invoice
                 joinedload(Billing.appointment).joinedload(Appointment.invoice),
                 selectinload(Billing.items),
             )
             .order_by(Billing.created_at.desc())
-            .limit(limit)
-            .offset(offset)
         )
 
+        # 2. Date Range Filtering
+        if start_date:
+            stmt = stmt.where(func.date(Billing.created_at) >= start_date)
+
+        if end_date:
+            stmt = stmt.where(func.date(Billing.created_at) <= end_date)
+
+        # 3. Status Filtering (from the linked Invoice)
+        if status:
+            # Matches "Paid", "Pending", "Overdue" etc. case-insensitively
+            stmt = stmt.where(Invoice.status.ilike(status))
+
+        # 4. Pagination
+        stmt = stmt.limit(limit).offset(offset)
+
         result = await db.execute(stmt)
-        billings = result.scalars().all()
+        billings = (
+            result.scalars().unique().all()
+        )  # .unique() is required when using joinedload on collections
 
         return billings
 
     except Exception as e:
-        # It's helpful to log the specific error for debugging
-        print(f"ERROR fetching billing records: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Failed to retrieve billing records: {str(e)}"
-        )
+        # Log the error here
+        print(f"Error fetching billing records: {e}")
+        return []
 
 
 @router.get("/records/{bill_id}", response_model=BillingRead)

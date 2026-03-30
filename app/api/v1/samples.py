@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated, List, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -216,18 +216,26 @@ async def create_sample_category(
     return category
 
 
-@router.get(
-    "/sample-categories",
-    response_model=list[SampleCategoryResponse],
-    status_code=status.HTTP_200_OK,
-)
-async def get_all_sample_category(
-    db: AsyncSession = Depends(get_db),
-):
-    stmt = select(SampleCategory)
-    existing = await db.scalars(stmt)
+@router.get("/sample-categories", response_model=List[SampleCategoryResponse])
+async def get_all_sample_categories(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(SampleCategory).order_by(SampleCategory.category_name)
+    )
+    return result.scalars().all()
 
-    return existing
+
+# @router.get(
+#     "/sample-categories",
+#     response_model=list[SampleCategoryResponse],
+#     status_code=status.HTTP_200_OK,
+# )
+# async def get_all_sample_category(
+#     db: AsyncSession = Depends(get_db),
+# ):
+#     stmt = select(SampleCategory)
+#     existing = await db.scalars(stmt)
+
+#     return existing
 
 
 @router.delete("/{sample_id}")

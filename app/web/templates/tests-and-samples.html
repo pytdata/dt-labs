@@ -1,0 +1,318 @@
+{% extends "settings-base.html" %}
+
+{% block settings_title %}Tests and Samples{% endblock %}
+<!-- {% block settings_breadcrumb %}Test Mapping{% endblock %} -->
+
+
+{% block settings_body %}
+<div class="row">
+    <div class="col-md-12">
+        <ul class="nav nav-tabs nav-tabs-solid nav-tabs-rounded mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="#tests-tab" data-bs-toggle="tab">
+                    <i class="ti ti-test-pipe me-1"></i>Test Directory & Pricing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#samples-tab" data-bs-toggle="tab">
+                    <i class="ti ti-flask me-1"></i>Sample Categories
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane show active" id="tests-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Test Directory</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTestModal">
+                            <i class="ti ti-plus me-1"></i>Add New Test
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle datatable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Test Name</th>
+                                        <th>Category</th>
+                                        <th>Department</th>
+                                        <th>Sample Type</th>
+                                        <th>Price (GHS)</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="test_list_container">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="samples-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Sample Types</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSampleModal">
+                            <i class="ti ti-plus me-1"></i>Add New Sample
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive" style="max-width: 600px;">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Category Name</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sample_list_container">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addTestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form id="addTestForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Lab Test</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Test Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. Full Blood Count">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Test Category</label>
+                        <select name="test_category_id" class="form-select" id="modal_test_cat" required>
+                            </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Sample Category</label>
+                        <select name="sample_category_id" class="form-select" id="modal_sample_cat">
+                            <option value="">No sample required</option>
+                            </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Department</label>
+                        <input type="text" name="department" class="form-control" placeholder="e.g. Hematology">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Price (GHS)</label>
+                        <input type="number" step="0.01" name="price_ghs" class="form-control" value="0.00">
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" name="requires_phlebotomy" checked>
+                            <label class="form-check-label">Requires Phlebotomy (Blood Draw)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Test</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="addSampleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="addSampleForm" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Sample Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Category Name</label>
+                    <input type="text" name="category_name" class="form-control" required placeholder="e.g. Whole Blood, Urine, Swab">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initial Data Loads
+    loadTests();
+    loadSamples();
+    loadTestCategories();
+
+    // --- SMART UI LOGIC FOR TEST MODAL ---
+    const categorySelect = document.getElementById('modal_test_cat');
+    const phlebotomySwitch = document.querySelector('input[name="requires_phlebotomy"]');
+    const sampleSelect = document.getElementById('modal_sample_cat');
+
+    if (categorySelect && phlebotomySwitch && sampleSelect) {
+        categorySelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const categoryName = (selectedOption.text || "").toLowerCase();
+
+            // 1. If Lab Investigation is selected -> Enable phlebotomy & samples
+            if (categoryName.includes('investigation') || categoryName.includes('phlebotomy')) {
+                phlebotomySwitch.checked = true;
+                sampleSelect.disabled = false;
+                sampleSelect.required = true; // Make sample mandatory for lab tests
+            } 
+            // 2. If Radiology is selected -> Disable phlebotomy & samples
+            else if (categoryName.includes('radiology')) {
+                phlebotomySwitch.checked = false;
+                sampleSelect.value = ""; // Reset sample selection
+                sampleSelect.disabled = true; 
+                sampleSelect.required = false;
+            }
+        });
+    }
+
+    // --- FORM SUBMISSIONS ---
+
+    // 1. SUBMIT NEW SAMPLE
+    const sampleForm = document.getElementById('addSampleForm');
+    if (sampleForm) {
+        sampleForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const payload = { category_name: formData.get('category_name') };
+
+            try {
+                const res = await fetch('/api/v1/samples/sample-categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addSampleModal')).hide();
+                    this.reset();
+                    loadSamples();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "Error saving sample");
+                }
+            } catch (error) { console.error("Sample Submit Error:", error); }
+        };
+    }
+
+    // 2. SUBMIT NEW TEST
+    const testForm = document.getElementById('addTestForm');
+    if (testForm) {
+        testForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const fd = new FormData(this);
+            
+            const payload = {
+                name: fd.get('name'),
+                test_category_id: parseInt(fd.get('test_category_id')),
+                sample_category_id: fd.get('sample_category_id') ? parseInt(fd.get('sample_category_id')) : null,
+                department: fd.get('department'),
+                price_ghs: parseFloat(fd.get('price_ghs')) || 0,
+                // Accessing checked state directly for the switch
+                requires_phlebotomy: phlebotomySwitch.checked 
+            };
+
+            try {
+                const res = await fetch('/api/v1/tests/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addTestModal')).hide();
+                    this.reset();
+                    loadTests();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "Error creating test");
+                }
+            } catch (error) { console.error("Test Submit Error:", error); }
+        };
+    }
+});
+
+/**
+ * FETCH AND RENDER FUNCTIONS
+ */
+
+async function loadTestCategories() {
+    try {
+        const res = await fetch('/api/v1/test-categories/categories'); 
+        const categories = await res.json();
+        const dropdown = document.getElementById('modal_test_cat');
+        
+        if (dropdown) {
+            dropdown.innerHTML = '<option value="">Select Category</option>' + 
+                categories.map(c => `<option value="${c.id}">${c.category_name}</option>`).join('');
+        }
+    } catch (error) { console.error("Load Categories Error:", error); }
+}
+
+async function loadSamples() {
+    try {
+        const res = await fetch('/api/v1/samples/sample-categories');
+        const samples = await res.json();
+        
+        const container = document.getElementById('sample_list_container');
+        if (container) {
+            container.innerHTML = samples.map(s => `
+                <tr>
+                    <td>#${s.id}</td>
+                    <td class="fw-bold">${s.category_name.toUpperCase()}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSample(${s.id})">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        const dropdown = document.getElementById('modal_sample_cat');
+        if (dropdown) {
+            dropdown.innerHTML = '<option value="">No sample required</option>' + 
+                samples.map(s => `<option value="${s.id}">${s.category_name.toUpperCase()}</option>`).join('');
+        }
+    } catch (error) { console.error("Load Samples Error:", error); }
+}
+
+async function loadTests() {
+    try {
+        const res = await fetch('/api/v1/tests/tests-with-category');
+        const tests = await res.json();
+        
+        const container = document.getElementById('test_list_container');
+        if (container) {
+            container.innerHTML = tests.map(t => `
+                <tr>
+                    <td><div class="fw-bold text-dark">${t.name}</div></td>
+                    <td><span class="badge bg-soft-primary text-primary">${t.test_category?.category_name || 'N/A'}</span></td>
+                    <td>${t.department || '-'}</td>
+                    <td>${t.sample_category?.category_name || 'None'}</td>
+                    <td class="fw-bold">₵ ${parseFloat(t.price_ghs).toFixed(2)}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-light" onclick="editTest(${t.id})">
+                            <i class="ti ti-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) { console.error("Load Tests Error:", error); }
+}
+</script>
+{% endblock %}

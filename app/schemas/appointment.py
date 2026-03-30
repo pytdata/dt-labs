@@ -1,7 +1,7 @@
 from datetime import datetime, time
 from decimal import Decimal
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 
 from app.schemas.lab import PatientOut
@@ -65,6 +65,17 @@ class AppointmentPatchUpdate(BaseModel):
     test_ids: Optional[List[int]] = None  # If they want to change the tests
 
 
+class TestCreate(BaseModel):
+    name: str = Field(..., min_length=2)
+    test_category_id: int
+    sample_category_id: Optional[int] = None
+    department: Optional[str] = None
+    default_analyzer_id: Optional[int] = None
+    price_ghs: float = 0.0
+    test_duration: str = "24 Hours"
+    requires_phlebotomy: bool = True
+
+
 class TestResponse(BaseModel):
     id: int
     name: str
@@ -73,6 +84,24 @@ class TestResponse(BaseModel):
     price_ghs: Decimal
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TestCategoryResponse(BaseModel):
+    id: int
+    category_name: str
+    date_added: datetime
+    date_modified: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AnalyzerResponse(BaseModel):
+    pass
+
+
+class TestResponseForSettings(TestResponse):
+    default_analyzer: AnalyzerResponse
+    test_category: TestCategoryResponse
 
 
 class LabResultResponse(BaseModel):
@@ -203,15 +232,6 @@ class AppointmentDetailResponse(AppointmentResponse):
 #     status: AppointmentStatus | None = AppointmentStatus.upcoming
 
 #     model_config = ConfigDict(from_attributes=True)
-
-
-class TestCategoryResponse(BaseModel):
-    id: int
-    category_name: str
-    date_added: datetime
-    date_modified: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class ManualTestResult(BaseModel):

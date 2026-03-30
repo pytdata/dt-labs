@@ -39,9 +39,6 @@ async def get_financial_summary(db: AsyncSession = Depends(get_db)):
     }
 
 
-from sqlalchemy import func
-
-
 @router.get("/reports/data")
 async def get_report_data(type: str, db: AsyncSession = Depends(get_db)):
     if type == "revenue":

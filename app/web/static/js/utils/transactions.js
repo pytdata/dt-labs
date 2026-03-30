@@ -1,200 +1,186 @@
+let transactionURL = "/api/v1/payments/";
 let paymentTableEL = document.querySelector(".payment__table");
 let totalTransactionEl = document.querySelector(".total__amount");
-let searchTransacPatient = document.querySelector(".search__transaction__patient");
+let paymentDataTable = null;
 
-let transactionURL = "/api/v1/payments/";
+// Track current filter state globally
+let currentFilters = {
+    start: moment().subtract(29, 'days').format('YYYY-MM-DD'),
+    end: moment().format('YYYY-MM-DD'),
+    search: ''
+};
 
-// data
-
-// search
-let searchTimeout = null;
-let activeController = null;
-
-(async function init() {
-  const res = await getRemoteData(transactionURL);
-  console.log(res);
-
-  render(res);
+/**
+ * INITIALIZATION
+ */
+(function init() {
+    const checkDeps = setInterval(() => {
+        if (window.jQuery && window.moment && jQuery.fn.DataTable && jQuery.fn.daterangepicker) {
+            clearInterval(checkDeps);
+            
+            setupDateFilter();
+            setupTypeFilters();
+            setupSearchFilter(); // Fixed the "null" error here
+            
+            // Initial load with default 30 days
+            fetchAndRender(currentFilters.start, currentFilters.end);
+        }
+    }, 100);
 })();
 
 /**
- * Fetch remote data
- * @returns Array[objects]
+ * 1. DATE FILTER SETUP
  */
-async function getRemoteData(url) {
-  const res = await fetch(url);
-  const data = await res.json();
-  return data;
+function setupDateFilter() {
+    const $picker = $('#reportrange');
+    if (!$picker.length) return;
+
+    $picker.daterangepicker({
+        startDate: moment(currentFilters.start),
+        endDate: moment(currentFilters.end),
+        ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, function(start, end) {
+        currentFilters.start = start.format('YYYY-MM-DD');
+        currentFilters.end = end.format('YYYY-MM-DD');
+        
+        $('.reportrange-picker-field').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        fetchAndRender(currentFilters.start, currentFilters.end);
+    });
+
+    $('.reportrange-picker-field').html(moment(currentFilters.start).format('MMMM D, YYYY') + ' - ' + moment(currentFilters.end).format('MMMM D, YYYY'));
 }
 
-
-searchTransacPatient.addEventListener("input", (e) => {
-   clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(async () => {
-    const value = e.target.value;
-    buildDynamicURLParam("name", value);
-    const data = await performSearch(value);
-    renderChemistrySearchResults(data);
-  }, 300);
-})
+/**
+ * 2. PAYMENT TYPE FILTERS
+ */
+function setupTypeFilters() {
+    $('.payment__type').on('change', function() {
+        // Always pass current dates when a checkbox is toggled
+        fetchAndRender(currentFilters.start, currentFilters.end);
+    });
+}
 
 /**
- * Render a lsit of object as html elements and display in DOM
- * @param {Array[Object]} appointmentsList
+ * 3. SEARCH FILTER (Fixed "addEventListener" error)
+ */
+function setupSearchFilter() {
+    // Check multiple possible selectors based on common naming patterns
+    const searchInput = document.querySelector(".search__transaction__patient") || 
+                        document.querySelector(".search-input input") ||
+                        document.querySelector(".btn-searchset").closest('.search-input')?.querySelector('input');
+
+    if (!searchInput) {
+        console.warn("Search input element not found. Skipping search listener.");
+        return;
+    }
+
+    let searchTimeout = null;
+    searchInput.addEventListener("input", (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentFilters.search = e.target.value;
+            fetchAndRender(currentFilters.start, currentFilters.end);
+        }, 500);
+    });
+}
+
+/**
+ * 4. DATA FETCHING
+ */
+async function fetchAndRender(startDate = '', endDate = '') {
+    try {
+        let url = new URL(transactionURL, window.location.origin);
+        
+        if (startDate && endDate) {
+            url.searchParams.set('start_date', startDate);
+            url.searchParams.set('end_date', endDate);
+        }
+
+        if (currentFilters.search) {
+            url.searchParams.set('search', currentFilters.search);
+        }
+
+        // Add selected payment methods (handles multi-select)
+        $('.payment__type:checked').each(function() {
+            url.searchParams.append('method', $(this).data('payment-type'));
+        });
+
+        const res = await fetch(url.toString());
+        const data = await res.json();
+        render(data);
+    } catch (error) {
+        console.error("Fetch error:", error);
+    }
+}
+
+/**
+ * 5. TABLE RENDERING
  */
 function render(transactionList) {
-  // total transaction
-  totalTransactionEl.textContent = transactionList.length;
+    if (!transactionList || !paymentTableEL) return;
+    
+    totalTransactionEl.textContent = transactionList.length;
 
-  // render patients data into html and join the results into an html string
+    if ($.fn.DataTable.isDataTable('.datatable')) {
+        $('.datatable').DataTable().clear().destroy();
+    }
 
-  const renderedHTML = transactionList
-    .map((payment) => {
-      return renderData(payment);
-    })
-    .join("");
+    paymentTableEL.innerHTML = transactionList.map(item => renderData(item)).join("");
 
-  // insert data into DOM
-  paymentTableEL.innerHTML = renderedHTML;
+    paymentDataTable = $('.datatable').DataTable({
+        columnDefs: [{ targets: 'no-sort', orderable: false }],
+        dom: 'tpr',
+        pageLength: 20,
+        buttons: [
+            { extend: 'excelHtml5', title: 'Transactions_' + moment().format('YYYY-MM-DD') },
+            { extend: 'pdfHtml5', title: 'Transaction Report' }
+        ]
+    });
+
+    $('.export-excel').off('click').on('click', () => paymentDataTable.button(0).trigger());
+    $('.export-pdf').off('click').on('click', () => paymentDataTable.button(1).trigger());
 }
 
-/**
- * Renders the patient data into html.
- * @param {Map} patient
- * @returns htmlement
- */
 function renderData(transaction) {
-  console.log(transaction);
-  const htmlElement = `
-  <tr>
-        <td>
-            <div class="form-check form-check-md">
-                <input class="form-check-input" type="checkbox">
-            </div>
-        </td>
-        <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">#TS0025</a></td>
+    const statusClass = (transaction.invoice?.status || "").toLowerCase() === "paid" 
+        ? "badge-soft-success text-success border-success" 
+        : "badge-soft-warning text-warning border-warning";
+
+    return `
+    <tr>
+        <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
+        <td class="fw-bold">#TS-${transaction.id}</td>
         <td>
             <div class="d-flex align-items-center">
-                <a href="patient-details.html" class="avatar avatar-xs me-2">
-                    <img src="${transaction.invoice.patient.profile_image}" alt="img" class="rounded">
-                </a>
-                <div>
-                    <h6 class="fs-14 mb-0 fw-medium"><a href="patient-details.html">${transaction.invoice.patient.full_name}</a></h6>
-                </div>
+                <img src="${transaction.invoice?.patient?.profile_image || '/static/img/profiles/avatar-01.jpg'}" class="avatar avatar-xs me-2 rounded">
+                <h6 class="fs-14 mb-0 fw-medium">${transaction.invoice?.patient?.full_name || 'Unknown'}</h6>
             </div>
         </td>
-        <td>${formatDate(transaction.transaction_date)}</td>
-        <td><p class="text-truncate mb-0">${transaction.description ? transaction.description : `Not description`}</p></td>
-        <td>${transaction.invoice.amount_paid}</td>
-        <td>${transaction.method}</td>
-
-        ${transaction.invoice.status == "paid" ? `<td><span class="badge badge-md badge-soft-success border border-success text-success">${transaction.invoice.status}</span></td>` : `<td><span class="badge badge-md badge-soft-warning border border-warning text-warning">${transaction.invoice.status}</span></td>`}
-        
+        <td>${formatDate(transaction.received_at || transaction.transaction_date)}</td>
+        <td><p class="text-truncate mb-0" style="max-width: 150px;">${transaction.description || 'N/A'}</p></td>
+        <td class="fw-bold text-dark">${transaction.amount || transaction.invoice?.amount_paid || '0.00'}</td>
+        <td><span class="text-uppercase small fw-bold">${transaction.method}</span></td>
+        <td><span class="badge badge-md ${statusClass}">${transaction.invoice?.status || 'unpaid'}</span></td>
         <td class="text-end">
-            <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-            <ul class="dropdown-menu p-2">
-                <li>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#view_modal"><i class="ti ti-eye me-1"></i>View Details</a>
-                </li>
-                <li>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                </li>
-            </ul>
+            <div class="dropdown">
+                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+                <ul class="dropdown-menu p-2">
+                    <li><a href="#" class="dropdown-item"><i class="ti ti-eye me-1"></i>Details</a></li>
+                </ul>
+            </div>
         </td>
-    </tr>
-                                   
-`;
-  return htmlElement;
+    </tr>`;
 }
 
 function formatDate(dateStr) {
-  // "2026-01-13" → "13 Jan, 2026"
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatTime(timeStr) {
-  // "08:17" → "08:17 AM"
-  if (!timeStr) return "not set";
-  const [h, m] = timeStr.split(":");
-  const date = new Date();
-  date.setHours(h, m);
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
-
-
-function buildDynamicURLParam(key, value, state) {
-  const url = new URL(transactionURL, window.location.origin);
-
-  // patient filtering parameter
-  if (key === "test_category_type") {
-    if (value && value) {
-      url.searchParams.set("test_category_type", value);
-    } else {
-      url.searchParams.delete("test_category_type");
-    }
-
-    transactionURL = url.pathname + url.search;
-    return;
-  }
-
-  // test name filtering parameter
-  if (key === "name") {
-    if (value && value.trim()) {
-      url.searchParams.set("name", value.trim());
-    } else {
-      url.searchParams.delete("name");
-    }
-
-    transactionURL = url.pathname + url.search;
-    return;
-  }
-
-  // department filtering parameter
-  if (key === "department") {
-    if (value && value.trim()) {
-      url.searchParams.set("department", value.trim());
-    } else {
-      url.searchParams.delete("department");
-    }
-
-    transactionURL = url.pathname + url.search;
-    return;
-  }
-
-  // search parameter
-  if (key === "search") {
-    if (value && value.trim()) {
-      url.searchParams.set("search", value.trim());
-    } else {
-      url.searchParams.delete("search");
-    }
-
-    transactionURL = url.pathname + url.search;
-    return;
-  }
-
-  // filter params
-  const currentValues = url.searchParams.getAll(key);
-
-  if (state) {
-    if (!currentValues.includes(value)) {
-      url.searchParams.append(key, value);
-    }
-  } else {
-    url.searchParams.delete(key);
-    currentValues
-      .filter((v) => v !== value)
-      .forEach((v) => url.searchParams.append(key, v));
-  }
-
-  transactionURL = url.pathname + url.search;
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }

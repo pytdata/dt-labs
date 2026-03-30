@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
 
     <!-- Theme Config Js -->
-    <script src="/static/js/theme-script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/theme-script.js"></script>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
@@ -29,12 +29,37 @@
 
     <!-- Tabler Icon CSS -->
     <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
+        <!-- Datetimepicker CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap-datetimepicker.min.css">
+
 
     <!-- Simplebar CSS -->
     <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
 
+        <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css" />
+
+
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
+
+
+       <style>
+
+/* Target the range list in the daterangepicker */
+        .daterangepicker .ranges ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the "Custom Range" (which is the last <li>) to the top */
+        .daterangepicker .ranges ul li:last-child {
+            order: -1; 
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+    </style>
 
 </head>
 
@@ -300,12 +325,12 @@
                             <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3 mb-3">
                                 <h5 class="d-flex align-items-center mb-0">Billing<span class="badge bg-soft-dark ms-2 text-dark fs-12 total__billings">2000 Billing</span></h5>
                                 <div class="d-flex align-items-center flex-wrap gap-2">
-                                    <div class="input-group w-auto input-group-flat">
-                                        <input type="text" class="form-control py-1 flatpickr-input active" data-provider="flatpickr" data-date-format="d M, Y" readonly="readonly" placeholder="Due Date">
-                                        <span class="input-group-text">
-                                            <i class="ti ti-calendar"></i>
-                                        </span>
-                                    </div>
+
+                                <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
+                            <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                            <span class="reportrange-picker-field">Select Date Range</span>
+                            </div>
+
                                     <div class="dropdown">
                                         <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
                                             Select Status
@@ -325,22 +350,27 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <div class="dropdown">
-                                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                                            <span class="d-inline-flex me-1">Sort By : </span> Last 7 Days
-                                        </a>
-                                        <ul class="dropdown-menu  dropdown-menu-end p-1">
-                                            <li>
-                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
-                                            </li>
-                                            <li>
-                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Created Date</a>
-                                            </li>
-                                            <li>
-                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Due Date</a>
-                                            </li>
-                                        </ul>
-                                    </div>
+
+                                  
+                                              <!-- EXPORT BUTTON -->
+                    <div class="dropdown me-2">
+                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i>Export
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2">
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-excel">
+                                    <i class="ti ti-file-spreadsheet me-2 text-success"></i>Excel (.xlsx)
+                                </a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-pdf">
+                                    <i class="ti ti-file-type-pdf me-2 text-danger"></i>PDF (.pdf)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                                 </div>
                             </div>
                             <div class="card-body p-0">
@@ -435,19 +465,34 @@
 </div>
 
     <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/jquery-3.7.1.min.js"></script>
 
     <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
-
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+        <script src="/static/js/moment.min.js"></script>
+    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>    
+    
+    <!-- Simplebar JS -->
+    <script src="/static/plugins/simplebar/simplebar.min.js"></script>
+    <script data-cfasync="false" src="/static/plugins/daterangepicker/daterangepicker.js"></script>
+    
     <!-- Flatpickr JS -->
-    <script src="/static/plugins/flatpickr/flatpickr.min.js" type="b21c265bdeecc6d171de6766-text/javascript"></script>
+    <script src="/static/plugins/flatpickr/flatpickr.min.js"></script>
+      <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
 
-	<!-- Simplebar JS -->
-	<script src="/static/plugins/simplebar/simplebar.min.js" type="b21c265bdeecc6d171de6766-text/javascript"></script>
+    <script src="/static/js/min/jszip.min.js"></script>
+    <script src="/static/js/min/pdfmake.min.js"></script>
+    <script src="/static/js/min/vsffonts.min.js"></script> 
+
+    <script src="/static/js/min/datatables.buttons.min.js"></script>
+    <script src="/static/js/min/buttons.min.js"></script> 
+    <script src="/static/js/min/print.min.js"></script>
+
+
 
     <!-- Main JS -->
-    <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/script.js"></script>
 
     <!-- Lab results -->
     <script src="{{ url_for('static', path='js/utils/billings.js') }}" defer></script>

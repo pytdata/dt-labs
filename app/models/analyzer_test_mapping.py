@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
+
 class AnalyzerTestMapping(Base):
     __tablename__ = "analyzer_test_mapping"
 

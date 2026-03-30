@@ -30,6 +30,10 @@
     <!-- Datatable CSS -->
     <link rel="stylesheet" href="/static/plugins/datatables/css/dataTables.bootstrap5.min.css">
 
+        <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css" />
+
+    <script data-cfasync="false" src="/static/js/min/moment.min.js"></script>
+
     <!-- Simplebar CSS -->
     <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
 
@@ -138,6 +142,25 @@
         border-left: 4px solid #003366;
     }
     .italic { font-style: italic; }
+
+
+
+/* Target the range list in the daterangepicker */
+        .daterangepicker .ranges ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the "Custom Range" (which is the last <li>) to the top */
+        .daterangepicker .ranges ul li:last-child {
+            order: -1; 
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+
+    
     </style>
 
 </head>
@@ -387,241 +410,9 @@
                     <div class="table-header border-bottom d-flex align-items-center justify-content-between gap-2 flex-wrap">
                         <div class="d-flex align-items-center flex-wrap gap-2">
 
-                            <!-- patient dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-users me-1"></i>Patient
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> James Carter
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-34.jpg" class="flex-shrink-0 rounded" alt="img"></span> Emily Davis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-6.jpg" class="flex-shrink-0 rounded" alt="img"></span>Michael Johnson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-25.jpg" class="flex-shrink-0 rounded" alt="img"></span>Olivia Miller
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-14.jpg" class="flex-shrink-0 rounded" alt="img"></span>David Smith
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-22.jpg" class="flex-shrink-0 rounded" alt="img"></span>Sophia Wilson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-30.jpg" class="flex-shrink-0 rounded" alt="img"></span>Daniel Williams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-24.jpg" class="flex-shrink-0 rounded" alt="img"></span>Isabella Anderson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-15.jpg" class="flex-shrink-0 rounded" alt="img"></span>William Brown
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-39.jpg" class="flex-shrink-0 rounded" alt="img"></span>Charlotte Taylor
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- test name dropdown -->
-                             <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-test-pipe-2 me-1"></i>Test Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Blood Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                           Urinalysis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Throat Culture
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Iron Panel
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Vitamin D Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Liver Function Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Thyroid Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Lipid Panel
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Troponin Test
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Hepatitis Panel
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- doctor dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-stethoscope me-1"></i>Doctor
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-01.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Andrew Clark
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-03.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Katherine Brooks
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-04.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Benjamin Harris
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-05.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Laura Mitchell
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-06.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Christopher Lewis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-07.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Natalie Foster
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-10.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Jonathan Adams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-08.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Rebecca Scott
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-12.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Samuel Turner
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/doctors/doctor-11.jpg" class="flex-shrink-0 rounded" alt="img"></span>Dr. Victoria Evans
-                                        </label>
-                                    </li>
-                                </ul>
+                             <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
+                            <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                            <span class="reportrange-picker-field">Select Date Range</span>
                             </div>
 
                             <!-- status dropdown -->
@@ -653,20 +444,25 @@
 
                         </div>
 
-                        <!-- sort by -->
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By : </span>  Newest
-                            </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-2">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
-                                </li>
-                            </ul>
-                        </div>
+                                <!-- EXPORT BUTTON -->
+                    <div class="dropdown me-2">
+                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                            <i class="ti ti-download me-1"></i>Export
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2">
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-excel">
+                                    <i class="ti ti-file-spreadsheet me-2 text-success"></i>Excel (.xlsx)
+                                </a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1 export-pdf">
+                                    <i class="ti ti-file-type-pdf me-2 text-danger"></i>PDF (.pdf)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                     </div>
                     <!-- table header -->
 
@@ -1036,20 +832,30 @@
 </div>
 
     <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/jquery-3.7.1.min.js"></script>
 
     <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
 
 	<!-- Simplebar JS -->
-	<script src="/static/plugins/simplebar/simplebar.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+	<script src="/static/plugins/simplebar/simplebar.min.js"></script>
 
     <!-- Datatable JS -->
-    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
-    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
+    <script data-cfasync="false" src="/static/plugins/daterangepicker/daterangepicker.js"></script>
+
+    <script src="/static/js/min/jszip.min.js"></script>
+    <script src="/static/js/min/pdfmake.min.js"></script>
+    <script src="/static/js/min/vsffonts.min.js"></script> 
+
+    <script src="/static/js/min/datatables.buttons.min.js"></script>
+    <script src="/static/js/min/buttons.min.js"></script> 
+    <script src="/static/js/min/print.min.js"></script>
+
 
     <!-- Main JS -->
-    <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
+    <script src="/static/js/script.js"></script>
 
     <!-- Lab results -->
     <script src="{{ url_for('static', path='js/utils/lab-results.js') }}" defer></script>

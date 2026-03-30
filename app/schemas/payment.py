@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
@@ -10,6 +10,8 @@ class PaymentFilterParams(BaseModel):
     invoice_id: int | None = None
     patient_id: int | None = None
     method: str | None = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
 
 
 class PatientMiniResponse(BaseModel):

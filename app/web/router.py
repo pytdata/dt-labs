@@ -793,6 +793,19 @@ async def settings_page(request: Request):
     )
 
 
+@router.get(
+    "/settings/tests-and-samples", response_class=HTMLResponse, name="tests_and_samples"
+)
+async def test_and_samples(request: Request):
+    return _render(
+        request,
+        "tests-and-samples.html",
+        active_page="tests_and_samples",
+        active_group="settings",
+        settings=settings,
+    )
+
+
 # --- Settings: Test ↔ Analyzer mapping (set default analyzer per test) ---
 
 

@@ -157,7 +157,11 @@ async def get_radiology_queue(
 
 
 @router.get("/active-appointments/", response_model=list[LabQueueResponse])
-async def get_all_finalized_results(db: AsyncSession = Depends(get_db)):
+async def get_all_finalized_results(
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    db: AsyncSession = Depends(get_db),
+):
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
@@ -169,8 +173,8 @@ async def get_all_finalized_results(db: AsyncSession = Depends(get_db)):
             .joinedload(LabOrder.appointment)
             .options(
                 joinedload(Appointment.patient),
-                joinedload(Appointment.phlebotomy),  # <--- THIS FIXES THE ERROR
-                joinedload(Appointment.doctor),  # Recommended to avoid future errors
+                joinedload(Appointment.phlebotomy),
+                joinedload(Appointment.doctor),
             ),
             # 3. Load results
             selectinload(LabOrderItem.lab_result),
@@ -179,33 +183,21 @@ async def get_all_finalized_results(db: AsyncSession = Depends(get_db)):
         .where(LabOrderItem.status == LabStatus.COMPLETED)
     )
 
+    # --- DYNAMIC DATE FILTERING ---
+    if start_date:
+        # func.date() casts the TIMESTAMP to a DATE for accurate comparison
+        stmt = stmt.where(func.date(LabOrderItem.created_at) >= start_date)
+
+    if end_date:
+        stmt = stmt.where(func.date(LabOrderItem.created_at) <= end_date)
+    # ------------------------------
+
+    # Sort by most recent first
+    stmt = stmt.order_by(LabOrderItem.id.desc())
+
     result = await db.execute(stmt)
-    # unique() is vital here because we have multiple joinedloads
     results = result.unique().scalars().all()
-    print(f"Found {len(results)} finalized records.")
     return results
-
-
-@router.get("/item/{item_id}")
-async def get_lab_item_details(item_id: int, db: AsyncSession = Depends(get_db)):
-    stmt = (
-        select(LabOrderItem)
-        .options(
-            joinedload(LabOrderItem.test).joinedload(Test.test_category),
-            joinedload(LabOrderItem.order)
-            .joinedload(LabOrder.appointment)
-            .joinedload(Appointment.patient),
-            selectinload(LabOrderItem.lab_result),
-            selectinload(LabOrderItem.radiology_result),
-        )
-        .where(LabOrderItem.id == item_id)
-    )
-    result = await db.execute(stmt)
-    item = result.scalar_one_or_none()
-
-    if not item:
-        raise HTTPException(status_code=404, detail="Result not found")
-    return item
 
 
 @router.get("/report/{item_id}")

@@ -1,6 +1,7 @@
-from typing import Annotated
+from datetime import date
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi import status
 from app.models.billing import Invoice, InvoiceItem, Payment
 from decimal import Decimal
@@ -22,12 +23,12 @@ from app.schemas.payment import (
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    response_model=list[PaymentResponse],
-)
+@router.get("/", response_model=list[PaymentResponse])
 async def get_all_transactions(
+    # Ensure PaymentFilterParams includes start_date: date and end_date: date
     filters: Annotated[PaymentFilterParams, Depends()],
+    # Handle multiple methods like ?method=cash&method=momo
+    method: Annotated[Optional[List[str]], Query()] = None,
     db: AsyncSession = Depends(get_db),
 ):
     stmt = (
@@ -40,13 +41,25 @@ async def get_all_transactions(
         .order_by(Payment.received_at.desc())
     )
 
+    # --- DATE RANGE FILTERING ---
+    if filters.start_date:
+        stmt = stmt.where(func.date(Payment.received_at) >= filters.start_date)
+
+    if filters.end_date:
+        stmt = stmt.where(func.date(Payment.received_at) <= filters.end_date)
+
+    # --- EXISTING FILTERS ---
     if filters.invoice_id:
         stmt = stmt.where(Payment.invoice_id == filters.invoice_id)
 
     if filters.patient_id:
         stmt = stmt.where(Invoice.patient_id == filters.patient_id)
 
-    if filters.method:
+    # --- MULTI-METHOD FILTERING ---
+    # We use .in_() so the user can filter by ['cash', 'momo'] simultaneously
+    if method:
+        stmt = stmt.where(Payment.method.in_(method))
+    elif filters.method:  # Fallback to single method if provided via filter class
         stmt = stmt.where(Payment.method == filters.method)
 
     result = await db.execute(stmt)
@@ -57,9 +70,13 @@ async def get_all_transactions(
 
 @router.get(
     "/invoices",
+    # Note: Ensure InvoiceResponse is imported or defined in your scope
     response_model=list[InvoiceResponse],
 )
 async def get_all_invoices(
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    status: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
     stmt = (
@@ -71,6 +88,19 @@ async def get_all_invoices(
         )
         .order_by(Invoice.created_at.desc())
     )
+
+    # --- DATE RANGE FILTERING ---
+    # Compares the DATE part of created_at to the provided start/end dates
+    if start_date:
+        stmt = stmt.where(func.date(Invoice.created_at) >= start_date)
+
+    if end_date:
+        stmt = stmt.where(func.date(Invoice.created_at) <= end_date)
+
+    # --- STATUS FILTERING ---
+    if status:
+        # Using ilike for case-insensitive matching (e.g., "Paid" vs "paid")
+        stmt = stmt.where(Invoice.status.ilike(status))
 
     result = await db.execute(stmt)
     invoices = result.scalars().all()
