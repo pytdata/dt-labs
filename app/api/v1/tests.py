@@ -3,12 +3,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload
 
+from sqlalchemy.exc import IntegrityError
 
 from app.db.session import get_db
 from app.models.catalog import Test
-from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult
+from app.models.lab import LabResult
 from app.schemas.appointment import (
     LabResultResponse,
     ManualTestResult,
@@ -73,10 +74,102 @@ async def create_new_test(
 
 @router.get("/tests-with-category", response_model=List[TestResponseForSettings])
 async def get_all_tests_with_category(db: AsyncSession = Depends(get_db)):
-    # We join test_category so we can show the category name in the table
-    stmt = select(Test).options(joinedload(Test.test_category)).order_by(Test.name)
+    stmt = (
+        select(Test)
+        .options(
+            joinedload(Test.test_category),
+            joinedload(Test.default_analyzer),
+            joinedload(Test.sample_category),
+        )
+        .order_by(Test.name)
+    )
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+@router.put("/{test_id}/change/", response_model=TestResponseForSettings)
+async def update_test(
+    test_id: int, payload: TestCreate, db: AsyncSession = Depends(get_db)
+):
+    # 1. Fetch the existing test
+    result = await db.execute(select(Test).where(Test.id == test_id))
+    db_test = result.scalar_one_or_none()
+
+    if not db_test:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Test not found"
+        )
+
+    # 2. Update the fields dynamically from the payload
+    update_data = payload.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(db_test, key, value)
+
+    try:
+        # 3. Commit the changes
+        await db.commit()
+        await db.refresh(db_test)
+
+        # 4. Re-fetch with relationships to satisfy the response model
+        # This ensures 'test_category', 'sample_category', etc., are loaded
+        stmt = (
+            select(Test)
+            .options(
+                joinedload(Test.test_category),
+                joinedload(Test.default_analyzer),
+                joinedload(Test.sample_category),
+            )
+            .where(Test.id == test_id)
+        )
+        final_result = await db.execute(stmt)
+        return final_result.scalar_one()
+
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Could not update test: {str(e)}",
+        )
+
+
+# from app.models import Test
+
+
+@router.delete("/{test_id}")
+async def delete_test(test_id: int, db: AsyncSession = Depends(get_db)):
+    # 1. Verify the test exists in the directory first
+    result = await db.execute(select(Test).where(Test.id == test_id))
+    db_test = result.scalar_one_or_none()
+
+    if not db_test:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="The test you are trying to delete does not exist.",
+        )
+
+    try:
+        # 2. Attempt the hard delete
+        await db.delete(db_test)
+        await db.commit()
+        return {"message": "Test removed successfully"}
+
+    except IntegrityError:
+        # 3. This block catches Database errors when Foreign Key constraints fail
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "This test is already linked to patient results or billing records. "
+                "It cannot be deleted to preserve medical history."
+            ),
+        )
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while deleting the test.",
+        )
 
 
 @router.get("/tests/", response_model=list[TestResponse])

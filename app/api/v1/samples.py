@@ -1,6 +1,7 @@
 from typing import Annotated, List, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, select, update
 from datetime import datetime
@@ -236,6 +237,40 @@ async def get_all_sample_categories(db: AsyncSession = Depends(get_db)):
 #     existing = await db.scalars(stmt)
 
 #     return existing
+
+
+@router.delete("/sample-categories/{sample_id}")
+async def delete_sample_category(sample_id: int, db: AsyncSession = Depends(get_db)):
+    # 1. Check if the sample category exists
+    result = await db.execute(
+        select(SampleCategory).where(SampleCategory.id == sample_id)
+    )
+    db_sample = result.scalar_one_or_none()
+
+    if not db_sample:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Sample category not found."
+        )
+
+    try:
+        # 2. Attempt to delete
+        await db.delete(db_sample)
+        await db.commit()
+        return {"message": "Sample category deleted successfully"}
+
+    except IntegrityError:
+        # 3. Prevent deletion if tests are linked to this sample type
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Cannot delete this category. It is currently assigned to "
+                "one or more tests in the directory."
+            ),
+        )
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 
 @router.delete("/{sample_id}")

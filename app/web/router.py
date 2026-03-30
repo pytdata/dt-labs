@@ -950,7 +950,7 @@ async def settings_templates(request: Request):
 async def settings_prefixes(request: Request):
     return _render(
         request,
-        "settings-placeholder.html",
+        "settings-and-prefixes.html",
         active_page="settings_prefixes",
         active_group="settings",
         title="Prefixes",

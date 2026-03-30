@@ -96,12 +96,21 @@ class TestCategoryResponse(BaseModel):
 
 
 class AnalyzerResponse(BaseModel):
-    pass
+    id: int
+    name: str
+
+
+class SampleResponseForSettings(BaseModel):
+    id: int
+    category_name: str
 
 
 class TestResponseForSettings(TestResponse):
-    default_analyzer: AnalyzerResponse
-    test_category: TestCategoryResponse
+    test_category: Optional[TestCategoryResponse] = None
+    default_analyzer: Optional[AnalyzerResponse] = None
+    sample_category: Optional[SampleResponseForSettings] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LabResultResponse(BaseModel):

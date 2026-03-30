@@ -1,0 +1,166 @@
+{% extends "settings-base.html" %} 
+
+{% block settings_title %}System ID Configuration{% endblock %} 
+
+{% block settings_body %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-settings-automation fs-2 text-primary me-2"></i>
+                    <h5 class="mb-0">Global ID Prefix Manager</h5>
+                </div>
+                <p class="text-muted small mb-0 mt-1">
+                    Define how IDs appear across the system (e.g., <span class="fw-bold text-dark">YKG-PAT-0001</span>).
+                </p>
+            </div>
+            <div class="card-body">
+                <form id="prefixConfigForm">
+                    <div class="row mb-4 pb-4 border-bottom">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold text-uppercase small text-primary">Master Organization Code</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light"><i class="ti ti-building-hospital"></i></span>
+                                <input type="text" id="org_identifier" class="form-control" placeholder="YKG" maxlength="5" value="YKG" required>
+                            </div>
+                            <div class="form-text">Usually a 3-letter acronym for your facility.</div>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3 text-dark fw-bold"><i class="ti ti-layers-intersect me-1"></i>Module Identifiers</h6>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Patient Prefix</label>
+                            <input type="text" id="prefix_pat" class="form-control" placeholder="PAT" value="PAT">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="pat">YKG-PAT-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Test Directory Prefix</label>
+                            <input type="text" id="prefix_tst" class="form-control" placeholder="TST" value="TST">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="tst">YKG-TST-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Appointment Prefix</label>
+                            <input type="text" id="prefix_apt" class="form-control" placeholder="APT" value="APT">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="apt">YKG-APT-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Invoice Prefix</label>
+                            <input type="text" id="prefix_inv" class="form-control" placeholder="INV" value="INV">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="inv">YKG-INV-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Billing Prefix</label>
+                            <input type="text" id="prefix_bil" class="form-control" placeholder="BIL" value="BIL">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="bil">YKG-BIL-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Analyzer Prefix</label>
+                            <input type="text" id="prefix_anl" class="form-control" placeholder="ANL" value="ANL">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="anl">YKG-ANL-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Payment Prefix</label>
+                            <input type="text" id="prefix_pay" class="form-control" placeholder="PAY" value="PAY">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="pay">YKG-PAY-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Lab Module Prefix</label>
+                            <input type="text" id="prefix_lab" class="form-control" placeholder="LAB" value="LAB">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="lab">YKG-LAB-0001</span></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Radiology Prefix</label>
+                            <input type="text" id="prefix_rad" class="form-control" placeholder="RAD" value="RAD">
+                            <div class="mt-2"><span class="badge bg-soft-info text-info preview-id" data-prefix="rad">YKG-RAD-0001</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-3 border-top d-flex justify-content-end">
+                        <button type="button" class="btn btn-light me-2" onclick="location.reload()">Reset Changes</button>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="ti ti-check me-1"></i>Save ID Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orgInput = document.getElementById('org_identifier');
+    const allInputs = document.querySelectorAll('#prefixConfigForm input');
+
+    // Live Preview Updater
+    function updatePreviews() {
+        const org = orgInput.value.trim().toUpperCase() || '???';
+        document.querySelectorAll('.preview-id').forEach(span => {
+            const moduleKey = span.dataset.prefix;
+            const moduleValue = document.getElementById(`prefix_${moduleKey}`).value.trim().toUpperCase() || moduleKey.toUpperCase();
+            span.innerText = `${org}-${moduleValue}-0001`;
+        });
+    }
+
+    // Attach listeners to all inputs for real-time feedback
+    allInputs.forEach(input => {
+        input.addEventListener('input', updatePreviews);
+    });
+
+    // Form Submission
+    document.getElementById('prefixConfigForm').onsubmit = async function(e) {
+        e.preventDefault();
+        
+        // Prepare payload
+        const payload = {
+            org_identifier: orgInput.value.toUpperCase(),
+            patient: document.getElementById('prefix_pat').value.toUpperCase(),
+            test: document.getElementById('prefix_tst').value.toUpperCase(),
+            appointment: document.getElementById('prefix_apt').value.toUpperCase(),
+            invoice: document.getElementById('prefix_inv').value.toUpperCase(),
+            bill: document.getElementById('prefix_bil').value.toUpperCase(),
+            analyzer: document.getElementById('prefix_anl').value.toUpperCase(),
+            payment: document.getElementById('prefix_pay').value.toUpperCase(),
+            lab: document.getElementById('prefix_lab').value.toUpperCase(),
+            radiology: document.getElementById('prefix_rad').value.toUpperCase()
+        };
+
+        try {
+            const res = await fetch('/api/v1/settings/prefixes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                showToast("ID Prefixes updated globally.", "success");
+            } else {
+                showToast("Failed to update settings.", "danger");
+            }
+        } catch (err) {
+            showToast("Connection error.", "danger");
+        }
+    };
+
+    function showToast(message, type) {
+        const id = Date.now();
+        const html = `
+            <div id="${id}" class="toast align-items-center text-white bg-${type} border-0 show" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>`;
+        document.getElementById('toast-container').insertAdjacentHTML('beforeend', html);
+        setTimeout(() => document.getElementById(id)?.remove(), 4000);
+    }
+});
+</script>
+{% endblock %}

@@ -122,6 +122,7 @@ class Test(Base):
     analyzer_mappings = relationship(
         "AnalyzerTestMapping", back_populates="test", cascade="all, delete-orphan"
     )
+    sample_category = relationship("SampleCategory")
     test_category = relationship("TestCategory")
     appointments = relationship(
         "Appointment",

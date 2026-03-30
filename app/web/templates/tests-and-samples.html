@@ -1,8 +1,6 @@
 {% extends "settings-base.html" %}
 
 {% block settings_title %}Tests and Samples{% endblock %}
-<!-- {% block settings_breadcrumb %}Test Mapping{% endblock %} -->
-
 
 {% block settings_body %}
 <div class="row">
@@ -25,7 +23,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Test Directory</h5>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTestModal">
+                        <button class="btn btn-primary btn-sm" onclick="prepareAddModal()">
                             <i class="ti ti-plus me-1"></i>Add New Test
                         </button>
                     </div>
@@ -36,14 +34,12 @@
                                     <tr>
                                         <th>Test Name</th>
                                         <th>Category</th>
-                                        <th>Department</th>
                                         <th>Sample Type</th>
                                         <th>Price (GHS)</th>
                                         <th class="text-end">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="test_list_container">
-                                    </tbody>
+                                <tbody id="test_list_container"></tbody>
                             </table>
                         </div>
                     </div>
@@ -54,22 +50,21 @@
                 <div class="card shadow-sm">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Sample Types</h5>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSampleModal">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="prepareAddSampleModal()">
                             <i class="ti ti-plus me-1"></i>Add New Sample
                         </button>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive" style="max-width: 600px;">
-                            <table class="table table-hover align-middle">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle w-100">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
+                                        <th style="width: 100px;">ID</th>
                                         <th>Category Name</th>
-                                        <th class="text-end">Action</th>
+                                        <th class="text-end" style="width: 150px;">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="sample_list_container">
-                                    </tbody>
+                                <tbody id="sample_list_container"></tbody>
                             </table>
                         </div>
                     </div>
@@ -82,46 +77,48 @@
 <div class="modal fade" id="addTestModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <form id="addTestForm" class="modal-content">
+            <input type="hidden" name="test_id" id="modal_test_id">
             <div class="modal-header">
-                <h5 class="modal-title">Create New Lab Test</h5>
+                <h5 class="modal-title" id="testModalTitle">Create New Lab Test</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="row g-3">
                     <div class="col-md-12">
                         <label class="form-label">Test Name</label>
-                        <input type="text" name="name" class="form-control" required placeholder="e.g. Full Blood Count">
+                        <input type="text" name="name" class="form-control" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Test Category</label>
-                        <select name="test_category_id" class="form-select" id="modal_test_cat" required>
-                            </select>
+                        <select name="test_category_id" class="form-select" id="modal_test_cat" required></select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Sample Category</label>
                         <select name="sample_category_id" class="form-select" id="modal_sample_cat">
                             <option value="">No sample required</option>
-                            </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Department</label>
-                        <input type="text" name="department" class="form-control" placeholder="e.g. Hematology">
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Price (GHS)</label>
                         <input type="number" step="0.01" name="price_ghs" class="form-control" value="0.00">
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Default Analyzer</label>
+                        <select name="default_analyzer_id" class="form-select" id="modal_analyzer">
+                            <option value="">None / Manual</option>
+                        </select>
+                    </div>
                     <div class="col-md-12">
                         <div class="form-check form-switch mt-2">
-                            <input class="form-check-input" type="checkbox" name="requires_phlebotomy" checked>
-                            <label class="form-check-label">Requires Phlebotomy (Blood Draw)</label>
+                            <input class="form-check-input" type="checkbox" name="requires_phlebotomy" id="phlebotomy_switch" checked>
+                            <label class="form-check-label">Requires Phlebotomy</label>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Test</button>
+                <button type="submit" class="btn btn-primary" id="saveTestBtn">Save Test</button>
             </div>
         </form>
     </div>
@@ -137,7 +134,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">Category Name</label>
-                    <input type="text" name="category_name" class="form-control" required placeholder="e.g. Whole Blood, Urine, Swab">
+                    <input type="text" name="category_name" class="form-control" required placeholder="e.g. Whole Blood, Urine">
                 </div>
             </div>
             <div class="modal-footer">
@@ -148,48 +145,98 @@
     </div>
 </div>
 
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content text-center">
+            <div class="modal-body p-4">
+                <div class="text-danger mb-3"><i class="ti ti-trash fs-1" style="font-size: 3rem;"></i></div>
+                <h5>Are you sure?</h5>
+                <p class="text-muted">This record will be permanently removed. This cannot be undone.</p>
+                <input type="hidden" id="delete_target_id">
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button type="button" class="btn btn-light w-100" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger w-100" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initial Data Loads
+let testsCache = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial Load
     loadTests();
     loadSamples();
     loadTestCategories();
+    loadAnalyzers();
 
-    // --- SMART UI LOGIC FOR TEST MODAL ---
+    // --- Smart Modal Logic ---
     const categorySelect = document.getElementById('modal_test_cat');
-    const phlebotomySwitch = document.querySelector('input[name="requires_phlebotomy"]');
+    const phlebotomySwitch = document.getElementById('phlebotomy_switch');
     const sampleSelect = document.getElementById('modal_sample_cat');
 
     if (categorySelect && phlebotomySwitch && sampleSelect) {
         categorySelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const categoryName = (selectedOption.text || "").toLowerCase();
-
-            // 1. If Lab Investigation is selected -> Enable phlebotomy & samples
+            const categoryName = (this.options[this.selectedIndex].text || "").toLowerCase();
             if (categoryName.includes('investigation') || categoryName.includes('phlebotomy')) {
                 phlebotomySwitch.checked = true;
                 sampleSelect.disabled = false;
-                sampleSelect.required = true; // Make sample mandatory for lab tests
-            } 
-            // 2. If Radiology is selected -> Disable phlebotomy & samples
-            else if (categoryName.includes('radiology')) {
+            } else if (categoryName.includes('radiology')) {
                 phlebotomySwitch.checked = false;
-                sampleSelect.value = ""; // Reset sample selection
+                sampleSelect.value = ""; 
                 sampleSelect.disabled = true; 
-                sampleSelect.required = false;
             }
         });
     }
 
-    // --- FORM SUBMISSIONS ---
+    // --- Test Form Submit ---
+    const testForm = document.getElementById('addTestForm');
+    if (testForm) {
+        testForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const fd = new FormData(this);
+            const testId = fd.get('test_id');
+            const payload = {
+                name: fd.get('name'),
+                test_category_id: parseInt(fd.get('test_category_id')),
+                sample_category_id: fd.get('sample_category_id') ? parseInt(fd.get('sample_category_id')) : null,
+                default_analyzer_id: fd.get('default_analyzer_id') ? parseInt(fd.get('default_analyzer_id')) : null,
+                price_ghs: parseFloat(fd.get('price_ghs')) || 0,
+                requires_phlebotomy: phlebotomySwitch.checked 
+            };
 
-    // 1. SUBMIT NEW SAMPLE
+            const url = testId ? `/api/v1/tests/${testId}/change` : '/api/v1/tests/create';
+            const method = testId ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addTestModal')).hide();
+                    loadTests();
+                    showToast(testId ? "Test updated successfully" : "New test created", "success");
+                } else {
+                    const err = await res.json();
+                    showToast(err.detail || "Error saving test", "danger");
+                }
+            } catch (error) { showToast("Network error occurred", "danger"); }
+        };
+    }
+
+    // --- Sample Form Submit ---
     const sampleForm = document.getElementById('addSampleForm');
     if (sampleForm) {
         sampleForm.onsubmit = async function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
-            const payload = { category_name: formData.get('category_name') };
+            const fd = new FormData(this);
+            const payload = { category_name: fd.get('category_name') };
 
             try {
                 const res = await fetch('/api/v1/samples/sample-categories', {
@@ -197,122 +244,188 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (res.ok) {
                     bootstrap.Modal.getInstance(document.getElementById('addSampleModal')).hide();
+                    loadSamples(); 
+                    showToast("Sample category added successfully!", "success");
                     this.reset();
-                    loadSamples();
                 } else {
                     const err = await res.json();
-                    alert(err.detail || "Error saving sample");
+                    showToast(err.detail || "Error saving sample", "danger");
                 }
-            } catch (error) { console.error("Sample Submit Error:", error); }
-        };
-    }
-
-    // 2. SUBMIT NEW TEST
-    const testForm = document.getElementById('addTestForm');
-    if (testForm) {
-        testForm.onsubmit = async function(e) {
-            e.preventDefault();
-            const fd = new FormData(this);
-            
-            const payload = {
-                name: fd.get('name'),
-                test_category_id: parseInt(fd.get('test_category_id')),
-                sample_category_id: fd.get('sample_category_id') ? parseInt(fd.get('sample_category_id')) : null,
-                department: fd.get('department'),
-                price_ghs: parseFloat(fd.get('price_ghs')) || 0,
-                // Accessing checked state directly for the switch
-                requires_phlebotomy: phlebotomySwitch.checked 
-            };
-
-            try {
-                const res = await fetch('/api/v1/tests/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    bootstrap.Modal.getInstance(document.getElementById('addTestModal')).hide();
-                    this.reset();
-                    loadTests();
-                } else {
-                    const err = await res.json();
-                    alert(err.detail || "Error creating test");
-                }
-            } catch (error) { console.error("Test Submit Error:", error); }
+            } catch (error) { showToast("Network error occurred", "danger"); }
         };
     }
 });
 
-/**
- * FETCH AND RENDER FUNCTIONS
- */
+// --- Feedback Helper ---
+function showToast(message, type = "success") {
+    const id = Date.now();
+    const container = document.getElementById('toast-container');
+    const toastHTML = `
+        <div id="${id}" class="toast align-items-center text-white bg-${type} border-0 show" role="alert">
+            <div class="d-flex">
+                <div class="toast-body"><i class="ti ti-info-circle me-2"></i>${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>`;
+    container.insertAdjacentHTML('beforeend', toastHTML);
+    setTimeout(() => { document.getElementById(id)?.remove(); }, 4000);
+}
 
-async function loadTestCategories() {
+// --- Test UI Helpers ---
+function prepareAddModal() {
+    const form = document.getElementById('addTestForm');
+    form.reset();
+    document.getElementById('modal_test_id').value = "";
+    document.getElementById('testModalTitle').innerText = "Create New Lab Test";
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('addTestModal')).show();
+}
+
+function editTest(id) {
+    const test = testsCache.find(t => t.id == id);
+    if (!test) return;
+    const form = document.getElementById('addTestForm');
+    document.getElementById('modal_test_id').value = test.id;
+    document.getElementById('testModalTitle').innerText = "Edit Lab Test";
+    form.querySelector('[name="name"]').value = test.name || "";
+    form.querySelector('[name="test_category_id"]').value = test.test_category_id || test.test_category?.id;
+    form.querySelector('[name="sample_category_id"]').value = test.sample_category_id || test.sample_category?.id || "";
+    form.querySelector('[name="price_ghs"]').value = test.price_ghs;
+    form.querySelector('[name="default_analyzer_id"]').value = test.default_analyzer_id || "";
+    form.querySelector('[name="requires_phlebotomy"]').checked = test.requires_phlebotomy;
+    
+    document.getElementById('modal_test_cat').dispatchEvent(new Event('change'));
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('addTestModal')).show();
+}
+
+function prepareDelete(id) {
+    document.getElementById('delete_target_id').value = id;
+    document.getElementById('confirmDeleteBtn').onclick = () => executeDeleteTest(id);
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteConfirmModal')).show();
+}
+
+async function executeDeleteTest(id) {
     try {
-        const res = await fetch('/api/v1/test-categories/categories'); 
-        const categories = await res.json();
-        const dropdown = document.getElementById('modal_test_cat');
-        
-        if (dropdown) {
-            dropdown.innerHTML = '<option value="">Select Category</option>' + 
-                categories.map(c => `<option value="${c.id}">${c.category_name}</option>`).join('');
+        const res = await fetch(`/api/v1/tests/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            loadTests();
+            showToast("Test deleted successfully", "success");
+            bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        } else {
+            const err = await res.json();
+            showToast(err.detail || "Delete failed", "warning");
+            bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
         }
-    } catch (error) { console.error("Load Categories Error:", error); }
+    } catch (e) { showToast("Communication error", "danger"); }
+}
+
+// --- Sample UI Helpers ---
+function prepareAddSampleModal() {
+    const form = document.getElementById('addSampleForm');
+    if (form) form.reset();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('addSampleModal')).show();
+}
+
+function prepareDeleteSample(id) {
+    document.getElementById('delete_target_id').value = id;
+    document.getElementById('confirmDeleteBtn').onclick = () => executeDeleteSample(id);
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteConfirmModal')).show();
+}
+
+async function executeDeleteSample(id) {
+    const btn = document.getElementById('confirmDeleteBtn');
+    btn.disabled = true;
+    try {
+        const res = await fetch(`/api/v1/samples/sample-categories/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            loadSamples();
+            showToast("Sample category removed", "success");
+            bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        } else {
+            const err = await res.json();
+            showToast(err.detail || "Cannot delete sample category", "warning");
+            bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
+        }
+    } catch (e) { showToast("Network error", "danger"); }
+    finally { btn.disabled = false; }
+}
+
+// --- Data Loading Functions ---
+async function loadTests() {
+    try {
+        const res = await fetch('/api/v1/tests/tests-with-category');
+        const tests = await res.json();
+        testsCache = tests;
+        const container = document.getElementById('test_list_container');
+        if (container) {
+            container.innerHTML = tests.map(t => {
+                const catName = t.test_category?.category_name || 'Uncategorized';
+                let sampleHtml = t.sample_category?.category_name 
+                    ? `<span class="badge border text-dark fw-normal text-uppercase">${t.sample_category.category_name}</span>`
+                    : catName.toLowerCase().includes('radiology') 
+                        ? `<small class="text-muted"><i class="ti ti-info-circle"></i> No sample</small>`
+                        : `<span class="text-warning small italic">Pending setup</span>`;
+
+                return `<tr>
+                    <td><div class="fw-bold text-dark">${t.name}</div></td>
+                    <td><span class="badge bg-soft-primary text-primary">${catName}</span></td>
+                    <td>${sampleHtml}</td>
+                    <td class="fw-bold">₵ ${parseFloat(t.price_ghs).toFixed(2)}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-light me-1" onclick="editTest(${t.id})"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-sm btn-light text-danger" onclick="prepareDelete(${t.id})"><i class="ti ti-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+    } catch (e) { console.error(e); }
 }
 
 async function loadSamples() {
     try {
         const res = await fetch('/api/v1/samples/sample-categories');
-        const samples = await res.json();
+        const data = await res.json();
         
-        const container = document.getElementById('sample_list_container');
-        if (container) {
-            container.innerHTML = samples.map(s => `
-                <tr>
-                    <td>#${s.id}</td>
-                    <td class="fw-bold">${s.category_name.toUpperCase()}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSample(${s.id})">
-                            <i class="ti ti-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
+        // Update Modal Dropdown
         const dropdown = document.getElementById('modal_sample_cat');
         if (dropdown) {
             dropdown.innerHTML = '<option value="">No sample required</option>' + 
-                samples.map(s => `<option value="${s.id}">${s.category_name.toUpperCase()}</option>`).join('');
+                data.map(s => `<option value="${s.id}">${s.category_name.toUpperCase()}</option>`).join('');
         }
-    } catch (error) { console.error("Load Samples Error:", error); }
+
+        // Update Table
+        const container = document.getElementById('sample_list_container');
+        if (container) {
+            if (data.length === 0) {
+                container.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No sample categories found.</td></tr>';
+            } else {
+                container.innerHTML = data.map(s => `
+                    <tr>
+                        <td>#${s.id}</td>
+                        <td class="fw-bold text-uppercase">${s.category_name}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-light text-danger" onclick="prepareDeleteSample(${s.id})">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`).join('');
+            }
+        }
+    } catch (error) { console.error(error); }
 }
 
-async function loadTests() {
-    try {
-        const res = await fetch('/api/v1/tests/tests-with-category');
-        const tests = await res.json();
-        
-        const container = document.getElementById('test_list_container');
-        if (container) {
-            container.innerHTML = tests.map(t => `
-                <tr>
-                    <td><div class="fw-bold text-dark">${t.name}</div></td>
-                    <td><span class="badge bg-soft-primary text-primary">${t.test_category?.category_name || 'N/A'}</span></td>
-                    <td>${t.department || '-'}</td>
-                    <td>${t.sample_category?.category_name || 'None'}</td>
-                    <td class="fw-bold">₵ ${parseFloat(t.price_ghs).toFixed(2)}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-light" onclick="editTest(${t.id})">
-                            <i class="ti ti-edit"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-    } catch (error) { console.error("Load Tests Error:", error); }
+async function loadAnalyzers() {
+    const res = await fetch('/api/v1/catalog/analyzers');
+    const data = await res.json();
+    document.getElementById('modal_analyzer').innerHTML = '<option value="">Manual</option>' + data.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+}
+
+async function loadTestCategories() {
+    const res = await fetch('/api/v1/test-categories/categories');
+    const data = await res.json();
+    document.getElementById('modal_test_cat').innerHTML = '<option value="">Select Category</option>' + data.map(c => `<option value="${c.id}">${c.category_name}</option>`).join('');
 }
 </script>
 {% endblock %}
