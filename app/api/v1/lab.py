@@ -10,7 +10,7 @@ from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Test
-from app.models.company import CompanyProfile
+from app.models.company import CompanyProfile, OrganizationPrefix
 from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult
 from app.schemas.appointment import TestResponse
@@ -284,6 +284,18 @@ async def get_lab_queue(
     end_date: date | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # 1. Fetch Global Prefix Settings
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    org_code = settings.org_identifier if settings else "YKG"
+    lab_prefix = settings.lab if settings else "LAB"
+    rad_prefix = settings.radiology if settings else "RAD"
+    pat_prefix = settings.patient if settings else "PAT"
+    apt_prefix = settings.appointment if settings else "APT"
+
+    # 2. Build Lab Queue Query
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
@@ -291,8 +303,6 @@ async def get_lab_queue(
         .join(LabOrderItem.order)
         .join(LabOrder.appointment)
         .join(Appointment.patient)
-        # Use outerjoin here because phlebotomy/radiology records
-        # aren't created until AFTER the scientist starts work
         .outerjoin(Appointment.phlebotomy)
         .options(
             contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
@@ -304,10 +314,10 @@ async def get_lab_queue(
             ),
         )
     ).order_by(LabOrderItem.id.desc())
+
     if start_date:
         stmt = stmt.where(LabOrder.created_at >= start_date)
     if end_date:
-        # We use end_date + 1 day or ensure the comparison includes the full end day
         stmt = stmt.where(LabOrder.created_at <= end_date)
 
     if dept == "phlebotomy":
@@ -316,7 +326,6 @@ async def get_lab_queue(
             LabOrderItem.status == LabStatus.AWAITING_SAMPLE,
         )
     else:
-        # Radiology / Others
         stmt = stmt.where(
             Test.requires_phlebotomy == False,
             LabOrderItem.status.in_(
@@ -324,9 +333,37 @@ async def get_lab_queue(
             ),
         )
 
+    # 3. Execute and Transform
     result = await db.execute(stmt)
-    # .unique() is necessary when using joined loads/contains_eager
-    return result.unique().scalars().all()
+    items = result.unique().scalars().all()
+
+    queue_out = []
+    for item in items:
+        # Convert to Pydantic
+        q_dto = LabQueueResponse.model_validate(item)
+
+        # Determine if this item uses LAB or RAD prefix based on the test
+        current_mod = rad_prefix if dept == "radiology" else lab_prefix
+
+        # Inject Lab Item Prefixes
+        q_dto._org_code = org_code
+        q_dto._mod_prefix = current_mod
+
+        # Cascade prefixes down the nesting
+        if q_dto.order and q_dto.order.appointment:
+            appt = q_dto.order.appointment
+            # Appointment Prefix
+            appt._org_code = org_code
+            appt._mod_prefix = apt_prefix
+
+            # Patient Prefix
+            if appt.patient:
+                appt.patient._org_code = org_code
+                appt.patient._mod_prefix = pat_prefix
+
+        queue_out.append(q_dto)
+
+    return queue_out
 
 
 @router.get(

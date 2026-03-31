@@ -19,6 +19,45 @@ let labDataTable = null;
     }, 100);
 })();
 
+
+
+function showToast (message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};
+
+
+
 /**
  * 2. DATE FILTER SETUP
  */
@@ -173,7 +212,7 @@ function formatDate(dateStr) {
 window.viewFinalReport = async function(itemId) {
     try {
         const [reportRes, companyRes] = await Promise.all([
-            fetch(`/api/v1/lab/item/${itemId}`),
+            fetch(`/api/v1/lab/report/item/${itemId}`),
             fetch(`/api/v1/company`)
         ]);
         if (!reportRes.ok) throw new Error("Could not fetch report details.");

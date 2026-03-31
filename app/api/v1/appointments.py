@@ -14,23 +14,20 @@ from sqlalchemy import or_
 
 
 from app.db.session import get_db
-from app.models import Patient, association
-from app.models.billing import Billing, BillingItem, Invoice, InvoiceItem, Payment
-from app.models.catalog import Phlebotomy, Priority, Sample, SampleStatus, Test
+from app.models import Patient
+from app.models.billing import Billing, BillingItem, Invoice, InvoiceItem
+from app.models.catalog import Test
+from app.models.company import OrganizationPrefix
 from app.models.enums import LabStage, LabStatus
-from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
+from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult
 from app.models.users import User
-from app.schemas import billing_service
 from app.schemas.appointment import (
     AppointmenCreate,
     AppointmentDetailResponse,
     AppointmentResponse,
     AppointmentStatus,
     AppointmentUpdate,
-    TestResponse,
 )
-from app.schemas.billing import PaymentCreate
-from app.schemas.lab_results import LabResultStatus
 
 
 router = APIRouter()
@@ -48,15 +45,6 @@ class FilterParams(BaseModel):
     department: str | None = None
     search: str | None = None
     status: AppointmentStatus | None = None
-
-
-DEFAULT_PREFIX = "YKG"
-
-
-async def _next_test_no(db: AsyncSession) -> str:
-    max_id = (await db.execute(select(func.max(LabResult.id)))).scalar() or 0
-    nxt = int(max_id) + 1
-    return f"{DEFAULT_PREFIX}-TEST-{nxt:06d}"
 
 
 @router.post("/")
@@ -175,6 +163,16 @@ async def create_appointment(
 async def get_all_appointments(
     filter_query: Annotated[FilterParams, Query()], db: AsyncSession = Depends(get_db)
 ):
+    # 1. Fetch Global Prefix Settings
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    org_code = settings.org_identifier if settings else "YKG"
+    apt_prefix = settings.appointment if settings else "APT"
+    pat_prefix = settings.patient if settings else "PAT"
+
+    # 2. Build Appointment Query
     stmt = (
         select(Appointment)
         .join(Appointment.patient)
@@ -187,9 +185,8 @@ async def get_all_appointments(
         )
     )
 
-    # --- NEW DATE FILTERING LOGIC ---
+    # --- Apply Filters ---
     if filter_query.start_date and filter_query.end_date:
-        # We cast the DateTime column to Date to match the incoming YYYY-MM-DD format
         stmt = stmt.where(
             func.date(Appointment.appointment_at).between(
                 filter_query.start_date, filter_query.end_date
@@ -204,11 +201,9 @@ async def get_all_appointments(
             func.date(Appointment.appointment_at) <= filter_query.end_date
         )
 
-    # Existing Patient ID filter
     if filter_query.patient_id:
         stmt = stmt.where(Appointment.patient_id == filter_query.patient_id)
 
-    # Existing Doctor Name search
     if filter_query.doctor:
         stmt = stmt.where(
             Appointment.doctor.has(
@@ -216,7 +211,6 @@ async def get_all_appointments(
             )
         )
 
-    # Existing Patient Name search
     if filter_query.patient:
         q = f"%{filter_query.patient.strip()}%"
         stmt = stmt.where(
@@ -229,22 +223,36 @@ async def get_all_appointments(
             )
         )
 
-    # Existing Status filter
     if filter_query.status:
-        # Cleaned up: avoid wrapping a single status in a list unless using .in_()
         stmt = stmt.where(Appointment.status == filter_query.status)
 
-    # Final Order, Limit, Offset
     stmt = (
         stmt.order_by(Appointment.appointment_at.desc())
         .limit(filter_query.limit)
         .offset(filter_query.offset)
     )
 
+    # 3. Execute and Transform
     result = await db.execute(stmt)
     appointments = result.scalars().all()
 
-    return appointments
+    appointments_out = []
+    for appt in appointments:
+        # Convert to Pydantic
+        a_dto = AppointmentResponse.model_validate(appt)
+
+        # Inject Appointment Prefixes
+        a_dto._org_code = org_code
+        a_dto._mod_prefix = apt_prefix
+
+        # Inject Patient Prefixes into the nested patient object
+        if a_dto.patient:
+            a_dto.patient._org_code = org_code
+            a_dto.patient._mod_prefix = pat_prefix
+
+        appointments_out.append(a_dto)
+
+    return appointments_out
 
 
 @router.put(

@@ -37,5 +37,11 @@ window.initLISFilter = function(elementId, onApplyCallback) {
 
         // Set Initial UI
         $picker.find('.reportrange-picker-field').text(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+
+        // Set Initial UI Label
+        $picker.find('.reportrange-picker-field').text(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        
+        // TRIGGER INITIAL FETCH ON LOAD
+        onApplyCallback(start, end);
     }
 };

@@ -953,7 +953,7 @@ function renderData(appointment) {
             </div>
         </td>
         <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">${
-          appointment.patient.patient_no
+          appointment.display_id
         }</a></td>
         <td>
             <div class="d-flex align-items-center">

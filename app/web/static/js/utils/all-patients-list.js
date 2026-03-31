@@ -12,88 +12,6 @@ let searchTimeout = null;
 let activeController = null;
 let dataTableInstance = null; // Store the instance globally
 
-// document.addEventListener("DOMContentLoaded", init);
-
-// async function init(e) {
-//   // get patient data
-
-//   let patientList = await getVisitsData(patientsURL);
-
-//   let sortCol = "newest";
-
-//   let sortState = sortCol == "newest" ? true : false;
-
-//   render(patientList);
-
-//   // listen for sort clicks
-
-//   sortOptionsEl.forEach((t) => {
-//     t.addEventListener("click", sortPatients);
-//   });
-
-//   // sorting
-
-//   function sortPatients(e) {
-//     let thisSort = e.currentTarget.dataset.value;
-
-//     if (sortCol === thisSort) sortState = !sortState;
-
-//     sortCol = thisSort;
-
-//     // change sorting algorithm.
-
-//     patientList.sort((a, b) => {
-//       if (a[sortCol] < b[sortCol]) return sortState ? 1 : -1;
-
-//       if (a[sortCol] > b[sortCol]) return sortState ? -1 : 1;
-
-//       return 0;
-//     });
-
-//     return render(patientList);
-//   }
-
-//   // FILTERING
-
-//   genderOptionsEl.forEach((genderOption) => {
-//     genderOption.addEventListener("change", async (e) => {
-//       buildDynamicURLParam(
-//         "sex",
-
-//         e.currentTarget.dataset.gender,
-
-//         e.currentTarget.checked,
-//       );
-
-//       // make request to backend
-
-//       patientList = await getVisitsData(patientsURL);
-
-//       render(patientList);
-//     });
-//   });
-
-//   // Search fields
-
-//   searchEl.forEach((searchField) => {
-//     searchField.addEventListener("input", (e) => {
-//       clearTimeout(searchTimeout);
-
-//       searchTimeout = setTimeout(async () => {
-//         let value = e.target.value;
-
-//         buildDynamicURLParam("search", value);
-
-//         const data = await performSearch(value);
-
-//         renderPatientSearchResults(data ?? []);
-
-//         return data;
-//       });
-//     });
-//   });
-// }
-
 function renderPatientSearchResults(data) {
   const searchResultsHtml = data
     .map((patient) => {
@@ -204,8 +122,6 @@ function buildDynamicURLParam(key, value, state) {
   patientsURL = url.pathname + url.search;
 }
 
-console.log(",,,,,,,,,,,,.>>>>>>>>>>>>>>>>>>>>>>>");
-
 
 window.render = function(patientList) {
   if (!patientsEL) return;
@@ -283,7 +199,7 @@ function renderData(patient) {
 
 </td>
 
-<td>${patient.patient_no}</td>
+<td>${patient.display_id}</td>
 
 <td>
 

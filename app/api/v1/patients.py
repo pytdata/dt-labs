@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.db.session import get_db
 from app.models import Patient
+from app.models.company import OrganizationPrefix
 from app.models.lab import LabOrder, LabOrderItem, LabResult, Visit
 from app.schemas import PatientCreate, PatientOut
 from sqlalchemy import or_
@@ -67,11 +68,21 @@ async def create_patient(
     return patient
 
 
-@router.get("", response_model=list[PatientOut])
+@router.get("/", response_model=list[PatientOut])
 async def list_patients(
     filter_query: Annotated[FilterParams, Query()],
     db: AsyncSession = Depends(get_db),
 ):
+    # 1. Fetch Global Prefix Settings
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    # Defaults if settings haven't been configured yet
+    org_code = settings.org_identifier if settings else "YKG"
+    pat_prefix = settings.patient if settings else "PAT"
+
+    # 2. Build Patient Query
     last_visit_subq = (
         select(
             Visit.patient_id,
@@ -86,6 +97,7 @@ async def list_patients(
         last_visit_subq.c.patient_id == Patient.id,
     )
 
+    # --- Apply Filters ---
     if filter_query.first_name:
         like = f"%{filter_query.first_name.strip()}%"
         stmt = stmt.where(Patient.first_name.ilike(like))
@@ -124,16 +136,25 @@ async def list_patients(
         stmt = stmt.where(
             Patient.created_at <= datetime.combine(filter_query.end_date, time.max)
         )
+
+    # 3. Execute and Transform
     result = await db.execute(stmt)
 
-    patients = []
+    patients_out = []
     for patient, last_visit_date in result.all():
-        patient.last_visit_date = last_visit_date
-        patients.append(patient)
+        # Convert DB model to Pydantic Schema
+        p_dto = PatientOut.model_validate(patient)
 
-    return patients
+        # Inject the prefixes into the private attributes
+        p_dto._org_code = org_code
+        p_dto._mod_prefix = pat_prefix
 
-    # return (await db.execute(stmt)).scalars().all()
+        # Manually attach the last_visit_date from the join
+        p_dto.last_visit_date = last_visit_date
+
+        patients_out.append(p_dto)
+
+    return patients_out
 
 
 @router.get("/search")

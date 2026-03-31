@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, PrivateAttr, computed_field
 from typing import Any, Dict, Optional
 from pydantic import ConfigDict
 
@@ -32,9 +32,19 @@ class PatientOut(PatientCreate):
     full_name: str
     profile_image: str
     created_at: datetime | None = None
-    # last_visit_date: datetime | None
+    last_visit_date: datetime | None = None
 
-    model_config = {"from_attributes": True}
+    # Private attributes for prefixing logic
+    _org_code: str = "YKG"
+    _mod_prefix: str = "PAT"
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        """Formatted ID: e.g., YKG-PAT-0001"""
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LabOrderCreate(BaseModel):
@@ -84,6 +94,15 @@ class QueuePatient(BaseModel):
     patient_no: str
     age: int
     sex: str
+
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="PAT")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -100,6 +119,14 @@ class QueueAppointment(BaseModel):
     # Add this! It can be None if the session hasn't started yet
     phlebotomy: Optional[QueuePhlebotomy] = None
     appointment_at: datetime
+
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="APT")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -140,8 +167,18 @@ class TestResponse(BaseModel):
 class LabQueueResponse(BaseModel):
     id: int
     status: str
-    test: TestResponse  # Use your existing TestResponse
-    order: QueueOrder
+    test: TestResponse
+    order: "QueueOrder"
+
+    # Private attributes for Lab Item prefix
+    _org_code: str = "YKG"
+    _mod_prefix: str = "LAB"
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        """Formatted Lab Item ID: e.g., YKG-LAB-0001"""
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,7 +1,7 @@
 from datetime import datetime, time
 from decimal import Decimal
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 from typing import List, Optional
 
 from app.schemas.lab import PatientOut
@@ -170,24 +170,26 @@ class AppointmentResponse(BaseModel):
     id: int
     patient: PatientOut
     doctor: UserResponse
-    # Add this to track which staff member handled the booking
-    # created_by_user: UserResponse | None = None
-
     appointment_at: datetime
     start_time: time
     end_time: time | None = None
     invoice: InvoiceSummaryMini | None = None
-
     preffered_mode: PrefferedModeOfAppointment | None = None
     notes: str | None = None
     status: str | None = "pending"
-
-    # Use Decimal for money to match your DB Numeric(12,2)
     total_price: Decimal = Decimal("0.00")
     mode_of_payment: PaymentMode
-
-    # This matches the Relationship in your Appointment model
     tests: List[TestResponse] = []
+
+    # Private attributes for prefixing logic
+    _org_code: str = "YKG"
+    _mod_prefix: str = "APT"
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        """Formatted ID: e.g., YKG-APT-0001"""
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
 
     model_config = ConfigDict(from_attributes=True)
 
