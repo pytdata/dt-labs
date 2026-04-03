@@ -1,0 +1,101 @@
+{% extends "settings-base.html" %} 
+{% block settings_title %}{{ title }}{% endblock %} 
+{% block settings_breadcrumb %}Roles & Permissions{% endblock %} 
+
+{% block settings_body %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h5 class="fw-bold mb-1">Role Management</h5>
+            <p class="text-muted mb-0">Define system roles and assign granular module permissions.</p>
+        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#roleModal">
+            <i class="ti ti-plus me-1"></i> Create New Role
+        </button>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h6 class="mb-0 fw-bold">Active System Roles</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-4">Role Name</th>
+                    <th>Slug</th>
+                    <th>Permissions Count</th>
+                    <th class="text-end pe-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="roles_list_container">
+                  <tr>
+                    <td class="ps-4 fw-medium">Medical Officer</td>
+                    <td><span class="badge badge-soft-secondary">medical_officer</span></td>
+                    <td>8 Modules</td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-info me-1"><i class="ti ti-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bold">Configuration: System Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="role_config_form">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Role Name</label>
+                            <input type="text" id="role_name" class="form-control" placeholder="e.g. Front Desk" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Role Slug (System ID)</label>
+                            <input type="text" id="role_slug" class="form-control" placeholder="e.g. front_desk" readonly>
+                        </div>
+                    </div>
+
+                    <h6 class="text-primary border-bottom pb-2 mb-3">Module Access & Actions</h6>
+                    
+                    <div id="permissions-container">
+                        <div class="row mb-2 d-none d-md-flex text-muted small fw-bold">
+                            <div class="col-md-5">MODULE / RESOURCE</div>
+                            <div class="col-md-5">ALLOWED ACTIONS</div>
+                            <div class="col-md-2 text-end">REMOVE</div>
+                        </div>
+                        <div id="dynamic-permission-rows">
+                            </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" id="add-permission-row">
+                            <i class="ti ti-circle-plus"></i> Add Module Permission
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4" id="saveRoleBtn">Save Role Configuration</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', path='js/utils/rbac-management.js') }}" defer></script>
+{% endblock %}

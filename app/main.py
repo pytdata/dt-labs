@@ -8,6 +8,8 @@ from app.api.v1.router import router as api_router
 from app.graphql.router import router as graphql_router
 from app.web.router import router as web_router
 
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
 
 def create_app() -> FastAPI:
     setup_logging()
@@ -23,6 +25,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
     app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 

@@ -910,7 +910,7 @@ async def settings_analyzers(request: Request, db: AsyncSession = Depends(get_db
 async def settings_roles(request: Request):
     return _render(
         request,
-        "settings-placeholder.html",
+        "roles-and-permissions.html",
         active_page="settings_roles",
         active_group="settings",
         title="Roles & Permissions",

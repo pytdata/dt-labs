@@ -4,6 +4,11 @@ from sqlalchemy import select
 from app.db.session import get_db
 from app.models.company import OrganizationPrefix
 from app.schemas.settings import PrefixUpdate
+from typing import List
+
+from app.core.rbac import PermissionChecker
+from app.models.permission import Permission, Role
+from app.schemas.permissions import RoleCreate, RoleResponse
 
 
 router = APIRouter()
@@ -56,3 +61,53 @@ async def save_prefixes(data: PrefixUpdate, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail="Database error during save")
+
+
+@router.post(
+    "/roles",
+    response_model=RoleResponse,
+    dependencies=[Depends(PermissionChecker("settings", "write"))],
+)
+async def create_or_update_role(
+    payload: RoleCreate, db: AsyncSession = Depends(get_db)
+):
+    # 1. Check if Role exists or create new
+    stmt = select(Role).where(Role.slug == payload.slug)
+    result = await db.execute(stmt)
+    db_role = result.scalar_one_or_none()
+
+    if not db_role:
+        db_role = Role(
+            name=payload.name, slug=payload.slug, description=payload.description
+        )
+        db.add(db_role)
+    else:
+        # If updating, clear old permissions first to sync with UI
+        db_role.permissions = []
+
+    # 2. Sync Permissions
+    for resource, actions in payload.access_map.items():
+        for action in actions:
+            # Find or Create the individual permission
+            p_stmt = select(Permission).where(
+                Permission.resource == resource, Permission.action == action
+            )
+            p_result = await db.execute(p_stmt)
+            db_perm = p_result.scalar_one_or_none()
+
+            if not db_perm:
+                db_perm = Permission(resource=resource, action=action)
+                db.add(db_perm)
+                await db.flush()  # Get ID
+
+            db_role.permissions.append(db_perm)
+
+    await db.commit()
+    await db.refresh(db_role)
+    return db_role
+
+
+@router.get("/roles", response_model=List[RoleResponse])
+async def list_roles(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Role))
+    return result.scalars().all()
