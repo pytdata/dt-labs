@@ -5,10 +5,12 @@ from fastapi import status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 
 from app.core.security import get_password_hash
 from app.db.session import get_db
+from app.models.permission import Role
 from app.models.users import User
 from app.schemas.staff import Gender, StaffCreate, StaffResponse, StaffUpdate
 
@@ -30,28 +32,30 @@ async def get_all_staffs(
     filter_query: Annotated[FilterParams, Query()], db: AsyncSession = Depends(get_db)
 ):
     try:
-        # 1. Base Query
-        stmt = select(User).order_by(User.id.desc())
+        # 1. Base Query (You already have lazy="selectin" in the model,
+        # so selectinload here is technically redundant but fine to keep)
+        stmt = select(User).options(selectinload(User.role)).order_by(User.id.desc())
 
         # 2. Dynamic Filtering
         if filter_query.name:
             stmt = stmt.where(User.full_name.ilike(f"%{filter_query.name.strip()}%"))
 
         if filter_query.role:
-            stmt = stmt.where(User.role.ilike(f"%{filter_query.role.strip()}%"))
+            # We join the 'role' relationship and filter by Role.name
+            stmt = stmt.join(User.role).where(
+                Role.name.ilike(f"%{filter_query.role.strip()}%")
+            )
 
         if filter_query.gender:
-            # Ensuring it handles single or list inputs if your FilterParams varies
             stmt = stmt.where(User.gender == filter_query.gender)
 
-        # 3. Pagination
+        # 3. Pagination & Execution
         stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
-
-        # 4. Execution
         result = await db.execute(stmt)
-        staffs = result.scalars().all()
+        users = result.scalars().all()
 
-        return staffs
+        # NO MANUAL LOOPING NEEDED HERE
+        return users
 
     except Exception as e:
         print(f"Staff Fetch Error: {e}")
@@ -87,29 +91,47 @@ async def create_staff(
     payload: StaffCreate,
     db: AsyncSession = Depends(get_db),
 ):
+    # 1. Check if user already exists
     existing_user = await db.scalar(select(User).where(User.email == payload.email))
-
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User with this email already exists",
         )
 
+    # 2. Fetch the Role object based on the slug sent from the frontend
+    # Replace 'Role' with your actual Role model name
+    role_obj = await db.scalar(select(Role).where(Role.slug == payload.role))
+
+    if not role_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Role '{payload.role}' does not exist",
+        )
+
+    # 3. Create the Staff/User record
     staff = User(
         email=payload.email,
         full_name=payload.full_name,
         password_hash=get_password_hash(payload.password),
-        role=payload.role,
+        role=role_obj,  # Assign the actual DB object, not the string
         phone_number=payload.phone_number,
         gender=payload.gender,
         is_active=True,
     )
 
-    db.add(staff)
-    await db.commit()
-    await db.refresh(staff)
+    try:
+        db.add(staff)
+        await db.commit()
+        await db.refresh(staff)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Data exist.",
+        )
 
-    return {"emssage": "ok"}
+    return {"message": "Staff created successfully"}
 
 
 @router.put(
@@ -122,7 +144,9 @@ async def update_staff(
     payload: StaffUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    user = await db.scalar(select(User).where(User.id == staff_id))
+    # 1. Fetch user with role relationship loaded
+    stmt = select(User).options(selectinload(User.role)).where(User.id == staff_id)
+    user = await db.scalar(stmt)
 
     if not user:
         raise HTTPException(
@@ -130,9 +154,24 @@ async def update_staff(
             detail="User not found",
         )
 
+    # Convert payload to dict, excluding fields not provided by JS
     update_data = payload.model_dump(exclude_unset=True)
 
-    # Handle email uniqueness
+    # 2. Handle Role Lookup (The missing link)
+    if "role" in update_data:
+        role_identifier = update_data.pop("role")
+        # Look up role by slug (from your JS select values)
+        role_stmt = select(Role).where(Role.slug == role_identifier)
+        db_role = await db.scalar(role_stmt)
+
+        if not db_role:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Role '{role_identifier}' does not exist",
+            )
+        user.role_id = db_role.id
+
+    # 3. Handle email uniqueness
     if "email" in update_data:
         existing = await db.scalar(
             select(User)
@@ -141,17 +180,19 @@ async def update_staff(
         )
         if existing:
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already in use",
+                status_code=status.HTTP_409_CONFLICT, detail="Email already in use"
             )
 
-    # Handle password separately
-    if "password" in update_data:
+    # 4. Handle password hashing
+    if "password" in update_data and update_data["password"]:
         user.password_hash = get_password_hash(update_data.pop("password"))
+    elif "password" in update_data:
+        update_data.pop("password")  # Remove empty password string if sent
 
-    # Update remaining fields
+    # 5. Update remaining fields (full_name, phone_number, etc.)
     for field, value in update_data.items():
-        setattr(user, field, value)
+        if hasattr(user, field):
+            setattr(user, field, value)
 
     await db.commit()
     await db.refresh(user)

@@ -1,8 +1,8 @@
 from datetime import datetime, time
 from decimal import Decimal
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, Field, computed_field
-from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from typing import Any, List, Optional
 
 from app.schemas.lab import PatientOut
 from app.schemas.visit import PaymentMode
@@ -25,6 +25,24 @@ class UserResponse(BaseModel):
     email: str | None
     role: str | None
     avatar: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserResponse2(BaseModel):
+    id: int
+    full_name: str
+    email: str | None
+    role: str | None
+    avatar: str
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def transform_role(cls, v: Any) -> str | None:
+        # If 'v' is a Role object from the DB, get its slug or name
+        if v and not isinstance(v, str):
+            return getattr(v, "slug", str(v))
+        return v
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -169,7 +187,7 @@ class InvoiceSummaryMini(BaseModel):
 class AppointmentResponse(BaseModel):
     id: int
     patient: PatientOut
-    doctor: UserResponse
+    doctor: UserResponse2
     appointment_at: datetime
     start_time: time
     end_time: time | None = None
@@ -204,7 +222,7 @@ class LabOrderSummary(BaseModel):
 class AppointmentDetailResponse(AppointmentResponse):
     id: int
     patient: PatientOut
-    doctor: UserResponse
+    # doctor: UserResponse
     # Add this to track which staff member handled the booking
     # created_by_user: UserResponse | None = None
 

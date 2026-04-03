@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 from sqlalchemy import (
     JSON,
     String,
@@ -91,6 +92,7 @@ class TestCategory(Base):
     # relationship
     added_by = relationship("User", foreign_keys=[added_by_id])
     modified_by = relationship("User", foreign_keys=[modified_by_id])
+    tests: Mapped[List["Test"]] = relationship("Test", back_populates="test_category")
 
 
 class Test(Base):
@@ -131,6 +133,9 @@ class Test(Base):
         viewonly=True,  # ← prevents warning
     )
     templates = relationship("TestTemplate", back_populates="test")
+    test_category: Mapped["TestCategory"] = relationship(
+        "TestCategory", back_populates="tests"
+    )
 
 
 class TestParameter(Base):

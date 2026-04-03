@@ -10,13 +10,13 @@ from fastapi import (
     Form,
     Query,
     BackgroundTasks,
+    status,
 )
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import and_, func, select, or_
 from sqlalchemy.orm import selectinload
-from sqlalchemy.orm import joinedload
 
 
 from app.core import deps
@@ -25,6 +25,7 @@ from app.core.security import create_access_token
 from app.db.session import get_db
 from app.models.catalog import SampleCategory, TestCategory
 from app.models.enums import LabStage
+from app.models.permission import Permission, Role
 from app.models.users import Department, User
 from app.schemas.appointment import AppointmenCreate
 from app.schemas.staff import StaffRole
@@ -70,7 +71,10 @@ def _render(
 
 # Dashboard stays on "/"
 @router.get("/", response_class=HTMLResponse, name="dashboard")
-async def dashboard(request: Request):
+async def dashboard(
+    request: Request,
+    current_user: User = Depends(deps.get_current_user),  # Ensure logged in
+):
     return _render(request, "index.html", active_page="dashboard")
 
 
@@ -115,7 +119,15 @@ async def patients_page(
     request: Request,
     q: str | None = Query(default=None, description="Filter by surname or first_name"),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
 ):
+    # Check permission manually for Template routes
+    if not current_user.has_permission("patients", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this module.",
+        )
+
     stmt = select(Patient).order_by(Patient.id.desc())
     if q:
         like = f"%{q.strip()}%"
@@ -146,11 +158,22 @@ async def patients_page(
         staffs=staffs,
         tests=tests,
         q=q or "",
+        user_perms=current_user.role.permissions if current_user.role else [],
     )
 
 
-@router.get("/patients/add", response_class=HTMLResponse, name="patient_add")
-async def patient_add_get(request: Request, db: AsyncSession = Depends(get_db)):
+@router.get(
+    "/patients/add",
+    response_class=HTMLResponse,
+    name="patient_add",
+)
+async def patient_add_get(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    if not current_user.has_permission("patients", "write"):
+        raise HTTPException(status_code=403, detail="Access Denied")
     ins = (
         (
             await db.execute(
@@ -184,7 +207,13 @@ async def patient_add_post(
     guardian_phone: str | None = Form(None),
     guardian_relation: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
 ):
+
+    if not current_user.has_permission("patients", "write"):
+        # For a POST request, you might want to redirect back with an error message
+        return RedirectResponse(url="/patients?error=unauthorized", status_code=303)
+
     # generate patient_no (same rule as API)
     from sqlalchemy import func
 
@@ -616,35 +645,46 @@ async def create_visit(
 
 @router.get("/appointments", response_class=HTMLResponse, name="appointments")
 async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
+    # 1. Fetch lookup data
     patients = await db.execute(select(Patient))
     departments = await db.execute(select(Department))
-    appointments = await db.execute(select(Visit))
+    appointments_count_res = await db.execute(select(func.count(Visit.id)))
     sample_categories = await db.execute(select(SampleCategory))
-    doctors = await db.execute(
-        select(User).where(
-            User.role.in_(
-                [StaffRole.lab_scientist, StaffRole.Admin, StaffRole.Receptionist]
-            ),
-            User.is_active == True,  # noqa: E712
-        )  # noqa: E712
-    )
-    # TODO: Change to subquery to get tests in addition
-    test_categories = await db.execute(select(TestCategory))
-    # tests_bac = await db.execute(
-    #     select(Test).where(Test.test_category_id == 2).order_by(Test.id.asc())
-    # )
-    # tests_chem = await db.execute(
-    #     select(Test).where(Test.test_category_id == 3).order_by(Test.id.asc())
-    # )
 
+    # 2. DYNAMIC STAFF FILTERING
+    # Fetch all users whose role has 'read' or 'write' access to appointments
+    # This replaces the hardcoded StaffRole Enum check
+    doctors_stmt = (
+        select(User)
+        .join(User.role)
+        .join(Role.permissions)
+        .where(
+            and_(
+                Permission.resource == "appointments",
+                Permission.action.in_(["read", "write"]),
+                User.is_active == True,
+            )
+        )
+        .distinct()
+    )
+    doctors = await db.execute(doctors_stmt)
+
+    # 3. OPTIMIZED TEST CATEGORIES (Addressing your TODO)
+    # selectinload fetches the category AND its tests in one go
+    test_categories_stmt = (
+        select(TestCategory)
+        .options(selectinload(TestCategory.tests))
+        .order_by(TestCategory.category_name.asc())
+    )
+    test_categories = await db.execute(test_categories_stmt)
+
+    # 4. Result Extraction
     patients_results = patients.scalars().all()
     department_results = departments.scalars().all()
     staff_results = doctors.scalars().all()
     test_categories_results = test_categories.scalars().all()
     sample_categories_results = sample_categories.scalars().all()
-    # bac_test_results = tests_bac.scalars().all()
-    # chem_test_results = tests_chem.scalars().all()
-    total_appointments = len(appointments.scalars().all())
+    total_appointments = appointments_count_res.scalar() or 0
 
     return _render(
         request,
@@ -653,7 +693,7 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
         departments=department_results,
         patients=patients_results,
         staffs=staff_results,
-        test_categories=test_categories_results,
+        test_categories=test_categories_results,  # Access tests via item.tests in HTML
         total_appointments=total_appointments,
         sample_categories=sample_categories_results,
     )

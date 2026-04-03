@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.models.company import OrganizationPrefix
 from app.schemas.settings import PrefixUpdate
@@ -71,24 +72,30 @@ async def save_prefixes(data: PrefixUpdate, db: AsyncSession = Depends(get_db)):
 async def create_or_update_role(
     payload: RoleCreate, db: AsyncSession = Depends(get_db)
 ):
-    # 1. Check if Role exists or create new
-    stmt = select(Role).where(Role.slug == payload.slug)
+    # 1. Fetch Role WITH permissions loaded upfront
+    stmt = (
+        select(Role)
+        .options(selectinload(Role.permissions))  # <--- Add this line
+        .where(Role.slug == payload.slug)
+    )
     result = await db.execute(stmt)
     db_role = result.scalar_one_or_none()
 
     if not db_role:
         db_role = Role(
-            name=payload.name, slug=payload.slug, description=payload.description
+            name=payload.name,
+            slug=payload.slug,
+            description=payload.description,
+            permissions=[],  # Initialize empty list
         )
         db.add(db_role)
     else:
-        # If updating, clear old permissions first to sync with UI
+        # Now this works because permissions were eager-loaded
         db_role.permissions = []
 
     # 2. Sync Permissions
     for resource, actions in payload.access_map.items():
         for action in actions:
-            # Find or Create the individual permission
             p_stmt = select(Permission).where(
                 Permission.resource == resource, Permission.action == action
             )
@@ -98,12 +105,13 @@ async def create_or_update_role(
             if not db_perm:
                 db_perm = Permission(resource=resource, action=action)
                 db.add(db_perm)
-                await db.flush()  # Get ID
+                await db.flush()
 
             db_role.permissions.append(db_perm)
 
     await db.commit()
-    await db.refresh(db_role)
+    # Eager load again during refresh to avoid the same error on return
+    await db.refresh(db_role, attribute_names=["permissions"])
     return db_role
 
 
@@ -111,3 +119,51 @@ async def create_or_update_role(
 async def list_roles(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Role))
     return result.scalars().all()
+
+
+@router.get("/roles/{role_id}", response_model=RoleResponse)
+async def get_role(role_id: int, db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(Role).options(selectinload(Role.permissions)).where(Role.id == role_id)
+    )
+    result = await db.execute(stmt)
+    role = result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return role
+
+
+@router.put("/roles/{role_id}", response_model=RoleResponse)
+async def update_role(
+    role_id: int, payload: RoleCreate, db: AsyncSession = Depends(get_db)
+):
+    # Reuse the logic from your POST but filter by ID
+    stmt = (
+        select(Role).options(selectinload(Role.permissions)).where(Role.id == role_id)
+    )
+    result = await db.execute(stmt)
+    db_role = result.scalar_one_or_none()
+
+    if not db_role:
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    db_role.name = payload.name
+    db_role.slug = payload.slug
+    db_role.permissions = []  # Clear and sync new permissions
+
+    for resource, actions in payload.access_map.items():
+        for action in actions:
+            p_stmt = select(Permission).where(
+                Permission.resource == resource, Permission.action == action
+            )
+            p_res = await db.execute(p_stmt)
+            db_p = p_res.scalar_one_or_none()
+            if not db_p:
+                db_p = Permission(resource=resource, action=action)
+                db.add(db_p)
+                await db.flush()
+            db_role.permissions.append(db_p)
+
+    await db.commit()
+    await db.refresh(db_role, attribute_names=["permissions"])
+    return db_role

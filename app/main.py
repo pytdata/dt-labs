@@ -25,7 +25,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+    # app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
     app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 

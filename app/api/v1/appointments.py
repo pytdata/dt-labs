@@ -1,7 +1,7 @@
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Annotated, List, Literal
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Query
@@ -13,6 +13,8 @@ from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy import or_
 
 
+from app.core.deps import get_current_user
+from app.core.rbac import PermissionChecker
 from app.db.session import get_db
 from app.models import Patient
 from app.models.billing import Billing, BillingItem, Invoice, InvoiceItem
@@ -47,10 +49,16 @@ class FilterParams(BaseModel):
     status: AppointmentStatus | None = None
 
 
-@router.post("/")
+@router.post(
+    "/",
+    # --- PERMISSION INTEGRATION ---
+    # Restricts access to users with 'appointments:write' permission
+    dependencies=[Depends(PermissionChecker("appointments", "write"))],
+)
 async def create_appointment(
     data: AppointmenCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),  # Added for audit tracking
 ):
     try:
         async with db.begin():
@@ -60,7 +68,10 @@ async def create_appointment(
             tests = result.scalars().all()
 
             if not tests:
-                raise HTTPException(status_code=400, detail="No valid tests selected")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="No valid tests selected",
+                )
 
             total_billable_amount = sum(t.price_ghs for t in tests)
 
@@ -72,6 +83,7 @@ async def create_appointment(
                 mode_of_payment=data.mode_of_payment,
                 total_price=total_billable_amount,
                 tests=tests,
+                created_by_id=current_user.id,  # Audit: track who booked this
             )
             db.add(appointment)
             await db.flush()
@@ -81,16 +93,18 @@ async def create_appointment(
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
                 status="pending",
+                created_by_id=current_user.id,  # Audit
             )
             db.add(order)
             await db.flush()
 
-            # --- NEW: 4. Create Billing Record (Master Audit Log) ---
+            # --- 4. Create Billing Record (Master Audit Log) ---
             billing = Billing(
                 bill_no=f"BIL-{appointment.id}-{datetime.now().strftime('%M%S')}",
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
                 total_billed=total_billable_amount,
+                created_by_id=current_user.id,  # Audit
             )
             db.add(billing)
             await db.flush()
@@ -100,17 +114,18 @@ async def create_appointment(
                 invoice_no=f"INV-{appointment.id}-{datetime.now().strftime('%M%S')}",
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
-                order_id=order.id,  # Link the order to invoice
+                order_id=order.id,
                 total_amount=total_billable_amount,
                 amount_paid=0,
                 balance=total_billable_amount,
                 status="unpaid",
                 payment_mode=data.mode_of_payment,
+                created_by_id=current_user.id,  # Audit
             )
             db.add(invoice)
             await db.flush()
 
-            # 6. Process Tests: Create clinical tasks, billing items, and invoice items
+            # 6. Process Tests
             for test in tests:
                 # A. Create the LabOrderItem (Clinical Task)
                 order_item = LabOrderItem(
@@ -122,7 +137,7 @@ async def create_appointment(
                 db.add(order_item)
                 await db.flush()
 
-                # --- NEW: B. Create BillingItem (The record holder) ---
+                # B. Create BillingItem
                 db.add(
                     BillingItem(
                         billing_id=billing.id,
@@ -132,7 +147,7 @@ async def create_appointment(
                     )
                 )
 
-                # C. Create the InvoiceItem (The visibility/payment toggle)
+                # C. Create the InvoiceItem
                 db.add(
                     InvoiceItem(
                         invoice_id=invoice.id,
@@ -154,20 +169,35 @@ async def create_appointment(
             "invoice_id": invoice.id,
         }
 
+    except HTTPException:
+        # Re-raise HTTP exceptions to avoid getting caught by the generic catch-all
+        raise
     except Exception as e:
-        print(f"ERROR: {e}")
-        raise HTTPException(status_code=500, detail=f"Transaction failed: {str(e)}")
+        # Log the error properly in a production environment
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="System failed to process the appointment transaction.",
+        )
 
 
-@router.get("/", response_model=list[AppointmentResponse])
+@router.get(
+    "/",
+    response_model=List[AppointmentResponse],
+    dependencies=[Depends(PermissionChecker("appointments", "read"))],
+)
 async def get_all_appointments(
     filter_query: Annotated[FilterParams, Query()], db: AsyncSession = Depends(get_db)
 ):
+    """
+    Fetch all appointments with comprehensive filtering and prefix injection.
+    Requires 'appointments:read' permission.
+    """
     # 1. Fetch Global Prefix Settings
     prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
     prefix_res = await db.execute(prefix_stmt)
     settings = prefix_res.scalar_one_or_none()
 
+    # Defaults if settings haven't been configured yet
     org_code = settings.org_identifier if settings else "YKG"
     apt_prefix = settings.appointment if settings else "APT"
     pat_prefix = settings.patient if settings else "PAT"
@@ -226,6 +256,7 @@ async def get_all_appointments(
     if filter_query.status:
         stmt = stmt.where(Appointment.status == filter_query.status)
 
+    # Pagination and Ordering
     stmt = (
         stmt.order_by(Appointment.appointment_at.desc())
         .limit(filter_query.limit)
@@ -238,14 +269,14 @@ async def get_all_appointments(
 
     appointments_out = []
     for appt in appointments:
-        # Convert to Pydantic
+        # Convert to Pydantic (Uses the field_validator we added to UserResponse earlier)
         a_dto = AppointmentResponse.model_validate(appt)
 
-        # Inject Appointment Prefixes
+        # Inject Appointment Prefixes for computed display_id
         a_dto._org_code = org_code
         a_dto._mod_prefix = apt_prefix
 
-        # Inject Patient Prefixes into the nested patient object
+        # Inject Patient Prefixes into the nested patient object for its display_id
         if a_dto.patient:
             a_dto.patient._org_code = org_code
             a_dto.patient._mod_prefix = pat_prefix
@@ -306,11 +337,29 @@ async def update_appointment(
     return appointment
 
 
-@router.get("/{id}/", response_model=AppointmentDetailResponse)
+@router.get(
+    "/{id}/",
+    response_model=AppointmentDetailResponse,
+    dependencies=[Depends(PermissionChecker("appointments", "read"))],
+)
 async def get_appointment(
     id: int,
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Fetch full details of a single appointment including invoice items and lab orders.
+    Requires 'appointments:read' permission.
+    """
+    # 1. Fetch Global Prefix Settings
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    org_code = settings.org_identifier if settings else "YKG"
+    apt_prefix = settings.appointment if settings else "APT"
+    pat_prefix = settings.patient if settings else "PAT"
+
+    # 2. Build Detailed Query
     stmt = (
         select(Appointment)
         .where(Appointment.id == id)
@@ -319,30 +368,60 @@ async def get_appointment(
             joinedload(Appointment.patient),
             joinedload(Appointment.doctor),
             joinedload(Appointment.created_by_user),
-            # Load the invoice AND its items
+            # Nested eager loading for invoice items
             joinedload(Appointment.invoice).selectinload(Invoice.items),
             joinedload(Appointment.lab_order),
         )
     )
 
     result = await db.execute(stmt)
+    # Using .unique() is required when using joinedload on collections (like invoice items)
     appointment = result.unique().scalar_one_or_none()
 
     if not appointment:
-        raise HTTPException(status_code=404, detail="Appointment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found"
+        )
 
-    return appointment
+    # 3. Transform and Inject Prefixes
+    # This ensures both the Appointment and Patient display IDs are correctly formatted
+    a_dto = AppointmentDetailResponse.model_validate(appointment)
+
+    # Inject Appointment Prefix
+    a_dto._org_code = org_code
+    a_dto._mod_prefix = apt_prefix
+
+    # Inject Patient Prefix into the nested patient object
+    if a_dto.patient:
+        a_dto.patient._org_code = org_code
+        a_dto.patient._mod_prefix = pat_prefix
+
+    return a_dto
 
 
-@router.patch("/{id}/", response_model=AppointmentDetailResponse)
+@router.patch(
+    "/{id}/",
+    response_model=AppointmentDetailResponse,
+    dependencies=[Depends(PermissionChecker("appointments", "write"))],
+)
 async def partial_update_appointment(
     id: int,
     data: AppointmentUpdate,
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        async with db.begin():
-            # 1. Fetch appointment with Tests and Invoice
+        # 1. Fetch Global Prefix Settings
+        prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+        prefix_res = await db.execute(prefix_stmt)
+        settings = prefix_res.scalar_one_or_none()
+
+        org_code = settings.org_identifier if settings else "YKG"
+        apt_prefix = settings.appointment if settings else "APT"
+        pat_prefix = settings.patient if settings else "PAT"
+
+        # USE begin_nested() instead of begin() to avoid the "already begun" error
+        async with db.begin_nested():
+            # 2. Fetch appointment with Tests and Invoice
             stmt = (
                 select(Appointment)
                 .where(Appointment.id == id)
@@ -354,41 +433,33 @@ async def partial_update_appointment(
             appointment = result.unique().scalar_one_or_none()
 
             if not appointment:
-                raise HTTPException(status_code=404, detail="Appointment not found")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Appointment not found",
+                )
 
-            # 2. Update basic fields
+            # 3. Update basic fields
             update_data = data.model_dump(exclude_unset=True, exclude={"test_ids"})
             for key, value in update_data.items():
                 setattr(appointment, key, value)
 
-            # 3. Synchronize Tests and Invoice
+            # 4. Synchronize Tests and Invoice
             if data.test_ids is not None:
-                # Fetch the new test objects
                 test_stmt = select(Test).where(Test.id.in_(data.test_ids))
                 test_result = await db.execute(test_stmt)
                 new_tests = test_result.scalars().all()
 
-                # Update Appointment relationship
                 appointment.tests = list(new_tests)
-
-                # Calculate new total
                 new_total = sum(t.price_ghs for t in new_tests)
                 appointment.total_price = new_total
 
-                # 4. Update the linked Invoice
                 if appointment.invoice:
                     inv = appointment.invoice
                     inv.total_amount = new_total
                     inv.balance = new_total - inv.amount_paid
+                    inv.status = "paid" if inv.balance <= 0 else "unpaid"
 
-                    # Update status if the new total is now covered by previous payments
-                    if inv.balance <= 0:
-                        inv.status = "paid"
-                    else:
-                        inv.status = "unpaid"
-
-                    # 5. Refresh InvoiceItems (Delete old, add new)
-                    # This ensures the itemized bill matches the new tests
+                    # Sync InvoiceItems
                     delete_stmt = delete(InvoiceItem).where(
                         InvoiceItem.invoice_id == inv.id
                     )
@@ -406,30 +477,49 @@ async def partial_update_appointment(
                             )
                         )
 
+            # Flush changes within the savepoint
             await db.flush()
-            # Commit the transaction so data is persisted
-            # await db.commit() # Only if not using 'async with db.begin()'
 
-            # RE-FETCH WITH EAGER LOADING
-            stmt = (
-                select(Appointment)
-                .where(Appointment.id == id)
-                .options(
-                    joinedload(Appointment.patient),
-                    joinedload(Appointment.doctor),
-                    joinedload(Appointment.invoice),
-                    joinedload(Appointment.lab_order),
-                    selectinload(Appointment.tests),
-                )
+        # 5. COMMIT AND RE-FETCH
+        # Commit the session transaction after the nested block succeeds
+        await db.commit()
+
+        # Re-fetch with full eager loading for the final response
+        stmt = (
+            select(Appointment)
+            .where(Appointment.id == id)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.doctor),
+                joinedload(Appointment.invoice).selectinload(Invoice.items),
+                joinedload(Appointment.lab_order),
+                selectinload(Appointment.tests),
             )
-            result = await db.execute(stmt)
-            appointment = result.unique().scalar_one_or_none()
+        )
+        result = await db.execute(stmt)
+        appointment = result.unique().scalar_one_or_none()
 
-            return appointment
+        # 6. Transform and Inject Prefixes
+        a_dto = AppointmentDetailResponse.model_validate(appointment)
+        a_dto._org_code = org_code
+        a_dto._mod_prefix = apt_prefix
 
+        if a_dto.patient:
+            a_dto.patient._org_code = org_code
+            a_dto.patient._mod_prefix = pat_prefix
+
+        return a_dto
+
+    except HTTPException:
+        # Don't wrap 404s in 500s
+        raise
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Update Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update appointment transaction.",
+        )
 
 
 @router.delete(

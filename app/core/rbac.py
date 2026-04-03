@@ -10,11 +10,16 @@ class PermissionChecker:
         self.action = action
 
     async def __call__(self, current_user: User = Depends(get_current_user)) -> bool:
-        # 1. Check if user has a role
+
+        # Check if user has a role
         if not current_user.role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="No role assigned to user"
             )
+
+        # If the user belongs to the 'admin' role, let them through everything
+        if current_user.role and current_user.role.slug == "admin":
+            return True
 
         # 2. Check for the specific permission
         # Note: permissions are loaded via selectinload in get_current_user

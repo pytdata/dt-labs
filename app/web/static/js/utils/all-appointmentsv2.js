@@ -167,7 +167,6 @@ catSelectEl.addEventListener("input", (e) => {
 
   testTableVisibilityEl.style.display = "block";
 
-  console.log(id, catName);
 
   if (catName.toLowerCase() === "radiology") {
     bacterialTestDivEl.classList.remove("bac__hidden");
@@ -301,7 +300,6 @@ appointmentForm.addEventListener("submit", async (e) => {
     }, 2000);
 
   } catch (error) {
-    console.error("Submission Error:", error);
     // Show error toast - no reload needed so they can fix the form
     showToast(error.message || "Appointment creation failed.", "error");
     
@@ -333,7 +331,6 @@ appointmentsTableEL.addEventListener("click", async (e) => {
     populateAppointmentDetailModal(appointment);
 
   } catch (error) {
-    console.error(error);
 
      showToast(error.message || "Failed to load appointment details.", "error");
     
@@ -363,12 +360,10 @@ appointmentsTableEL.addEventListener("click", async (e) => {
     if (!res.ok) throw new Error("Failed to fetch appointment");
     
     const appointment = await res.json();
-    console.log("DEBUG: appointment detail", appointment);
 
     populateEditModal(appointment);
 
   } catch (error) {
-    console.error(error);
     
     showToast(error.message || "Failed to load appointment details for editing.", "error");
     // REPLACED ALERT WITH MODAL
@@ -423,7 +418,6 @@ document.querySelector(".edit__appointment__form").addEventListener("submit", as
             showToast("Failed to update appointment.", "error");
         }
     } catch (error) {
-        console.error("Update Error:", error);
         showToast("Network error. Please try again.", "error");
     }
 });
@@ -465,7 +459,6 @@ document
       showToast(`The appointment has been successfully marked as ${status.replace('_', ' ')}.`, "success");
 
     } catch (error) {
-      console.error(error);
       showToast(error.message || "Could not update the appointment status. Please try again.", "error")
       // showFeedback({
       //   title: "Update Error",
@@ -513,7 +506,6 @@ document
       showToast("The appointment record has been permanently removed.", "success");
 
     } catch (error) {
-      console.error(error);
       // REPLACED ALERT(error) WITH MODAL
       showToast(error.message || "An error occurred while trying to delete the record. Try again","error");
       // showFeedback({
@@ -546,7 +538,6 @@ appointmentsTableEL.addEventListener("click", async (e) => {
     if (!res.ok) throw new Error("Failed to fetch appointment");
     
     const appointment = await res.json();
-    console.log(appointment);
 
     populateAddSampleModal(
       appointment.tests,
@@ -573,7 +564,6 @@ appointmentsTableEL.addEventListener("click", async (e) => {
       });
       
   } catch (error) {
-    console.error(error);
     // REPLACED ALERT WITH MODAL
     // showFeedback({
     //   title: "Loading Error",
@@ -667,7 +657,6 @@ addSampleCategoryForm.addEventListener("submit", async function(e) {
     if (!res.ok) throw new Error("Failed to save sample category");
 
     const data = await res.json();
-    console.log(data);
 
     // SUCCESS MODAL + RELOAD
     // showFeedback({
@@ -680,7 +669,6 @@ addSampleCategoryForm.addEventListener("submit", async function(e) {
     showToast("New sample category has been added successfully", "success");
 
   } catch (error) {
-    console.error(error);
     showToast(error.message || "An error occurred while saving the new category. Please try again.", "error")
     // showFeedback({
     //   title: "Creation Failed",
@@ -703,7 +691,6 @@ searchStaff.addEventListener("input", (e) => {
       const data = await performSearch(value, true);
       renderStaffSearchResults(data);
     } catch (error) {
-      console.error("Staff search error:", error);
       // Optional: showFeedback here if you want to notify of search failures
       showToast("An error was encountered while searching. Please try again", "error")
     }
@@ -721,7 +708,7 @@ patientSearch.addEventListener("input", (e) => {
       const data = await performSearch(value, true);
       renderPatientsSearchResults(data);
     } catch (error) {
-      console.error("Patient search error:", error);
+      showToast("Patient search error", "danger")
     }
   }, 300);
 });
@@ -739,7 +726,6 @@ statusFilter.forEach((statusOption) =>
       const data = await getRemoteData(appointmentsURL);
       render(data);
     } catch (error) {
-      console.error("Filter error:", error);
       // showFeedback({
       //   title: "Filter Error",
       //   message: "Could not refresh the list with the selected filters.",
@@ -827,7 +813,6 @@ document.querySelector(".ti-refresh").addEventListener("click", async (e) => {
  * @param {Number} patientId
  */
 function populateAddSampleModal(samples, appointmentId, patientId) {
-  console.log("status update: ", samples);
   const requestedTestsHTML = samples
     .map((sample) => {
       return `
@@ -931,7 +916,7 @@ window.render = function(appointmentsList) {
         table.button('.buttons-pdf').trigger();
     });
 
-    console.log("DataTable Rendered with " + appointmentsList.length + " records.");
+
 };
 
 
@@ -941,7 +926,6 @@ window.render = function(appointmentsList) {
  * @returns htmlement
  */
 function renderData(appointment) {
-  console.log("Appointment information: ===", appointment)
   // Extract invoice ID safely
   const invoiceId = appointment.invoice ? appointment.invoice.id : null;
   const isPaid = appointment.invoice && appointment.invoice.status === 'paid';
@@ -1047,7 +1031,6 @@ document.addEventListener('click', async (e) => {
             // Note: We don't need modal.show() here because 
             // data-bs-toggle="modal" on the button handles it!
         } catch (error) {
-            console.error(error);
             // If it fails, close the modal so the user isn't stuck with an overlay
             const modalEl = document.getElementById('paymentModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
@@ -1072,7 +1055,6 @@ function populatePaymentModal(appointment) {
         return;
     }
 
-    console.log(`FINDING INVOVICE IN APP>>>>>>>>>>>>>>>>>>:}`,appointment)
     // 1. Set Header Info & Store Invoice ID for the Process button
     document.getElementById('payInvoiceNo').innerText = invoice.invoice_no;
     document.getElementById('payInvoiceNo').dataset.invoiceId = invoice.id; // Store raw ID
@@ -1158,10 +1140,6 @@ document.getElementById('btnProcessPayment').addEventListener('click', async fun
     const amount = parseFloat(document.getElementById('payAmountInput').value);
     const method = document.getElementById('payMethod').value;
 
-    console.log("Processing Payment for Invoice:", invoiceId);
-    console.log("Tests to unlock:", testIdsToClear);
-    console.log("Amount:", amount);
-
     // 3. Simple Validation
     if (!invoiceId) return alert("Invoice ID missing. Please reload.");
     if (isNaN(amount) || amount <= 0) return alert("Please enter a valid amount.");
@@ -1201,7 +1179,6 @@ document.getElementById('btnProcessPayment').addEventListener('click', async fun
                   btn.innerText = "Process Payment";
               }
     } catch (error) {
-        console.error("Payment Request Failed:", error);
         showToast("Payment Request Failed", "success");
         // modal.hide();
         btn.disabled = false;
@@ -1222,7 +1199,6 @@ document.getElementById('selectAllTests').addEventListener('change', (e) => {
 
 
 function populateAppointmentDetailModal(appointment) {
-  console.log("status update: ", appointment);
   document.getElementById("patient_name").innerText =
     `${appointment.patient.first_name} ${appointment.patient.other_names ? appointment.patient.other_names : ""} ${appointment.patient.surname}`;
   document.getElementById("preffered_mode").innerText =
@@ -1280,7 +1256,6 @@ function populateEditModal(appointment) {
 
 
   if (appointment.invoice) {
-    console.log("^^^^", appointment.invoice.status.toUpperCase())
     invBadge.textContent = appointment.invoice.status.toUpperCase();
     invBadge.className = `badge ${appointment.invoice.status === 'paid' ? 'bg-success' : 'bg-warning text-dark'}`;
     balanceText.textContent = `Bal: GHS ${parseFloat(appointment.invoice.balance).toFixed(2)}`;
@@ -1332,12 +1307,9 @@ function populateEditModal(appointment) {
 
 // updating billing status
 document.getElementById("btn_mark_as_paid").addEventListener("click", async (e) => {
-  console.log(document.getElementById("btn_mark_as_paid"), "html obj")
     const btn = e.currentTarget;
     const invoiceId = btn.dataset.invoiceId;
     const totalAmount = btn.dataset.total;
-
-    if (!confirm("Confirm that full payment has been received?")) return;
 
     try {
         const res = await fetch(`/api/v1/billing/invoices/${invoiceId}/pay`, {
@@ -1350,16 +1322,15 @@ document.getElementById("btn_mark_as_paid").addEventListener("click", async (e) 
         });
 
         if (res.ok) {
-            alert("Payment recorded successfully!");
+            showToast("Payment recorded successfully!")
             // Refresh the modal data or close it
             location.reload(); 
         } else {
             const error = await res.json();
-            alert(`Error: ${error.detail}`);
+            showToast(error.detail, "danger")
         }
     } catch (err) {
-      alert(err)
-        console.error("Payment Error:", err);
+        showToast("Payment Error", "danger");
     }
 });
 
@@ -1407,7 +1378,6 @@ function showComputedAmount(totalAmount) {
  * @param {Array[object]} selectedTestList
  */
 function accordionListRender(selectedTestList) {
-  console.log(selectedTestList);
   if (selectedTestList.length === 0) {
     selectedTestAccordionListEl.innerHTML = `<p class="p-4 fs-4 text-align-center">No test selected</p>`;
   } else {
@@ -1596,7 +1566,6 @@ async function performSearch(query, useAppointment) {
     // ignore AbortError because it happens intentionally when a user keeps typing
     if (err.name === "AbortError") return;
 
-    console.error("Search error:", err);
     
     // NOTIFY USER OF ACTUAL SEARCH ERRORS
     // showFeedback({
@@ -1812,7 +1781,6 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
             resultsWrapper.classList.remove("d-none");
             
         } catch (err) {
-            console.error("Search Error:", err);
             showToast("Encountered an error while searching for tests. Please try again.", "error")
         }
     }, 400); 

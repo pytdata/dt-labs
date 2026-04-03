@@ -60,6 +60,19 @@ class User(Base):
     def __repr__(self) -> str:
         return f"<{self.email!r} {self.full_name!r} Role ID: {self.role_id}>"
 
+    def has_permission(self, resource: str, action: str) -> bool:
+        """
+        Checks if the user's role has a specific permission.
+        Usage: user.has_permission("patients", "read")
+        """
+        if not self.role or not self.role.permissions:
+            return False
+
+        # Match against your Permission model attributes: resource and action
+        return any(
+            p.resource == resource and p.action == action for p in self.role.permissions
+        )
+
     @property
     def avatar(self) -> str:
         if self.profile_picture:

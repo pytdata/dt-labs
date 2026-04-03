@@ -1,19 +1,22 @@
 from datetime import date, datetime, time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi import Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from app.core.deps import get_current_user
+from app.core.rbac import PermissionChecker
 from app.db.session import get_db
 from app.models import Patient
 from app.models.company import OrganizationPrefix
 from app.models.lab import LabOrder, LabOrderItem, LabResult, Visit
+from app.models.users import User
 from app.schemas import PatientCreate, PatientOut
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
 
-from typing import Annotated, Literal
+from typing import Annotated, List, Literal
 
 
 from pydantic import BaseModel, Field
@@ -54,25 +57,46 @@ class FilterParams(BaseModel):
     end_date: date | None = None
 
 
-@router.post("/", response_model=PatientOut)
+@router.post(
+    "/",
+    response_model=PatientOut,
+    dependencies=[Depends(PermissionChecker("patients", "write"))],
+)
 async def create_patient(
     payload: PatientCreate,
     db: AsyncSession = Depends(get_db),
-    # current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     patient_no = await _next_patient_no(db)
-    patient = Patient(patient_no=patient_no, **payload.model_dump())
+
+    # Store who created the patient for audit trails
+    patient_data = payload.model_dump()
+    patient = Patient(
+        patient_no=patient_no, **patient_data, created_by_id=current_user.id
+    )
+
     db.add(patient)
     await db.commit()
     await db.refresh(patient)
     return patient
 
 
-@router.get("/", response_model=list[PatientOut])
+@router.get(
+    "/",
+    response_model=List[PatientOut],
+    dependencies=[Depends(PermissionChecker("patients", "read"))],
+)
 async def list_patients(
     filter_query: Annotated[FilterParams, Query()],
     db: AsyncSession = Depends(get_db),
+    # Optional: if you need the user object for audit or filtering
+    # current_user: User = Depends(get_current_user),
 ):
+    """
+    List all patients with prefix-aware IDs and last visit tracking.
+    Access restricted to users with 'patients:read' permission.
+    """
+
     # 1. Fetch Global Prefix Settings
     prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
     prefix_res = await db.execute(prefix_stmt)
@@ -82,7 +106,7 @@ async def list_patients(
     org_code = settings.org_identifier if settings else "YKG"
     pat_prefix = settings.patient if settings else "PAT"
 
-    # 2. Build Patient Query
+    # 2. Build Query with Last Visit Subquery
     last_visit_subq = (
         select(
             Visit.patient_id,
@@ -98,58 +122,49 @@ async def list_patients(
     )
 
     # --- Apply Filters ---
-    if filter_query.first_name:
-        like = f"%{filter_query.first_name.strip()}%"
-        stmt = stmt.where(Patient.first_name.ilike(like))
+    if filter_query.search:
+        q = f"%{filter_query.search.strip()}%"
+        stmt = stmt.where(
+            or_(
+                Patient.first_name.ilike(q),
+                Patient.surname.ilike(q),
+                Patient.other_names.ilike(q),
+                Patient.patient_no.ilike(q),
+            )
+        )
 
-    if filter_query.surname:
-        like = f"%{filter_query.surname.strip()}%"
-        stmt = stmt.where(Patient.surname.ilike(like))
+    if filter_query.sex:
+        # Standardize input to match your DB storage (e.g., 'Male', 'Female')
+        stmt = stmt.where(Patient.sex.in_(filter_query.sex))
 
+    # Apply Date Range Filters
+    if filter_query.start_date:
+        stmt = stmt.where(func.date(Patient.created_at) >= filter_query.start_date)
+    if filter_query.end_date:
+        stmt = stmt.where(func.date(Patient.created_at) <= filter_query.end_date)
+
+    # 3. Sorting and Pagination
     if filter_query.sort_by == "oldest":
         stmt = stmt.order_by(Patient.id.asc())
     else:
         stmt = stmt.order_by(Patient.id.desc())
 
-    # Apply limit and offset
-    stmt = stmt.limit(limit=filter_query.limit).offset(offset=filter_query.offset)
+    stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
 
-    if filter_query.sex:
-        sexes = [s.capitalize() for s in filter_query.sex]
-        stmt = stmt.where(Patient.sex.in_(sexes))
-
-    if filter_query.search:
-        stmt = stmt.where(
-            or_(
-                Patient.first_name.ilike(f"%{filter_query.search}%"),
-                Patient.surname.ilike(f"%{filter_query.search}%"),
-                Patient.other_names.ilike(f"%{filter_query.search}%"),
-            )
-        )
-
-    if filter_query.start_date:
-        stmt = stmt.where(
-            Patient.created_at >= datetime.combine(filter_query.start_date, time.min)
-        )
-
-    if filter_query.end_date:
-        stmt = stmt.where(
-            Patient.created_at <= datetime.combine(filter_query.end_date, time.max)
-        )
-
-    # 3. Execute and Transform
+    # 4. Execute and Transform
     result = await db.execute(stmt)
+    rows = result.all()
 
     patients_out = []
-    for patient, last_visit_date in result.all():
-        # Convert DB model to Pydantic Schema
+    for patient, last_visit_date in rows:
+        # Validate into Pydantic
         p_dto = PatientOut.model_validate(patient)
 
-        # Inject the prefixes into the private attributes
+        # Inject Prefix Data (Essential for the display_id computed field)
         p_dto._org_code = org_code
         p_dto._mod_prefix = pat_prefix
 
-        # Manually attach the last_visit_date from the join
+        # Attach the last visit date from the outer join
         p_dto.last_visit_date = last_visit_date
 
         patients_out.append(p_dto)
@@ -157,90 +172,168 @@ async def list_patients(
     return patients_out
 
 
-@router.get("/search")
+@router.get(
+    "/search",
+    # --- PERMISSION INTEGRATION ---
+    dependencies=[Depends(PermissionChecker("patients", "read"))],
+)
 async def search_patients(
     q: str,
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Quick search for patients by name or patient number.
+    Returns prefix-aware IDs and basic info for selection UI.
+    """
+    # 1. Fetch Global Prefix Settings for Display IDs
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    org_code = settings.org_identifier if settings else "YKG"
+    pat_prefix = settings.patient if settings else "PAT"
+
+    # 2. Build Search Query
+    # Included patient_no in the search for better UX
+    search_term = f"%{q.strip()}%"
     stmt = (
         select(Patient)
         .where(
             or_(
-                Patient.first_name.ilike(f"%{q}%"),
-                Patient.surname.ilike(f"%{q}%"),
+                Patient.first_name.ilike(search_term),
+                Patient.surname.ilike(search_term),
+                Patient.other_names.ilike(search_term),
+                Patient.patient_no.ilike(search_term),
             )
         )
-        .limit(5)
+        .limit(10)  # Increased slightly for better results
     )
 
     result = await db.execute(stmt)
     patients = result.scalars().all()
 
+    # 3. Return Formatted Results
     return [
         {
             "id": p.id,
+            # Generate the Display ID manually here to match your PatientOut logic
+            "display_id": f"{org_code}-{pat_prefix}-{str(p.id).zfill(4)}",
             "full_name": f"{p.first_name} {p.surname}",
             "phone": p.phone,
-            "dob": p.date_of_birth,
+            "dob": p.date_of_birth.isoformat() if p.date_of_birth else None,
         }
         for p in patients
     ]
 
 
-@router.get("/{id}/", response_model=PatientOut)
+@router.get(
+    "/{id}/",
+    response_model=PatientOut,
+    dependencies=[Depends(PermissionChecker("patients", "read"))],
+)
 async def get_patients(
     id: int,
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Fetch a single patient by ID with prefix-aware formatting.
+    Access restricted to users with 'patients:read' permission.
+    """
+    # 1. Fetch Global Prefix Settings
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    org_code = settings.org_identifier if settings else "YKG"
+    pat_prefix = settings.patient if settings else "PAT"
+
+    # 2. Fetch Patient Record
     stmt = select(Patient).where(Patient.id == id)
-
     result = await db.execute(stmt)
+    patient = result.scalar_one_or_none()
 
-    result = result.scalar()
-    if not result:
-        raise HTTPException(detail="Resource not found", status_code=404)
-    return result
+    if not patient:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient record not found"
+        )
+
+    # 3. Transform to Pydantic and Inject Prefixes
+    # This ensures the 'display_id' computed field uses the correct DB settings
+    p_dto = PatientOut.model_validate(patient)
+    p_dto._org_code = org_code
+    p_dto._mod_prefix = pat_prefix
+
+    # Note: If your PatientOut requires last_visit_date, you may need a
+    # separate query or a join here similar to the list_patients route.
+
+    return p_dto
 
 
-@router.get("/{patient_id}/lab-results", response_model=list[LabResultResponse])
+@router.get(
+    "/{patient_id}/lab-results",
+    response_model=List[LabResultResponse],
+    dependencies=[Depends(PermissionChecker("patients", "read"))],
+)
 async def get_patient_lab_results(
     patient_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    # Use a join to find results specifically belonging to this patient
+    """
+    Fetch all lab results for a specific patient.
+    Requires 'patients:read' permission.
+    """
+
+    # 1. Verify Patient Exists (Optional but recommended for better 404s)
+    patient_exists = await db.scalar(select(Patient.id).where(Patient.id == patient_id))
+    if not patient_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found"
+        )
+
+    # 2. Build Optimized Query
+    # We navigate: LabResult -> LabOrderItem -> LabOrder -> Patient
     stmt = (
         select(LabResult)
         .join(LabResult.order_item)
         .join(LabOrderItem.order)
         .options(
-            # Eagerly load the test name and category so the frontend can display them
-            selectinload(LabResult.order_item).selectinload(LabOrderItem.test)
+            # Eagerly load the nested relationships to prevent N+1 queries
+            selectinload(LabResult.order_item).selectinload(LabOrderItem.test),
+            # If your LabResultResponse needs who entered/verified the results:
+            selectinload(LabResult.entered_by_user),
+            selectinload(LabResult.verified_by_user),
         )
         .where(LabOrder.patient_id == patient_id)
-        .order_by(LabResult.received_at.desc())
+        .order_by(LabResult.updated_at.desc())  # Or received_at depending on your model
     )
 
     result = await db.execute(stmt)
     lab_results = result.scalars().all()
 
-    # Debugging: Print count to terminal to see if DB is actually returning rows
-    print(f"DEBUG: Found {len(lab_results)} results for patient {patient_id}")
-
+    # 3. Return results
+    # Since LabResultResponse likely doesn't use the org_prefix logic
+    # (usually handled at the Order/Invoice level), a direct return works here.
     return lab_results
 
 
 @router.get(
     "/lab-results",
-    response_model=list[LabResultResponse],
+    response_model=List[LabResultResponse],
+    dependencies=[Depends(PermissionChecker("lab_results", "read"))],
 )
 async def get_all_lab_results(
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Fetch all lab results.
+    Access restricted to users with 'lab_results:read' permission.
+    """
     stmt = (
         select(LabResult)
         .options(
             selectinload(LabResult.sample),
-            selectinload(LabResult.order_item),
+            # Load the test name and category via order_item
+            selectinload(LabResult.order_item).selectinload(LabOrderItem.test),
             selectinload(LabResult.analyzer),
             selectinload(LabResult.analyzer_message),
             selectinload(LabResult.entered_by_user),

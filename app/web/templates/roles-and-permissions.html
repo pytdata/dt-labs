@@ -33,15 +33,12 @@
                   </tr>
                 </thead>
                 <tbody id="roles_list_container">
-                  <tr>
-                    <td class="ps-4 fw-medium">Medical Officer</td>
-                    <td><span class="badge badge-soft-secondary">medical_officer</span></td>
-                    <td>8 Modules</td>
-                    <td class="text-end pe-4">
-                        <button class="btn btn-sm btn-outline-info me-1"><i class="ti ti-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash"></i></button>
-                    </td>
-                  </tr>
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-2 text-muted">Loading system roles...</span>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -91,6 +88,19 @@
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary px-4" id="saveRoleBtn">Save Role Configuration</button>
             </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="toast-container">
+    <div id="appCustomToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex p-2 align-items-center">
+            <div class="toast-body d-flex align-items-center w-100">
+                <i id="toastIcon" class="ti me-2"></i>
+                <span id="appCustomToastText" class="fw-medium"></span>
+            </div>
+            <button type="button" class="btn-close me-2" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
     </div>
 </div>

@@ -1,5 +1,12 @@
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, EmailStr, PrivateAttr, computed_field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    PrivateAttr,
+    computed_field,
+    field_validator,
+)
 from typing import Optional
 
 
@@ -17,7 +24,7 @@ class StaffRole(str, Enum):
 class StaffResponse(BaseModel):
     id: int
     full_name: str
-    role: str
+    role: str | None
     email: EmailStr
     phone_number: str | None
     gender: Gender | None
@@ -27,6 +34,14 @@ class StaffResponse(BaseModel):
     # Standardized Staff Prefix
     _org_code: str = PrivateAttr(default="YKG")
     _mod_prefix: str = PrivateAttr(default="STF")
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def transform_role(cls, v):
+        # This converts the Role DB object into the string name for the JSON
+        if hasattr(v, "name"):
+            return v.name
+        return v
 
     @computed_field
     @property
@@ -39,7 +54,7 @@ class StaffResponse(BaseModel):
 
 class StaffCreate(BaseModel):
     full_name: str
-    role: StaffRole
+    role: str  # This will receive the role slug from the frontend
     email: EmailStr
     phone_number: str
     gender: Gender
