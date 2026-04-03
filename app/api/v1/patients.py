@@ -202,7 +202,7 @@ async def get_patients(
     return result
 
 
-@router.get("/{patient_id}/lab-results")
+@router.get("/{patient_id}/lab-results", response_model=list[LabResultResponse])
 async def get_patient_lab_results(
     patient_id: int,
     db: AsyncSession = Depends(get_db),

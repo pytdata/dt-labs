@@ -1,5 +1,5 @@
 /**
- * RADIOLOGY QUEUE MANAGEMENT - INTEGRATED WITH DATATABLES & EXPORT
+ * RADIOLOGY QUEUE MANAGEMENT - INTEGRATED WITH DATATABLES & INLINE CONFIRMATION
  */
 
 // 1. SAFE GLOBAL DECLARATIONS
@@ -45,7 +45,6 @@ window.showToast = window.showToast || function(message, type = 'success') {
 })();
 
 // 4. DATE RANGE FILTER
-// 4. DATE RANGE FILTER - UPDATED FOR VISIBILITY
 function setupFilters() {
     const $picker = $('#reportrange');
     if (!$picker.length) return;
@@ -57,8 +56,8 @@ function setupFilters() {
         startDate: start,
         endDate: end,
         opens: 'left',
-        drops: 'auto', // Automatically detect if it should drop up or down
-        parentEl: "body", // Attaches the picker to the body so it isn't clipped by cards
+        drops: 'auto',
+        parentEl: "body",
         ranges: {
             'Today': [moment(), moment()],
             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -72,7 +71,6 @@ function setupFilters() {
         fetchAndRender(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
     });
 
-    // Initialize the label
     $('.reportrange-picker-field').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
 }
 
@@ -99,16 +97,11 @@ window.fetchAndRender = async function(startDate, endDate) {
 // 6. TABLE RENDERING
 function renderRadiologyTable(items) {
     const containerEl = document.querySelector('.lab__container');
-    const tableSelector = '#radiologyMainTable'; // Targets the unique ID
+    const tableSelector = '#radiologyMainTable';
     const $table = $(tableSelector);
 
-    // Destroy existing instance to prevent double-initialization
     if ($.fn.DataTable.isDataTable(tableSelector)) {
         $table.DataTable().clear().destroy();
-    }
-
-    if (window.pdfMake && window.pdfMake.vfs) {
-        pdfMake.vfs = window.pdfMake.vfs;
     }
 
     containerEl.innerHTML = items.map(item => {
@@ -135,7 +128,7 @@ function renderRadiologyTable(items) {
         return `
         <tr>
             <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
-            <td><span class="text-muted fw-bold">#RAD-${item.id}</span></td>
+            <td><span class="text-muted fw-bold">${item.display_id}</span></td>
             <td><h6 class="fs-14 mb-0 fw-medium">${patient.full_name || 'N/A'}</h6></td>
             <td>${patient.gender || 'N/A'}</td>
             <td>${displayDate}</td>
@@ -145,86 +138,76 @@ function renderRadiologyTable(items) {
             <td class="text-end">
                 <div class="d-flex align-items-center justify-content-end">
                     ${action}
-                    <div class="dropdown">
+                    <!--<div class="dropdown">
                         <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
                         <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
                              <li><a href="javascript:void(0);" class="dropdown-item" onclick="viewFinalReport(${item.id})">View History</a></li>
                         </ul>
-                    </div>
+                    </div> -->
                 </div>
             </td>
         </tr>`;
     }).join('');
 
-    /**
-     * INITIALIZE DATATABLE
-     * dom: 'tpr' removes the 'B' (Buttons) element entirely from the DOM layout.
-     * We define the buttons in the configuration but they won't be rendered.
-     */
     window.radiologyDataTable = $table.DataTable({
         dom: 'tpr', 
         pageLength: 20,
-        responsive: true,
-        buttons: [
-            { 
-                extend: 'csvHtml5', 
-                title: 'Radiology_Export_' + moment().format('YYYY-MM-DD'),
-                exportOptions: { columns: ':not(:first-child):not(:last-child)' } 
-            },
-            { 
-                extend: 'excelHtml5', 
-                title: 'Radiology_Export_' + moment().format('YYYY-MM-DD'),
-                exportOptions: { columns: ':not(:first-child):not(:last-child)' } 
-            },
-            { 
-                extend: 'pdfHtml5', 
-                title: 'Radiology Report', 
-                orientation: 'landscape', 
-                exportOptions: { columns: ':not(:first-child):not(:last-child)' },
-                customize: (doc) => { 
-                    if (doc.defaultStyle) doc.defaultStyle.font = 'Roboto'; 
-                } 
-            },
-            { 
-                extend: 'print', 
-                title: 'Radiology Queue', 
-                exportOptions: { columns: ':not(:first-child):not(:last-child)' } 
-            }
-        ]
-    });
-
-    /**
-     * PROXY CLICK EVENTS
-     * We manually trigger the button actions by index.
-     */
-    $(document).off('click', '.export-csv').on('click', '.export-csv', function(e) {
-        e.preventDefault();
-        window.radiologyDataTable.button('.buttons-csv').trigger();
-    });
-    $(document).off('click', '.export-excel').on('click', '.export-excel', function(e) {
-        e.preventDefault();
-        window.radiologyDataTable.button('.buttons-excel').trigger();
-    });
-    $(document).off('click', '.export-pdf').on('click', '.export-pdf', function(e) {
-        e.preventDefault();
-        window.radiologyDataTable.button('.buttons-pdf').trigger();
-    });
-    $(document).off('click', '.export-print').on('click', '.export-print', function(e) {
-        e.preventDefault();
-        window.radiologyDataTable.button('.buttons-print').trigger();
+        responsive: true
     });
 }
 
 // 7. MODAL & API HANDLERS
+
+/**
+ * Open Modal for Fresh Findings
+ */
+window.openReportModal = function(itemId, testName) {
+    document.getElementById('rad_order_item_id').value = itemId;
+    document.getElementById('rad_test_name_display').innerText = testName;
+    document.getElementById('rad_findings').value = '';
+    document.getElementById('rad_conclusion').value = '';
+    
+    // UI Visibility
+    document.getElementById('btn_save_result').style.display = 'block';
+    document.getElementById('btn_finalize_init').style.display = 'none';
+    document.getElementById('inline_confirm_wrapper').style.display = 'none';
+    
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('radiologyResultModal')).show();
+};
+
+/**
+ * Open Modal for Reviewing Existing Findings
+ */
+window.reviewReport = async function(itemId, testName) {
+    try {
+        const response = await fetch(`/api/v1/radiology/result-by-item/${itemId}`);
+        const resultData = await response.json();
+        
+        document.getElementById('rad_order_item_id').value = itemId;
+        document.getElementById('rad_test_name_display').innerText = testName;
+        document.getElementById('rad_findings').value = resultData.result_value || '';
+        document.getElementById('rad_conclusion').value = resultData.comments || '';
+        
+        // UI Visibility: Hide save, show "Approve" button, hide the final "Yes" wrapper
+        document.getElementById('btn_save_result').style.display = 'none';
+        document.getElementById('btn_finalize_init').style.display = 'block';
+        document.getElementById('inline_confirm_wrapper').style.display = 'none';
+        
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('radiologyResultModal')).show();
+    } catch (err) {
+        showToast("Could not load report findings.", "error");
+    }
+};
+
+/**
+ * Save Draft Results
+ */
 window.saveRadiologyResult = async function() {
     const findings = document.getElementById('rad_findings').value;
     const conclusion = document.getElementById('rad_conclusion').value;
     const itemId = document.getElementById('rad_order_item_id').value;
 
-    if (!findings.trim()) {
-        showToast("Please enter clinical findings.", "error");
-        return;
-    }
+    if (!findings.trim()) return showToast("Please enter clinical findings.", "error");
 
     const submitBtn = document.getElementById('btn_save_result');
     submitBtn.disabled = true;
@@ -237,8 +220,7 @@ window.saveRadiologyResult = async function() {
         });
 
         if (response.ok) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('radiologyResultModal'));
-            if (modal) modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('radiologyResultModal')).hide();
             showToast("Findings submitted for approval.");
             fetchAndRender(); 
         } else {
@@ -251,52 +233,57 @@ window.saveRadiologyResult = async function() {
     }
 };
 
-window.openReportModal = function(itemId, testName) {
-    document.getElementById('rad_order_item_id').value = itemId;
-    document.getElementById('rad_test_name_display').innerText = testName;
-    document.getElementById('rad_findings').value = '';
-    document.getElementById('rad_conclusion').value = '';
-    document.getElementById('btn_save_result').style.display = 'block';
-    document.getElementById('btn_finalize_result').style.display = 'none';
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('radiologyResultModal')).show();
+/**
+ * Inline Confirmation Toggles
+ */
+window.showInlineConfirm = function() {
+    document.getElementById('btn_finalize_init').style.display = 'none';
+    document.getElementById('inline_confirm_wrapper').style.display = 'inline-flex';
 };
 
-window.reviewReport = async function(itemId, testName) {
-    const modalEl = document.getElementById('radiologyResultModal');
-    try {
-        const response = await fetch(`/api/v1/radiology/result-by-item/${itemId}`);
-        const resultData = await response.json();
-        document.getElementById('rad_order_item_id').value = itemId;
-        document.getElementById('rad_test_name_display').innerText = testName;
-        document.getElementById('rad_findings').value = resultData.result_value || '';
-        document.getElementById('rad_conclusion').value = resultData.comments || '';
-        document.getElementById('btn_save_result').style.display = 'none';
-        document.getElementById('btn_finalize_result').style.display = 'block';
-        bootstrap.Modal.getOrCreateInstance(modalEl).show();
-    } catch (err) {
-        showToast("Could not load report findings.", "error");
-    }
+window.cancelInlineConfirm = function() {
+    document.getElementById('inline_confirm_wrapper').style.display = 'none';
+    document.getElementById('btn_finalize_init').style.display = 'inline-block';
 };
 
-window.finalizeReport = async function() {
+/**
+ * Final Sign-off and API Call
+ */
+window.executeFinalizeNow = async function() {
     const itemId = document.getElementById('rad_order_item_id').value;
-    if (!itemId || !confirm("Finalize and sign off this report?")) return;
+    const wrapper = document.getElementById('inline_confirm_wrapper');
+    
+    if (!itemId) return showToast("Order ID missing", "error");
+
+    wrapper.style.pointerEvents = 'none';
+    wrapper.style.opacity = '0.7';
 
     try {
-        const response = await fetch(`/api/v1/radiology/finalize-report/${itemId}`, { method: 'POST' });
+        const response = await fetch(`/api/v1/radiology/finalize-report/${itemId}`, { 
+            method: 'POST' 
+        });
+
         if (response.ok) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('radiologyResultModal'));
-            if (modal) modal.hide();
-            showToast("Report finalized and signed.");
+            bootstrap.Modal.getInstance(document.getElementById('radiologyResultModal')).hide();
+            showToast("Report finalized and signed successfully.");
             fetchAndRender();
         } else {
-            showToast("Could not finalize report.", "error");
+            const error = await response.json();
+            showToast(error.detail || "Finalization failed.", "error");
+            cancelInlineConfirm();
         }
     } catch (error) {
-        showToast("Network error.", "error");
+        showToast("Network error occurred.", "error");
+        cancelInlineConfirm();
+    } finally {
+        wrapper.style.pointerEvents = 'auto';
+        wrapper.style.opacity = '1';
     }
 };
 
+/**
+ * View Final Report PDF-style
+ */
 window.viewFinalReport = async function(itemId) {
     try {
         const response = await fetch(`/api/v1/lab/report/${itemId}`);

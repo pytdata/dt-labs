@@ -25,87 +25,94 @@ router = APIRouter()
 
 @router.get("/", response_model=list[PaymentResponse])
 async def get_all_transactions(
-    # Ensure PaymentFilterParams includes start_date: date and end_date: date
     filters: Annotated[PaymentFilterParams, Depends()],
-    # Handle multiple methods like ?method=cash&method=momo
     method: Annotated[Optional[List[str]], Query()] = None,
     db: AsyncSession = Depends(get_db),
+    limit: int = 100,
+    offset: int = 0,
 ):
-    stmt = (
-        select(Payment)
-        .join(Payment.invoice)
-        .options(
-            selectinload(Payment.invoice).selectinload(Invoice.patient),
-            selectinload(Payment.verified_by),
+    try:
+        # 1. Base query with optimized relationship loading
+        stmt = (
+            select(Payment)
+            .join(Payment.invoice)
+            .options(
+                # Deep loading: Payment -> Invoice -> Patient
+                selectinload(Payment.invoice).selectinload(Invoice.patient),
+                selectinload(Payment.verified_by),
+            )
+            .order_by(Payment.received_at.desc())
         )
-        .order_by(Payment.received_at.desc())
-    )
 
-    # --- DATE RANGE FILTERING ---
-    if filters.start_date:
-        stmt = stmt.where(func.date(Payment.received_at) >= filters.start_date)
+        # 2. Date Range & Invoice/Patient Filtering
+        if filters.start_date:
+            stmt = stmt.where(func.date(Payment.received_at) >= filters.start_date)
+        if filters.end_date:
+            stmt = stmt.where(func.date(Payment.received_at) <= filters.end_date)
+        if filters.invoice_id:
+            stmt = stmt.where(Payment.invoice_id == filters.invoice_id)
+        if filters.patient_id:
+            stmt = stmt.where(Invoice.patient_id == filters.patient_id)
 
-    if filters.end_date:
-        stmt = stmt.where(func.date(Payment.received_at) <= filters.end_date)
+        # 3. Multi-Method Filtering (Cash, Momo, etc.)
+        if method:
+            stmt = stmt.where(Payment.method.in_(method))
+        elif filters.method:
+            stmt = stmt.where(Payment.method == filters.method)
 
-    # --- EXISTING FILTERS ---
-    if filters.invoice_id:
-        stmt = stmt.where(Payment.invoice_id == filters.invoice_id)
+        # 4. Pagination & Execution
+        stmt = stmt.limit(limit).offset(offset)
+        result = await db.execute(stmt)
+        payments = result.scalars().all()
 
-    if filters.patient_id:
-        stmt = stmt.where(Invoice.patient_id == filters.patient_id)
+        return payments
 
-    # --- MULTI-METHOD FILTERING ---
-    # We use .in_() so the user can filter by ['cash', 'momo'] simultaneously
-    if method:
-        stmt = stmt.where(Payment.method.in_(method))
-    elif filters.method:  # Fallback to single method if provided via filter class
-        stmt = stmt.where(Payment.method == filters.method)
-
-    result = await db.execute(stmt)
-    payments = result.scalars().all()
-
-    return payments
+    except Exception as e:
+        print(f"Transaction Fetch Error: {e}")
+        return []
 
 
-@router.get(
-    "/invoices",
-    # Note: Ensure InvoiceResponse is imported or defined in your scope
-    response_model=list[InvoiceResponse],
-)
+@router.get("/invoices", response_model=list[InvoiceResponse])
 async def get_all_invoices(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     status: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
+    limit: int = 100,
+    offset: int = 0,
 ):
-    stmt = (
-        select(Invoice)
-        .options(
-            selectinload(Invoice.patient),
-            selectinload(Invoice.items).selectinload(InvoiceItem.test),
-            selectinload(Invoice.payments),
+    try:
+        # 1. Base query with deep loading to prevent N+1 issues
+        stmt = (
+            select(Invoice)
+            .options(
+                selectinload(Invoice.patient),
+                selectinload(Invoice.items).selectinload(InvoiceItem.test),
+                selectinload(Invoice.payments),
+            )
+            .order_by(Invoice.created_at.desc())
         )
-        .order_by(Invoice.created_at.desc())
-    )
 
-    # --- DATE RANGE FILTERING ---
-    # Compares the DATE part of created_at to the provided start/end dates
-    if start_date:
-        stmt = stmt.where(func.date(Invoice.created_at) >= start_date)
+        # 2. Date Range Filtering
+        if start_date:
+            stmt = stmt.where(func.date(Invoice.created_at) >= start_date)
+        if end_date:
+            stmt = stmt.where(func.date(Invoice.created_at) <= end_date)
 
-    if end_date:
-        stmt = stmt.where(func.date(Invoice.created_at) <= end_date)
+        # 3. Status Filtering
+        if status:
+            stmt = stmt.where(Invoice.status.ilike(status))
 
-    # --- STATUS FILTERING ---
-    if status:
-        # Using ilike for case-insensitive matching (e.g., "Paid" vs "paid")
-        stmt = stmt.where(Invoice.status.ilike(status))
+        # 4. Execution
+        stmt = stmt.limit(limit).offset(offset)
+        result = await db.execute(stmt)
+        invoices = result.scalars().all()
 
-    result = await db.execute(stmt)
-    invoices = result.scalars().all()
+        return invoices
 
-    return invoices
+    except Exception as e:
+        print(f"Error fetching invoices: {e}")
+        return []
 
 
 @router.get(

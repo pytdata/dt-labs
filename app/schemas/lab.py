@@ -225,6 +225,13 @@ class AppointmentBaseResponse(BaseModel):
     appointment_at: Optional[datetime] = None
     patient: PatientResponse
     doctor: Optional[DoctorResponse] = None
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="APT")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -232,7 +239,13 @@ class AppointmentBaseResponse(BaseModel):
 class LabOrderBaseResponse(BaseModel):
     id: int
     # order_no: str | None = None
-    appointment: AppointmentBaseResponse  # Nested Appointment
+    # appointment: AppointmentBaseResponse  # Nested Appointment
+    patient: Optional[QueuePatient] = None
+    appointment: Optional[AppointmentBaseResponse] = None
+
+    # We add private attrs here too in case you want an Order display_id later
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="LAB")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -245,8 +258,14 @@ class LabQueueResponse2(BaseModel):
     test: TestResponse
     order: LabOrderBaseResponse
 
-    # This allows Pydantic to use the 'entered_at' value from the DB
-    # for the 'created_at' field in JSON
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="RAD")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
+
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 

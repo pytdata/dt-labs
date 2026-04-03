@@ -167,7 +167,7 @@ function renderData(item) {
     return `  
     <tr class="align-middle">
         <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-        <td class="fw-bold text-dark">#ORD-${item.id}</td>
+        <td class="fw-bold text-dark">${item.display_id}</td>
         <td>
             <div class="d-flex flex-column">
                 <span class="text-dark fw-medium">${patient.full_name}</span>

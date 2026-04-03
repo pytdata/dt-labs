@@ -12,7 +12,7 @@ from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Test
 from app.models.company import CompanyProfile, OrganizationPrefix
 from app.models.enums import LabStage, LabStatus
-from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult
+from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Patient
 from app.schemas.appointment import TestResponse
 from app.schemas.lab import LabOrderItemResponse, LabQueueResponse, LabQueueResponse2
 from app.core.config import settings
@@ -34,32 +34,69 @@ class PhlebotomyStatus(str, Enum):
     in_progress = "in_progress"
 
 
-@router.get("/phlebotomy-queue/")
+@router.get("/phlebotomy-queue/", response_model=list[LabQueueResponse2])
 async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
-    """
-    Fetches only LabOrderItems that require phlebotomy and are awaiting results.
-    """
+    # 1. Fetch Global Prefix Settings
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    org_code = settings.org_identifier if settings else "YKG"
+    lab_prefix = settings.lab if settings else "LAB"
+    pat_prefix = settings.patient if settings else "PAT"
+    apt_prefix = settings.appointment if settings else "APT"
+
+    # 2. Build Query with explicit Eager Loading for the Doctor
     stmt = (
         select(LabOrderItem)
         .join(Test, LabOrderItem.test_id == Test.id)
         .join(LabOrder, LabOrderItem.order_id == LabOrder.id)
         .where(
-            # Using your specific Enum or String status
             LabOrderItem.status == LabStatus.AWAITING_RESULTS,
-            # LabOrderItem.status == LabStatus.IN_PROGRESS,
-            # Ensure it's a lab test, not radiology
             Test.requires_phlebotomy == True,
         )
         .options(
-            # Match your model relationships
-            selectinload(LabOrderItem.order).selectinload(LabOrder.patient),
+            selectinload(LabOrderItem.order).options(
+                selectinload(LabOrder.patient),
+                selectinload(LabOrder.appointment).options(
+                    selectinload(Appointment.patient),
+                    selectinload(Appointment.doctor),  # <--- ADD THIS LINE
+                ),
+            ),
             selectinload(LabOrderItem.test).selectinload(Test.test_category),
         )
         .order_by(LabOrder.created_at.asc())
     )
 
     result = await db.execute(stmt)
-    return result.scalars().all()
+    items = result.scalars().all()
+
+    # 3. Transform and Inject
+    queue_out = []
+    for item in items:
+        # Now model_validate won't trigger a lazy-load error for the doctor
+        q_dto = LabQueueResponse2.model_validate(item)
+
+        setattr(q_dto, "_org_code", org_code)
+        setattr(q_dto, "_mod_prefix", lab_prefix)
+
+        if q_dto.order:
+            if q_dto.order.patient:
+                setattr(q_dto.order.patient, "_org_code", org_code)
+                setattr(q_dto.order.patient, "_mod_prefix", pat_prefix)
+
+            if q_dto.order.appointment:
+                appt = q_dto.order.appointment
+                setattr(appt, "_org_code", org_code)
+                setattr(appt, "_mod_prefix", apt_prefix)
+
+                if appt.patient:
+                    setattr(appt.patient, "_org_code", org_code)
+                    setattr(appt.patient, "_mod_prefix", pat_prefix)
+
+        queue_out.append(q_dto)
+
+    return queue_out
 
 
 @router.post("/results/submit-phlebotomy")
@@ -101,6 +138,17 @@ async def get_radiology_queue(
     end_date: Optional[date] = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # 1. Fetch Global Prefix Settings
+    prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
+    prefix_res = await db.execute(prefix_stmt)
+    settings = prefix_res.scalar_one_or_none()
+
+    org_code = settings.org_identifier if settings else "YKG"
+    rad_prefix = settings.radiology if settings else "RAD"
+    pat_prefix = settings.patient if settings else "PAT"
+    apt_prefix = settings.appointment if settings else "APT"
+
+    # 2. Build Query
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
@@ -111,49 +159,62 @@ async def get_radiology_queue(
         .outerjoin(Appointment.doctor)
     )
 
-    # 1. Base Filters (Status and Stage)
     filters = [
         Test.requires_phlebotomy == False,
         LabOrderItem.status.in_(
-            [
-                LabStatus.AWAITING_RESULTS,
-                LabStatus.AWAITING_APPROVAL,
-            ]
+            [LabStatus.AWAITING_RESULTS, LabStatus.AWAITING_APPROVAL]
         ),
         LabOrderItem.stage.in_(
-            [
-                LabStage.BOOKING,
-                LabStage.RUNNING,
-                LabStage.ANALYZING,
-            ]
+            [LabStage.BOOKING, LabStage.RUNNING, LabStage.ANALYZING]
         ),
     ]
 
-    # 2. Dynamic Date Filtering
-    # We use func.date() to ensure we compare only the date part of a timestamp
     if start_date:
         filters.append(func.date(LabOrderItem.created_at) >= start_date)
     if end_date:
         filters.append(func.date(LabOrderItem.created_at) <= end_date)
 
-    # Apply all filters
-    stmt = stmt.where(*filters)
-
-    # 3. Eager Loading and Ordering
-    stmt = stmt.options(
-        contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
-        contains_eager(LabOrderItem.order)
-        .contains_eager(LabOrder.appointment)
+    stmt = (
+        stmt.where(*filters)
         .options(
-            contains_eager(Appointment.patient), contains_eager(Appointment.doctor)
-        ),
-        selectinload(LabOrderItem.radiology_result),
-        selectinload(LabOrderItem.lab_result),
-    ).order_by(LabOrderItem.id.desc())
+            contains_eager(LabOrderItem.test).contains_eager(Test.test_category),
+            contains_eager(LabOrderItem.order)
+            .contains_eager(LabOrder.appointment)
+            .options(
+                contains_eager(Appointment.patient), contains_eager(Appointment.doctor)
+            ),
+            selectinload(LabOrderItem.radiology_result),
+            selectinload(LabOrderItem.lab_result),
+        )
+        .order_by(LabOrderItem.id.desc())
+    )
 
     result = await db.execute(stmt)
     results = result.unique().scalars().all()
-    return results
+
+    # 3. Transform and Inject Prefixes
+    queue_out = []
+    for item in results:
+        # Validate Pydantic Model
+        q_dto = LabQueueResponse2.model_validate(item)
+
+        # Inject Radiology Item Prefixes
+        setattr(q_dto, "_org_code", org_code)
+        setattr(q_dto, "_mod_prefix", rad_prefix)
+
+        # Cascade to Appointment and Patient
+        if q_dto.order and q_dto.order.appointment:
+            appt = q_dto.order.appointment
+            setattr(appt, "_org_code", org_code)
+            setattr(appt, "_mod_prefix", apt_prefix)
+
+            if appt.patient:
+                setattr(appt.patient, "_org_code", org_code)
+                setattr(appt.patient, "_mod_prefix", pat_prefix)
+
+        queue_out.append(q_dto)
+
+    return queue_out
 
 
 @router.get("/active-appointments/", response_model=list[LabQueueResponse])
@@ -284,6 +345,7 @@ async def get_lab_queue(
     end_date: date | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+
     # 1. Fetch Global Prefix Settings
     prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
     prefix_res = await db.execute(prefix_stmt)

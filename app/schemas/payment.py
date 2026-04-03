@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, PrivateAttr, computed_field
 
 from app.schemas.lab import PatientOut
 
@@ -19,7 +19,15 @@ class PatientMiniResponse(BaseModel):
     full_name: Optional[str] = None
     profile_image: str
 
-    model_config = {"from_attributes": True}
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="PAT")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TestMiniResponse(BaseModel):
@@ -53,7 +61,15 @@ class InvoiceMiniResponse(BaseModel):
     status: str
     patient: PatientMiniResponse
 
-    model_config = {"from_attributes": True}
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="INV")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserMiniResponse(BaseModel):
@@ -77,7 +93,17 @@ class PaymentResponse(BaseModel):
     invoice: InvoiceMiniResponse
     verified_by: Optional[UserMiniResponse] = None
 
-    model_config = {"from_attributes": True}
+    # Standardized Transaction Prefix
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="TRN")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        """Formatted Transaction ID: YKG-TRN-0001"""
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InvoiceResponse(BaseModel):
@@ -92,6 +118,16 @@ class InvoiceResponse(BaseModel):
     patient: PatientOut
     items: list[InvoiceItemResponse]
     payments: list[PaymentResponse]
+
+    # Standardized Prefix Logic
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="INV")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        """Formatted ID: e.g., YKG-INV-0001"""
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
 
     model_config = ConfigDict(from_attributes=True)
 

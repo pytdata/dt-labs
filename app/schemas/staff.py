@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, PrivateAttr, computed_field
 from typing import Optional
 
 
@@ -23,6 +23,16 @@ class StaffResponse(BaseModel):
     gender: Gender | None
     is_active: bool
     avatar: str
+
+    # Standardized Staff Prefix
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="STF")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        """Formatted Staff ID: e.g., YKG-STF-0005"""
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
 
     model_config = ConfigDict(from_attributes=True)
 

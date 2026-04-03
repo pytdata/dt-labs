@@ -26,13 +26,14 @@ async def get_all_billing_records(
 ):
     try:
         # 1. Base query with optimized loading
-        # We use .join() because we need to filter based on Invoice status
+        # We explicitly join Appointment and Invoice to allow for filtering by Invoice status
         stmt = (
             select(Billing)
             .join(Appointment, Billing.appointment_id == Appointment.id)
             .join(Invoice, Appointment.id == Invoice.appointment_id)
             .options(
                 joinedload(Billing.patient),
+                # Ensure Invoice is loaded so the display logic/UI can access status
                 joinedload(Billing.appointment).joinedload(Appointment.invoice),
                 selectinload(Billing.items),
             )
@@ -46,24 +47,23 @@ async def get_all_billing_records(
         if end_date:
             stmt = stmt.where(func.date(Billing.created_at) <= end_date)
 
-        # 3. Status Filtering (from the linked Invoice)
+        # 3. Status Filtering (Linked from Invoice table)
         if status:
-            # Matches "Paid", "Pending", "Overdue" etc. case-insensitively
             stmt = stmt.where(Invoice.status.ilike(status))
 
-        # 4. Pagination
+        # 4. Pagination & Execution
         stmt = stmt.limit(limit).offset(offset)
-
         result = await db.execute(stmt)
-        billings = (
-            result.scalars().unique().all()
-        )  # .unique() is required when using joinedload on collections
+
+        # .unique() is critical here because joinedload on collections
+        # can create duplicate row references in the result set
+        billings = result.scalars().unique().all()
 
         return billings
 
     except Exception as e:
-        # Log the error here
-        print(f"Error fetching billing records: {e}")
+        # Professional logging for the presentation environment
+        print(f"Internal Server Error [Billing Records]: {e}")
         return []
 
 

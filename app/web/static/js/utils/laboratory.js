@@ -48,16 +48,17 @@ function renderQueue(list) {
     const container = document.querySelector(".labtest__container");
     
     container.innerHTML = list.map(item => {
+        console.log(item, "=========?????>>>>>>>")
         // Construct Full Name from JSON fields
         const patient = item.order.patient;
-        const fullName = `${patient.first_name} ${patient.surname}`;
+        const fullName = `${patient.full_name}`;
         const testName = item.test.name;
         const dateCreated = formatDate(item.order.created_at);
 
         return `
         <tr class="align-middle">
             <td><input class="form-check-input" type="checkbox"></td>
-            <td class="fw-bold">#ORD-${item.order_id}</td>
+            <td class="fw-bold">${item.display_id}</td>
             <td>
                 <div class="d-flex flex-column">
                     <span class="fw-bold text-dark">${fullName}</span>
@@ -70,7 +71,7 @@ function renderQueue(list) {
             <td><span class="badge bg-soft-warning text-warning border-warning">Awaiting Results</span></td>
             <td class="text-end">
                 <button class="btn btn-sm btn-primary shadow-sm" 
-                    onclick="openFillModal(${item.id}, '${testName.replace(/'/g, "\\'")}', '${fullName.replace(/'/g, "\\'")}')">
+                    onclick="openFillModal(${item.id}, '${testName.replace(/'/g, "\\'")}', '${fullName.replace(/'/g, "\\'")}', '${item.display_id}')">
                     <i class="ti ti-edit me-1"></i> Enter Results
                 </button>
             </td>
@@ -79,11 +80,11 @@ function renderQueue(list) {
 }
 
 // 1. OPEN MODAL & FETCH TEMPLATE
-window.openFillModal = async function(itemId, testName, patientName) {
+window.openFillModal = async function(itemId, testName, patientName, displayId) {
     // 1. UI Setup
     document.getElementById('display_test_name').innerText = testName;
     document.getElementById('display_patient_name').innerText = patientName;
-    document.getElementById('display_order_id').innerText = `#ORD-${itemId}`;
+    document.getElementById('display_order_id').innerText = `${displayId}`;
     document.getElementById('fill_order_item_id').value = itemId;
     
     const container = document.getElementById('dynamic_template_container');

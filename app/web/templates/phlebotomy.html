@@ -542,7 +542,7 @@
                         <input class="form-check-input" type="checkbox" id="select-all">
                     </div>
                 </th>
-                <th>Patient ID</th>
+                <th>Laboratory ID</th>
                 <th>Patient Name</th>
                 <th>Investigation (Sample)</th>
                 <th>Status</th>
@@ -1226,7 +1226,7 @@ function renderQueueRow(item) {
     return `
     <tr class="align-middle">
         <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
-        <td><span class="fw-bold text-dark">${patient.patient_no}</span></td>
+        <td><span class="fw-bold text-dark">${item.display_id}</span></td>
         <td>
             <div class="d-flex flex-column">
                 <span class="fw-medium text-dark">${patient.full_name}</span>

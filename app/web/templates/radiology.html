@@ -731,16 +731,51 @@
                     <textarea class="form-control" id="rad_conclusion" rows="2" placeholder="Summary of findings (e.g., Normal study)"></textarea>
                 </div>
             </div>
+            
+
+            
             <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                
-                <button type="button" id="btn_save_result" class="btn btn-primary" onclick="saveRadiologyResult()">
-                    Submit for Approval
-                </button>
-                
-                <button type="button" id="btn_finalize_result" class="btn btn-success" style="display: none;" onclick="finalizeReport()">
-                    <i class="ti ti-check me-1"></i>Approve & Finalize
-                </button>
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+    
+    <button type="button" id="btn_save_result" class="btn btn-primary" onclick="saveRadiologyResult()">
+        Submit for Approval
+    </button>
+    
+    <button type="button" id="btn_finalize_init" class="btn btn-success" style="display: none;" onclick="showInlineConfirm()">
+        <i class="ti ti-check me-1"></i>Approve & Finalize
+    </button>
+
+    <div id="inline_confirm_wrapper" style="display: none; align-items: center;" class="bg-light-warning p-2 rounded border">
+        <span class="text-dark fw-bold me-3 small">Finalize and sign report?</span>
+        <button type="button" class="btn btn-sm btn-danger me-1" onclick="executeFinalizeNow()">Yes, Sign</button>
+        <button type="button" class="btn btn-sm btn-light border" onclick="cancelInlineConfirm()">No</button>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="finalizeConfirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="card border-0 shadow">
+            <div class="card-body p-4 text-center">
+                <div class="text-warning mb-3">
+                    <i class="ti ti-alert-triangle fs-1"></i>
+                </div>
+                <h5 class="mb-2">Finalize Report?</h5>
+                <p class="text-muted">Once finalized, this report will be signed off and cannot be edited further.</p>
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button 
+                        type="button" 
+                        class="btn btn-primary" 
+                        id="confirmFinalizeBtn"
+                        onclick="executeFinalConfirm()"
+                    >
+                        Yes, Finalize & Sign
+                    </button>
+                </div>
             </div>
         </div>
     </div>

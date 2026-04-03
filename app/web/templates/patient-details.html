@@ -285,12 +285,12 @@
                         <h4 class="mb-1">Patient Details</h4>
                         <div class="text-end">
                             <ol class="breadcrumb m-0 py-0">
-                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
                                 <li class="breadcrumb-item active">Patient Details</li>
                             </ol>
                         </div>
                     </div>
-                    <a href="all-patients.html" class="fw-medium d-flex align-items-center"><i class="ti ti-arrow-left me-1"></i>Back to Patient</a>
+                    <a href="{{ request.url_for('patients') }}" class="fw-medium d-flex align-items-center"><i class="ti ti-arrow-left me-1"></i>Back to Patient</a>
                 </div>
 				<!-- End Page Header -->
 
@@ -1040,7 +1040,7 @@
 	<script src="/static/plugins/simplebar/simplebar.min.js" type="0023b285d84836549fa43e14-text/javascript"></script>
 
     <script src="/static/js/script.js" type="09e0d2b48ab211936e55812e-text/javascript"></script>
-
+    <script data-cfasync="false" src="/static/js/min/moment.min.js"></script>
     <script>
         const currentPatient = "{{patient.id}}"; // should be above patient-details.js
     </script>

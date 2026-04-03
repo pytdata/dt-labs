@@ -156,7 +156,7 @@ function renderData(transaction) {
     return `
     <tr>
         <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-        <td class="fw-bold">#TS-${transaction.id}</td>
+        <td class="fw-bold">${transaction.display_id}</td>
         <td>
             <div class="d-flex align-items-center">
                 <img src="${transaction.invoice?.patient?.profile_image || '/static/img/profiles/avatar-01.jpg'}" class="avatar avatar-xs me-2 rounded">

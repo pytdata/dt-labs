@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr, computed_field
 from typing import List, Optional
 from decimal import Decimal
 
@@ -71,6 +71,19 @@ class BillingRead(BaseModel):
     patient: PatientSummaryRead
     appointment: AppointmentSummaryRead
     items: list[BillingItemRead]
+
+    # Matching your design pattern exactly
+    _org_code: str = PrivateAttr(default="YKG")
+    _mod_prefix: str = PrivateAttr(default="BIL")
+
+    @computed_field
+    @property
+    def display_id(self) -> str:
+        """
+        Generates the standard format: YKG-BIL-0074
+        Note: Using zfill(4) to match your Appointment pattern
+        """
+        return f"{self._org_code}-{self._mod_prefix}-{str(self.id).zfill(4)}"
 
     class Config:
         from_attributes = True

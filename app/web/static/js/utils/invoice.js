@@ -138,7 +138,7 @@ function renderRow(invoice) {
     return `
     <tr>
         <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-        <td><a href="javascript:void(0);" onclick="viewInvoiceDetail(${invoice.id})" class="fw-bold text-primary">#INV-${invoice.id}</a></td>
+        <td><a href="javascript:void(0);" onclick="viewInvoiceDetail(${invoice.id})" class="fw-bold text-primary">${invoice.display_id}</a></td>
         <td>
             <div class="d-flex align-items-center">
                 <img src="${invoice.patient?.profile_image || '/static/img/default-user.png'}" class="avatar avatar-md rounded-circle me-2">

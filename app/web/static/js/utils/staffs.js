@@ -490,7 +490,7 @@ function renderData(staffData) {
                     <input class="form-check-input" type="checkbox">
                 </div>
             </td>
-            <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">${staffData.id}</a></td>
+            <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#view_modal">${staffData.display_id}</a></td>
             <td>
                 <div class="d-flex align-items-center">
                         <a href="javascript:void(0);" class="avatar avatar-xs me-2" data-bs-toggle="modal"

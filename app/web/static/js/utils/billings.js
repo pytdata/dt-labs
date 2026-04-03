@@ -109,6 +109,8 @@ async function fetchAndRender(startDate = '', endDate = '') {
  */
 function renderTable(records) {
     if (!billingContainerEL) return;
+
+    console.log("RECORDS: ==>", records)
     
     totalBillingEl.textContent = `${records.length} Billing`;
 
@@ -164,7 +166,7 @@ function renderRow(bill) {
     return `
     <tr>
         <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-        <td><span class="text-primary fw-bold">${bill.bill_no}</span></td>
+        <td><span class="text-primary fw-bold">${bill.display_id}</span></td>
         <td>
             <div class="d-flex align-items-center">
                 <img src="${bill.patient?.profile_image || '/static/img/default-user.png'}" class="avatar avatar-sm rounded-circle me-2">
@@ -223,7 +225,7 @@ window.viewBillDetails = async function(billId) {
             <div class="mb-3 d-flex justify-content-between align-items-start">
                 <div>
                     <h5 class="mb-1">${bill.patient.first_name} ${bill.patient.surname}</h5>
-                    <p class="text-muted mb-0 small">Bill No: <strong class="text-primary">${bill.bill_no}</strong></p>
+                    <p class="text-muted mb-0 small">Bill No: <strong class="text-primary">${bill.display_id}</strong></p>
                 </div>
                 <div class="text-end">
                     <span class="badge ${invoice?.status === 'paid' ? 'bg-success' : 'bg-warning'} mb-1">

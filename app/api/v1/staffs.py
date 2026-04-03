@@ -29,22 +29,33 @@ class FilterParams(BaseModel):
 async def get_all_staffs(
     filter_query: Annotated[FilterParams, Query()], db: AsyncSession = Depends(get_db)
 ):
-    stmt = select(User).order_by(User.id.desc())
-    if filter_query.name:
-        stmt = stmt.where(User.full_name.ilike(f"%{filter_query.name.strip()}%"))
+    try:
+        # 1. Base Query
+        stmt = select(User).order_by(User.id.desc())
 
-    if filter_query.role:
-        q = f"%{filter_query.role.strip()}%"
-        stmt = stmt.where(User.role.ilike(q))
-    if filter_query.gender:
-        stmt = stmt.where(User.gender.in_([filter_query.gender]))
+        # 2. Dynamic Filtering
+        if filter_query.name:
+            stmt = stmt.where(User.full_name.ilike(f"%{filter_query.name.strip()}%"))
 
-    stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
+        if filter_query.role:
+            stmt = stmt.where(User.role.ilike(f"%{filter_query.role.strip()}%"))
 
-    result = await db.execute(stmt)
-    staffs = result.scalars().all()
+        if filter_query.gender:
+            # Ensuring it handles single or list inputs if your FilterParams varies
+            stmt = stmt.where(User.gender == filter_query.gender)
 
-    return staffs
+        # 3. Pagination
+        stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
+
+        # 4. Execution
+        result = await db.execute(stmt)
+        staffs = result.scalars().all()
+
+        return staffs
+
+    except Exception as e:
+        print(f"Staff Fetch Error: {e}")
+        return []
 
 
 @router.get("/{id}/", response_model=StaffResponse)

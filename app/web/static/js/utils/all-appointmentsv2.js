@@ -1006,18 +1006,18 @@ function renderData(appointment) {
                     </a>
                 </li>
                 <hr class="dropdown-divider">
-                <li>
+               <!-- <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center add__sample__btn" data-bs-toggle="modal" data-bs-target="#add_sample_modal" data-appointmentId=${appointment.id}><i class="ti ti-plus me-1"></i>Add Sample</a>
-                </li>
+                </li> -->
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center view__appointment__btn" data-bs-toggle="modal" data-bs-target="#view_modal" data-appointmentId=${appointment.id}><i class="ti ti-eye me-1"></i>View Details</a>
                 </li>
                 <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center edit__appointment__btn" data-bs-toggle="modal" data-bs-target="#edit_modal" data-appointmentId=${appointment.id}><i class="ti ti-edit me-1"></i>Edit</a>
                 </li>
-                <li>
+               <!-- <li>
                     <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center delete__appointment__btn" data-appointmentId=${appointment.id} data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="ti ti-trash me-1"></i>Delete</a>
-                </li>
+                </li> -->
             </ul>
         </td>
     </tr>`;
