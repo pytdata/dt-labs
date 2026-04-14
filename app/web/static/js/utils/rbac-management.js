@@ -1,28 +1,38 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const rowContainer = document.getElementById('dynamic-permission-rows');
     const addBtn = document.getElementById('add-permission-row');
     const roleNameInput = document.getElementById('role_name');
     const roleSlugInput = document.getElementById('role_slug');
     const roleModalEl = document.getElementById('roleModal');
     
-    // Track if we are editing
+    // State Management
     let editingRoleId = null;
-
-const resources = [
-    'patients', 
-    'billing', 
-    'inventory', 
-    'lab_results', 
-    'staff', 
-    'appointments', 
-    'settings'  // <--- Add this!
-];
+    let availableResources = []; // Will be populated from the API
     const actions = ['read', 'write', 'update', 'delete'];
+
+    /**
+     * INITIALIZE: Fetch resources from the backend once on load
+     */
+    async function initializeResources() {
+        try {
+            const response = await fetch('/api/v1/settings/resources');
+            if (!response.ok) throw new Error("Failed to load system resources");
+            availableResources = await response.json();
+        } catch (error) {
+            console.error(error);
+            // Fallback to minimal set if API fails to prevent total UI breakage
+            availableResources = ['patients', 'billing', 'staff', 'settings'];
+            showToast("Warning: Using fallback resource list.", "warning");
+        }
+    }
 
     // Auto-generate slug from name (only if not editing)
     roleNameInput.addEventListener('input', (e) => {
         if (!editingRoleId) {
-            roleSlugInput.value = e.target.value.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
+            roleSlugInput.value = e.target.value
+                .toLowerCase()
+                .replace(/\s+/g, '_')
+                .replace(/[^\w-]+/g, '');
         }
     });
 
@@ -38,7 +48,11 @@ const resources = [
                 <div class="col-md-5">
                     <select class="form-select resource-select">
                         <option value="">-- Select Module --</option>
-                        ${resources.map(r => `<option value="${r}" ${r === selectedResource ? 'selected' : ''}>${r.toUpperCase()}</option>`).join('')}
+                        ${availableResources.map(r => `
+                            <option value="${r}" ${r === selectedResource ? 'selected' : ''}>
+                                ${r.toUpperCase().replace('_', ' ')}
+                            </option>
+                        `).join('')}
                     </select>
                 </div>
                 <div class="col-md-5">
@@ -218,7 +232,10 @@ const resources = [
         document.querySelector('#roleModal .modal-title').innerText = "Configuration: System Role";
     });
 
-    // Initial Load
+    // EXECUTION FLOW
+    // 1. Load resources first so the "Add Row" button works immediately
+    await initializeResources();
+    // 2. Render the table
     fetchAndRenderRoles();
 });
 
@@ -229,12 +246,15 @@ window.showToast = window.showToast || function(message, type = 'success') {
     const toastIcon = document.getElementById('toastIcon');
     if (!toastEl) return;
 
-    toastEl.classList.remove('bg-success', 'bg-danger');
+    toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning');
     toastText.innerText = message;
 
     if (type === 'success') {
         toastEl.classList.add('bg-success');
         if (toastIcon) toastIcon.className = 'ti ti-circle-check fs-4 me-2';
+    } else if (type === 'warning') {
+        toastEl.classList.add('bg-warning');
+        if (toastIcon) toastIcon.className = 'ti ti-alert-circle fs-4 me-2';
     } else {
         toastEl.classList.add('bg-danger');
         if (toastIcon) toastIcon.className = 'ti ti-alert-triangle fs-4 me-2';

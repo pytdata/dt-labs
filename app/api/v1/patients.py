@@ -89,7 +89,6 @@ async def create_patient(
 async def list_patients(
     filter_query: Annotated[FilterParams, Query()],
     db: AsyncSession = Depends(get_db),
-    # Optional: if you need the user object for audit or filtering
     # current_user: User = Depends(get_current_user),
 ):
     """

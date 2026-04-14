@@ -63,12 +63,20 @@ class User(Base):
     def has_permission(self, resource: str, action: str) -> bool:
         """
         Checks if the user's role has a specific permission.
-        Usage: user.has_permission("patients", "read")
+        Admins bypass all checks.
         """
-        if not self.role or not self.role.permissions:
+        if not self.role:
             return False
 
-        # Match against your Permission model attributes: resource and action
+        # 1. THE ADMIN OVERRIDE
+        # If the role slug is 'admin', allow everything
+        if self.role.slug == "admin":
+            return True
+
+        # 2. STANDARD PERMISSION CHECK
+        if not self.role.permissions:
+            return False
+
         return any(
             p.resource == resource and p.action == action for p in self.role.permissions
         )

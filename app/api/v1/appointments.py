@@ -51,17 +51,16 @@ class FilterParams(BaseModel):
 
 @router.post(
     "/",
-    # --- PERMISSION INTEGRATION ---
-    # Restricts access to users with 'appointments:write' permission
     dependencies=[Depends(PermissionChecker("appointments", "write"))],
 )
 async def create_appointment(
     data: AppointmenCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),  # Added for audit tracking
+    current_user: User = Depends(get_current_user),
 ):
     try:
-        async with db.begin():
+        # Use begin_nested() to create a Savepoint
+        async with db.begin_nested():
             # 1. Fetch Tests to calculate totals
             stmt = select(Test).where(Test.id.in_(data.test_ids))
             result = await db.execute(stmt)
@@ -75,7 +74,7 @@ async def create_appointment(
 
             total_billable_amount = sum(t.price_ghs for t in tests)
 
-            # 2. Create Appointment
+            # Create Appointment
             appointment = Appointment(
                 patient_id=data.patient_id,
                 doctor_id=data.doctor_id,
@@ -83,33 +82,33 @@ async def create_appointment(
                 mode_of_payment=data.mode_of_payment,
                 total_price=total_billable_amount,
                 tests=tests,
-                created_by_id=current_user.id,  # Audit: track who booked this
+                created_by_user_id=current_user.id,
             )
             db.add(appointment)
             await db.flush()
 
-            # 3. Create Lab Order (Clinical container)
+            # Create Lab Order
             order = LabOrder(
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
                 status="pending",
-                created_by_id=current_user.id,  # Audit
+                created_by_id=current_user.id,
             )
             db.add(order)
             await db.flush()
 
-            # --- 4. Create Billing Record (Master Audit Log) ---
+            # Create Billing Record
             billing = Billing(
                 bill_no=f"BIL-{appointment.id}-{datetime.now().strftime('%M%S')}",
                 patient_id=data.patient_id,
                 appointment_id=appointment.id,
                 total_billed=total_billable_amount,
-                created_by_id=current_user.id,  # Audit
+                created_by_id=current_user.id,
             )
             db.add(billing)
             await db.flush()
 
-            # 5. Create Master Invoice (Transactional record)
+            #  Create Master Invoice
             invoice = Invoice(
                 invoice_no=f"INV-{appointment.id}-{datetime.now().strftime('%M%S')}",
                 patient_id=data.patient_id,
@@ -120,14 +119,13 @@ async def create_appointment(
                 balance=total_billable_amount,
                 status="unpaid",
                 payment_mode=data.mode_of_payment,
-                created_by_id=current_user.id,  # Audit
+                created_by_id=current_user.id,
             )
             db.add(invoice)
             await db.flush()
 
-            # 6. Process Tests
+            # Process Tests
             for test in tests:
-                # A. Create the LabOrderItem (Clinical Task)
                 order_item = LabOrderItem(
                     order_id=order.id,
                     test_id=test.id,
@@ -137,7 +135,6 @@ async def create_appointment(
                 db.add(order_item)
                 await db.flush()
 
-                # B. Create BillingItem
                 db.add(
                     BillingItem(
                         billing_id=billing.id,
@@ -147,7 +144,6 @@ async def create_appointment(
                     )
                 )
 
-                # C. Create the InvoiceItem
                 db.add(
                     InvoiceItem(
                         invoice_id=invoice.id,
@@ -161,6 +157,9 @@ async def create_appointment(
                     )
                 )
 
+        # Explicitly commit the main transaction after the nested block succeeds
+        await db.commit()
+
         return {
             "status": "success",
             "message": "Appointment, Billing, and Invoice created successfully.",
@@ -170,10 +169,10 @@ async def create_appointment(
         }
 
     except HTTPException:
-        # Re-raise HTTP exceptions to avoid getting caught by the generic catch-all
         raise
     except Exception as e:
-        # Log the error properly in a production environment
+        await db.rollback()  # Rollback on any unexpected failure
+        print(f"TRANSACTION ERROR: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="System failed to process the appointment transaction.",

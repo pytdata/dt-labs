@@ -299,3 +299,28 @@ function computeFlag(value, min, max) {
   if (value < min) return "L";
   return "N";
 }
+
+
+
+
+// {% if request.user.has_permission('patients', 'write') %}
+//     <a href="{{ url_for('patient_add') }}" class="btn btn-success">
+//         <i class="fas fa-plus"></i> Add Patient
+//     </a>
+// {% endif %}
+
+// {% if request.user.has_permission('patients', 'read') %}
+//     <table class="table">
+//         </table>
+// {% else %}
+//     <div class="alert alert-warning">
+//         You do not have permission to view the patient list.
+//     </div>
+// {% endif %}
+
+
+
+
+// {% if current_user.has_permission('patients', 'write') %}
+//     <button class="btn btn-warning">Edit Profile</button>
+// {% endif %}

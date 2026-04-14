@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from app.core import deps, constants
 from app.db.session import get_db
 from app.models.company import OrganizationPrefix
+from app.models.users import User
 from app.schemas.settings import PrefixUpdate
 from typing import List
 
@@ -167,3 +169,14 @@ async def update_role(
     await db.commit()
     await db.refresh(db_role, attribute_names=["permissions"])
     return db_role
+
+
+@router.get("/resources")
+async def get_system_resources(
+    current_user: User = Depends(deps.get_current_user),
+):
+
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    return constants.SYSTEM_RESOURCES

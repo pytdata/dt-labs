@@ -45,6 +45,10 @@ class Patient(Base):
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
     age: Mapped[int] = mapped_column()
 
+    # created by
+    created_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
     # Billing / insurance
     patient_type: Mapped[str] = mapped_column(
         String(20), default="cash"
@@ -74,6 +78,7 @@ class Patient(Base):
         "Visit", back_populates="patient", cascade="all, delete-orphan"
     )
     appointments: Mapped[list["Appointment"]] = relationship(back_populates="patient")
+    created_by_user = relationship("User", foreign_keys=[created_by_id])
 
     @property
     def full_name(self) -> str:
@@ -169,6 +174,10 @@ class LabOrder(Base):
         ForeignKey("appointments.id"),
         nullable=True,
     )
+    # created by
+    created_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -193,6 +202,7 @@ class LabOrder(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    created_by_user = relationship("User", foreign_keys=[created_by_id])
 
 
 class LabOrderItem(Base):

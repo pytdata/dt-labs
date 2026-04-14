@@ -45,6 +45,10 @@ class Invoice(Base):
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    # created by
+    created_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
 
     patient = relationship("Patient")
     order = relationship("LabOrder")
@@ -62,6 +66,7 @@ class Invoice(Base):
     )
     appointment: Mapped["Appointment"] = relationship(back_populates="invoice")
     payments: Mapped[list["Payment"]] = relationship(back_populates="invoice")
+    created_by_user = relationship("User", foreign_keys=[created_by_id])
 
 
 class InvoiceItem(Base):
@@ -142,6 +147,9 @@ class Billing(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    created_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
 
     # Relationships
     appointment = relationship("Appointment")
@@ -149,6 +157,7 @@ class Billing(Base):
     items: Mapped[list["BillingItem"]] = relationship(
         back_populates="billing", cascade="all, delete-orphan"
     )
+    created_by_user = relationship("User", foreign_keys=[created_by_id])
 
 
 class BillingItem(Base):

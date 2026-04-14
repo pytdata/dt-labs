@@ -16,7 +16,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, func, select, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 
 from app.core import deps
@@ -75,7 +75,9 @@ async def dashboard(
     request: Request,
     current_user: User = Depends(deps.get_current_user),  # Ensure logged in
 ):
-    return _render(request, "index.html", active_page="dashboard")
+    return _render(
+        request, "index.html", active_page="dashboard", current_user=current_user
+    )
 
 
 @router.get("/login", response_class=HTMLResponse, name="login")
@@ -239,7 +241,6 @@ async def patient_add_post(
         guardian_phone=guardian_phone,
         guardian_relation=guardian_relation,
     )
-    print(patient)
     db.add(patient)
     await db.commit()
 
@@ -250,21 +251,48 @@ async def patient_add_post(
     "/patients/{patient_id}", response_class=HTMLResponse, name="patient_detail"
 )
 async def patient_detail(
-    request: Request, patient_id: int, db: AsyncSession = Depends(get_db)
+    request: Request,
+    patient_id: int,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
 ):
-    patient = (
-        await db.execute(select(Patient).where(Patient.id == patient_id))
-    ).scalar_one_or_none()
+    # Permission Check
+    if not current_user.has_permission("patients", "read"):
+        # For UI routes, raise a 403 or redirect to a 'denied' page
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to view patient details.",
+        )
+
+    #  Fetch Patient
+    result = await db.execute(
+        select(Patient)
+        .where(Patient.id == patient_id)
+        # It's good practice to load the insurance details for the detail view
+        .options(joinedload(Patient.insurance_company))
+    )
+    patient = result.scalar_one_or_none()
+
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
-    # reuse template if available
+
+    #  Template Selection
     tpl = (
         "patient-details.html"
         if (settings.TEMPLATES_PATH / "patient-details.html").exists()
         else "all-patients.html"
     )
-    print(tpl)
-    return _render(request, tpl, active_page="patients", patient=patient)
+
+    # Render with Context
+    return _render(
+        request,
+        tpl,
+        active_page="patients",
+        patient=patient,
+        # Pass current_user to allow the template to hide/show Edit or Delete buttons
+        current_user=current_user,
+    )
 
 
 @router.get("/patients/{patient_id}/visit", name="patient_new_visit")
@@ -306,34 +334,54 @@ async def patient_new_visit_post(
     name="appointment_add",
 )
 async def appointment_add_get(
-    request: Request, patient_id: int, db: AsyncSession = Depends(get_db)
+    request: Request,
+    patient_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
 ):
+    # Permission Check
+    # Creating an appointment is a 'write' action
+    if not current_user.has_permission("appointments", "write"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to book appointments.",
+        )
+
+    # Fetch Patient
     patient = (
         await db.execute(select(Patient).where(Patient.id == patient_id))
     ).scalar_one_or_none()
+
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
-    test_categories = await db.execute(select(TestCategory))
-    doctors = await db.execute(
-        select(User).where(
-            User.role.in_(
-                [StaffRole.lab_scientist, StaffRole.Admin, StaffRole.Receptionist]
-            ),
-            User.is_active == True,  # noqa: E712
-        )  # noqa: E712
+    # Fetch Test Categories for the selection UI
+    test_categories = (await db.execute(select(TestCategory))).scalars().all()
+
+    # Fetch Staff (Filtering by Role Slugs)
+    # Adjusted to use the relationship logic we established earlier
+    staff_stmt = (
+        select(User)
+        .join(User.role)
+        .join(Role.permissions)
+        .where(
+            Permission.resource == "appointments",
+            Permission.action == "write",
+            User.is_active == True,
+        )
+        .distinct()  # Prevent duplicate users if they have multiple matching perms
     )
+    staff_results = (await db.execute(staff_stmt)).scalars().all()
 
-    staff_results = doctors.scalars().all()
-    test_categories_results = test_categories.scalars().all()
-
+    # Render
     return _render(
         request,
         "appointment-add.html",
         active_page="appointments",
         patient=patient,
         staffs=staff_results,
-        test_categories=test_categories_results,
+        test_categories=test_categories,
+        current_user=current_user,
     )
 
 
@@ -344,21 +392,54 @@ async def appointment_add_post(
     appointment_at: str = Form(...),
     notes: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
 ):
+    # Permission Check
+    if not current_user.has_permission("appointments", "write"):
+        # Redirect back with an error or show a 403
+        return RedirectResponse(
+            url=f"/patients/{patient_id}?error=unauthorized", status_code=303
+        )
+
+    #  Verify Patient Existence
     patient = (
         await db.execute(select(Patient).where(Patient.id == patient_id))
     ).scalar_one_or_none()
+
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
-    # flatpickr often returns "YYYY-MM-DD HH:mm"; accept both ISO and that format
+
+    # Parse Datetime (Handling Flatpickr formats)
     try:
         dt = datetime.fromisoformat(appointment_at)
     except ValueError:
-        dt = datetime.strptime(appointment_at, "%Y-%m-%d %H:%M")
+        try:
+            dt = datetime.strptime(appointment_at, "%Y-%m-%d %H:%M")
+        except ValueError:
+            # Fallback/Error if format is totally unexpected
+            raise HTTPException(
+                status_code=400, detail="Invalid date format. Expected YYYY-MM-DD HH:mm"
+            )
 
-    appt = Appointment(patient_id=patient_id, appointment_at=dt, notes=notes)
-    db.add(appt)
-    await db.commit()
+    # Create Appointment with Audit Data
+    appt = Appointment(
+        patient_id=patient_id,
+        appointment_at=dt,
+        notes=notes,
+        # Track who performed the booking
+        created_by_user_id=current_user.id,
+    )
+
+    try:
+        db.add(appt)
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        print(f"Booking Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save appointment.")
+
+    # Success Redirect
     return RedirectResponse(url=request.url_for("appointments"), status_code=303)
 
 
@@ -490,22 +571,47 @@ async def patient_book_lab_post(
 
 @router.get("/invoice/{invoice_id}", response_class=HTMLResponse, name="invoice_detail")
 async def invoice_detail(
-    request: Request, invoice_id: int, db: AsyncSession = Depends(get_db)
+    request: Request,
+    invoice_id: int,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
 ):
-    invoice = (
-        await db.execute(
-            select(Invoice)
-            .where(Invoice.id == invoice_id)
-            .options(
-                selectinload(Invoice.items),
-                selectinload(Invoice.payments),
-                selectinload(Invoice.patient),
-            )
+    # Permission Check
+    # We use 'billing' as the resource name to match your permission table
+    if not current_user.has_permission("billing", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to view invoices.",
         )
-    ).scalar_one_or_none()
+
+    # Fetch Invoice with Comprehensive Loading
+    stmt = (
+        select(Invoice)
+        .where(Invoice.id == invoice_id)
+        .options(
+            selectinload(Invoice.items),
+            selectinload(Invoice.payments),
+            selectinload(Invoice.patient),
+            # Load appointment so you can show the Doctor/Date on the invoice
+            joinedload(Invoice.appointment).joinedload(Appointment.doctor),
+        )
+    )
+
+    result = await db.execute(stmt)
+    invoice = result.unique().scalar_one_or_none()
+
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    return _render(request, "invoice-pay.html", active_page="invoice", invoice=invoice)
+
+    # Render
+    return _render(
+        request,
+        "invoice-pay.html",
+        active_page="billing",
+        invoice=invoice,
+        current_user=current_user,
+    )
 
 
 @router.post("/invoice/{invoice_id}/pay", name="invoice_pay")
@@ -516,60 +622,81 @@ async def invoice_pay(
     method: str = Form("cash"),
     reference: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
 ):
-    invoice = (
-        await db.execute(select(Invoice).where(Invoice.id == invoice_id))
-    ).scalar_one_or_none()
-    if not invoice:
-        raise HTTPException(status_code=404, detail="Invoice not found")
-
-    # add payment
-    pay = Payment(
-        invoice_id=invoice.id, amount=amount, method=method, reference=reference
-    )
-    db.add(pay)
-    await db.flush()
-
-    # update invoice totals
-    paid = float(invoice.amount_paid or 0) + float(amount)
-    total = float(invoice.total_amount or 0)
-    bal = max(total - paid, 0.0)
-    invoice.amount_paid = paid
-    invoice.balance = bal
-    if bal <= 0.0001:
-        invoice.status = "paid"
-    elif paid > 0:
-        invoice.status = "partial"
-    else:
-        invoice.status = "unpaid"
-    invoice.payment_mode = method
-
-    # If fully paid, advance lab stages to "sampling" automatically
-    if invoice.status == "paid" and invoice.order_id:
-        items = (
-            (
-                await db.execute(
-                    select(LabOrderItem).where(
-                        LabOrderItem.order_id == invoice.order_id
-                    )
-                )
-            )
-            .scalars()
-            .all()
+    # Permission Check
+    if not current_user.has_permission("billing", "write"):
+        return RedirectResponse(
+            url=f"/invoice/{invoice_id}?error=unauthorized", status_code=303
         )
-        for it in items:
-            if it.stage == "booking":
-                db.add(
-                    LabStatusLog(
-                        order_item_id=it.id,
-                        from_stage=it.stage,
-                        to_stage="sampling",
-                        note="Auto: payment confirmed",
-                    )
-                )
-                it.stage = "sampling"
 
+    # Use begin_nested to avoid "Transaction already begun" errors
+    async with db.begin_nested():
+        # Fetch Invoice
+        invoice = (
+            await db.execute(select(Invoice).where(Invoice.id == invoice_id))
+        ).scalar_one_or_none()
+
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+
+        # Create Payment with Audit Trail
+        pay = Payment(
+            invoice_id=invoice.id,
+            amount=amount,
+            method=method,
+            reference=reference,
+            # Track who received the payment
+            created_by_id=current_user.id,
+        )
+        db.add(pay)
+        await db.flush()
+
+        # Update Invoice Totals
+        paid = float(invoice.amount_paid or 0) + float(amount)
+        total = float(invoice.total_amount or 0)
+        bal = max(total - paid, 0.0)
+
+        invoice.amount_paid = paid
+        invoice.balance = bal
+
+        if bal <= 0.0001:
+            invoice.status = "paid"
+        elif paid > 0:
+            invoice.status = "partial"
+        else:
+            invoice.status = "unpaid"
+
+        invoice.payment_mode = method
+
+        # Advance Lab Stages automatically
+        if invoice.status == "paid" and invoice.order_id:
+            items_res = await db.execute(
+                select(LabOrderItem).where(LabOrderItem.order_id == invoice.order_id)
+            )
+            items = items_res.scalars().all()
+
+            for it in items:
+                # Use LabStage enum if available, otherwise strings match your current logic
+                if it.stage == "booking":
+                    db.add(
+                        LabStatusLog(
+                            order_item_id=it.id,
+                            from_stage=it.stage,
+                            to_stage="sampling",
+                            note="Auto: payment confirmed",
+                            # Log who triggered the stage change
+                            created_by_id=current_user.id,
+                        )
+                    )
+                    it.stage = "sampling"
+                    # Also update item status if needed
+                    it.status = "awaiting_sampling"
+
+    # Commit the outer transaction
     await db.commit()
+
     return RedirectResponse(
         url=request.url_for("invoice_detail", invoice_id=invoice_id), status_code=303
     )
@@ -644,16 +771,29 @@ async def create_visit(
 
 
 @router.get("/appointments", response_class=HTMLResponse, name="appointments")
-async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
-    # 1. Fetch lookup data
+async def appointments(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
+):
+    # Permission Check
+    if not current_user.has_permission("appointments", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to view the appointment list.",
+        )
+
+    # Fetch lookup data
     patients = await db.execute(select(Patient))
     departments = await db.execute(select(Department))
-    appointments_count_res = await db.execute(select(func.count(Visit.id)))
     sample_categories = await db.execute(select(SampleCategory))
 
-    # 2. DYNAMIC STAFF FILTERING
-    # Fetch all users whose role has 'read' or 'write' access to appointments
-    # This replaces the hardcoded StaffRole Enum check
+    # Corrected to count Appointments instead of Visits
+    appointments_count_res = await db.execute(select(func.count(Appointment.id)))
+
+    # DYNAMIC STAFF FILTERING
+    # Fetches staff authorized to handle appointments
     doctors_stmt = (
         select(User)
         .join(User.role)
@@ -669,8 +809,7 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     )
     doctors = await db.execute(doctors_stmt)
 
-    # 3. OPTIMIZED TEST CATEGORIES (Addressing your TODO)
-    # selectinload fetches the category AND its tests in one go
+    # OPTIMIZED TEST CATEGORIES
     test_categories_stmt = (
         select(TestCategory)
         .options(selectinload(TestCategory.tests))
@@ -678,7 +817,7 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
     )
     test_categories = await db.execute(test_categories_stmt)
 
-    # 4. Result Extraction
+    # Result Extraction
     patients_results = patients.scalars().all()
     department_results = departments.scalars().all()
     staff_results = doctors.scalars().all()
@@ -693,16 +832,30 @@ async def appointments(request: Request, db: AsyncSession = Depends(get_db)):
         departments=department_results,
         patients=patients_results,
         staffs=staff_results,
-        test_categories=test_categories_results,  # Access tests via item.tests in HTML
+        test_categories=test_categories_results,
         total_appointments=total_appointments,
         sample_categories=sample_categories_results,
+        current_user=current_user,
     )
 
 
-@router.get("/appointments/add", response_class=HTMLResponse, name="appointments")
+@router.get(
+    "/appointments/add",
+    response_class=HTMLResponse,
+    name="appointments_add_redirect",
+)
 async def create_appointments(
-    request: Request, data: AppointmenCreate, db: AsyncSession = Depends(get_db)
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
 ):
+    # Permission Check
+    if not current_user.has_permission("appointments", "write"):
+        return RedirectResponse(url="/appointments?error=unauthorized", status_code=303)
+
+    # Perform Redirect
+    # Usually, a GET to /add would render a form, but if your flow
+    # requires a redirect to the main list, we maintain that here.
     return RedirectResponse(
         url="/appointments/",
         status_code=303,
@@ -710,171 +863,353 @@ async def create_appointments(
 
 
 @router.get("/lab", response_class=HTMLResponse, name="lab_main")
-async def lab_main(request: Request):
+async def lab_main(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    # Permission: General lab access
+    if not current_user.has_permission("lab", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to access the Laboratory module.",
+        )
+
     return _render(
-        request, "laboratory.html", active_page="lab_main", active_group="lab"
+        request,
+        "laboratory.html",
+        active_page="lab_main",
+        active_group="lab",
+        current_user=current_user,
     )
 
 
 @router.get("/lab/results", response_class=HTMLResponse, name="lab_results")
-async def lab_results(request: Request):
+async def lab_results(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    # Permission: Specifically reading lab results
+    if not current_user.has_permission("lab", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied."
+        )
+
     tpl = (
         "lab-results.html"
         if (settings.TEMPLATES_PATH / "lab-results.html").exists()
         else "laboratory.html"
     )
-    return _render(request, tpl, active_page="lab_results", active_group="lab")
+    return _render(
+        request,
+        tpl,
+        active_page="lab_results",
+        active_group="lab",
+        current_user=current_user,
+    )
 
 
 @router.get("/phlebotomy", response_class=HTMLResponse, name="phlebotomy")
-async def phlebotomy(request: Request, db: AsyncSession = Depends(get_db)):
+async def phlebotomy(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    # Permission: Phlebotomy access (adjust resource name if yours is 'sampling')
+    if not current_user.has_permission("phlebotomy", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission for Phlebotomy.",
+        )
+
     tpl = (
         "phlebotomy.html"
         if (settings.TEMPLATES_PATH / "phlebotomy.html").exists()
         else "phlebotomy.html"
     )
-    phlebotomy = await db.execute(select(User))
-    results = phlebotomy.scalars().all()
-    return _render(request, tpl, phlebotomy=results, active_page="phlebotomy")
+
+    # DYNAMIC STAFF: Fetch only active staff who can actually perform phlebotomy
+    staff_stmt = (
+        select(User)
+        .join(User.role)
+        .join(Role.permissions)
+        .where(
+            Permission.resource == "phlebotomy",
+            Permission.action.in_(["read", "write"]),
+            User.is_active == True,
+        )
+        .distinct()
+    )
+
+    phlebotomists = (await db.execute(staff_stmt)).scalars().all()
+
+    return _render(
+        request,
+        tpl,
+        phlebotomy=phlebotomists,
+        active_page="phlebotomy",
+        current_user=current_user,
+    )
 
 
 @router.get("/radiology", response_class=HTMLResponse, name="radiology")
-async def radiology(request: Request, db: AsyncSession = Depends(get_db)):
+async def radiology(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
+):
+    # Permission Check
+    # Resource: "radiology", Action: "read"
+    if not current_user.has_permission("radiology", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to access the Radiology module.",
+        )
+
+    # Template Selection
     tpl = (
         "radiology.html"
         if (settings.TEMPLATES_PATH / "radiology.html").exists()
         else "radiology.html"
     )
-    # phlebotomy = await db.execute(select(User))
-    # results = phlebotomy.scalars().all()
-    return _render(request, tpl, active_page="radiology")
+
+    # Render with Context
+    return _render(
+        request,
+        tpl,
+        active_page="radiology",
+        current_user=current_user,
+    )
 
 
 @router.get("/reports", response_class=HTMLResponse, name="reports")
-async def reports(request: Request):
+async def reports(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
+):
+    # Permission Check
+    # Aggregated reports usually require high-level clearance
+    if not current_user.has_permission("reports", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to view system reports.",
+        )
+
+    # Template Selection
     tpl = (
         "reports.html"
         if (settings.TEMPLATES_PATH / "reports.html").exists()
         else "transaction-report.html"
     )
-    return _render(request, tpl, active_page="reports")
+
+    # Render with Context
+    return _render(
+        request,
+        tpl,
+        active_page="reports",
+        current_user=current_user,  # Allows template to toggle specific report sections
+    )
 
 
 @router.get("/staff", response_class=HTMLResponse, name="staff_list")
-async def staff_list(request: Request, db: AsyncSession = Depends(get_db)):
+async def staff_list(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated and active
+    current_user: User = Depends(deps.get_current_user),
+):
+    # Permission Check
+    # Only users with 'staff:read' (or 'users:read') should see this list
+    if not current_user.has_permission("staff", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to view the staff directory.",
+        )
+
+    # Template Selection
     tpl = (
         "staffs.html"
         if (settings.TEMPLATES_PATH / "staffs.html").exists()
         else "all-doctors-list.html"
     )
 
-    staffs = await db.execute(select(User))
-
-    staff_results = staffs.scalars().all()
+    # Fetch Staff with Role data
+    # Added joinedload so the template can display staff roles without extra queries
+    stmt = select(User).options(joinedload(User.role)).order_by(User.id.desc())
+    result = await db.execute(stmt)
+    staff_results = result.scalars().all()
     staff_counts = len(staff_results)
 
+    # Render
     return _render(
         request,
         tpl,
         active_page="staff",
         staffs=staff_results,
         staff_counts=staff_counts,
+        current_user=current_user,  # Pass for UI permission checks
     )
 
 
 @router.get("/invoice", response_class=HTMLResponse, name="invoice_list")
-async def invoice_list(request: Request):
+async def invoice_list(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    if not current_user.has_permission("billing", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     tpl = (
         "invoice.html"
         if (settings.TEMPLATES_PATH / "invoice.html").exists()
         else "add-invoice.html"
     )
-    return _render(request, tpl, active_page="invoice")
+    return _render(request, tpl, active_page="invoice", current_user=current_user)
 
 
 @router.get("/payments", response_class=HTMLResponse, name="payments")
-async def payments(request: Request):
+async def payments(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    # Usually falls under billing or a specific 'accounting' permission
+    if not current_user.has_permission("billing", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     tpl = (
         "transactions.html"
         if (settings.TEMPLATES_PATH / "transactions.html").exists()
         else "add-payment.html"
     )
-    return _render(request, tpl, active_page="payments")
+    return _render(request, tpl, active_page="payments", current_user=current_user)
 
 
 @router.get("/notifications", response_class=HTMLResponse, name="notifications")
-async def notifications(request: Request):
+async def notifications(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    # Everyone can usually read their own notifications,
+    # but accessing the notification dashboard may require a general 'user' permission
     tpl = (
         "notifications.html"
         if (settings.TEMPLATES_PATH / "notifications.html").exists()
         else "notifications-settings.html"
     )
-    return _render(request, tpl, active_page="notifications")
+    return _render(request, tpl, active_page="notifications", current_user=current_user)
 
 
 @router.get("/messages", response_class=HTMLResponse, name="messages")
-async def messages(request: Request):
+async def messages(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    # Basic permission check for communication module
+    if not current_user.has_permission("messages", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     tpl = (
         "messages.html"
         if (settings.TEMPLATES_PATH / "messages.html").exists()
         else "chat.html"
     )
-    return _render(request, tpl, active_page="messages")
+    return _render(request, tpl, active_page="messages", current_user=current_user)
 
 
 @router.get("/settings", response_class=HTMLResponse, name="settings")
-async def settings_page(request: Request):
+async def settings_page(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    print(current_user.full_name, current_user.role.slug)
+    # Settings should strictly be restricted to Admins
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: Only administrators can access system settings.",
+        )
+
     return _render(
         request,
         "settings-general.html",
         active_page="settings",
         active_group="settings",
         settings=settings,
+        current_user=current_user,
     )
 
 
 @router.get(
     "/settings/tests-and-samples", response_class=HTMLResponse, name="tests_and_samples"
 )
-async def test_and_samples(request: Request):
+async def test_and_samples(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated and has administrative/config rights
+    current_user: User = Depends(deps.get_current_user),
+):
+    # Permission Check
+    # Restrict to users who can manage system configurations
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to manage test and sample settings.",
+        )
+
+    # Fetch Data for the Settings UI
+    # Usually, this page needs the current list of tests and categories
+    test_categories = (await db.execute(select(TestCategory))).scalars().all()
+    sample_types = (await db.execute(select(SampleCategory))).scalars().all()
+
+    # Render
     return _render(
         request,
         "tests-and-samples.html",
         active_page="tests_and_samples",
         active_group="settings",
         settings=settings,
+        test_categories=test_categories,
+        sample_types=sample_types,
+        current_user=current_user,
     )
-
-
-# --- Settings: Test ↔ Analyzer mapping (set default analyzer per test) ---
 
 
 @router.get(
     "/settings/test-mapping", response_class=HTMLResponse, name="settings_test_mapping"
 )
-async def settings_test_mapping(request: Request, db: AsyncSession = Depends(get_db)):
-    analyzers = (
-        (
-            await db.execute(
-                select(Analyzer)
-                .where(Analyzer.is_active == True)  # noqa: E712
-                .order_by(Analyzer.name.asc())
-            )
+async def settings_test_mapping(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated and has configuration permissions
+    current_user: User = Depends(deps.get_current_user),
+):
+    # Permission Check
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to modify analyzer mappings.",
         )
-        .scalars()
-        .all()
+
+    # Fetch Active Analyzers
+    analyzers_stmt = (
+        select(Analyzer).where(Analyzer.is_active == True).order_by(Analyzer.name.asc())
     )
-    tests = (
-        (
-            await db.execute(
-                select(Test)
-                .options(selectinload(Test.default_analyzer))
-                .order_by(Test.department.asc().nulls_last(), Test.name.asc())
-            )
-        )
-        .scalars()
-        .all()
+    analyzers = (await db.execute(analyzers_stmt)).scalars().all()
+
+    # Fetch Tests with their current default analyzer mappings
+    tests_stmt = (
+        select(Test)
+        .options(selectinload(Test.default_analyzer))
+        .order_by(Test.department.asc().nulls_last(), Test.name.asc())
     )
+    tests = (await db.execute(tests_stmt)).scalars().all()
+
+    # Render with Context
     return _render(
         request,
         "settings-test-mapping.html",
@@ -882,6 +1217,7 @@ async def settings_test_mapping(request: Request, db: AsyncSession = Depends(get
         active_group="settings",
         analyzers=analyzers,
         tests=tests,
+        current_user=current_user,  # Added for template-level permission checks
     )
 
 
@@ -892,46 +1228,77 @@ async def settings_test_mapping_post(
     default_analyzer_id: list[str] = Form(...),
     price_ghs: list[str] = Form(...),
     db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
 ):
-    """Bulk update: default analyzer and price per test.
+    #  Permission Check
+    # Bulk updating configurations is strictly a 'write' action
+    if not current_user.has_permission("settings", "write"):
+        return RedirectResponse(
+            url=f"{request.url_for('settings_test_mapping')}?error=unauthorized",
+            status_code=303,
+        )
 
-    Form lists must align by index.
-    """
+    # Validation
     if not (len(test_id) == len(default_analyzer_id) == len(price_ghs)):
-        raise HTTPException(status_code=400, detail="Invalid form submission")
+        raise HTTPException(status_code=400, detail="Form lists are misaligned.")
 
-    # Fetch tests in one query
-    tests = (await db.execute(select(Test).where(Test.id.in_(test_id)))).scalars().all()
-    test_map = {t.id: t for t in tests}
+    try:
+        # 3. Transactional Safety (Savepoint)
+        async with db.begin_nested():
+            # Fetch tests in one query for efficiency
+            stmt = select(Test).where(Test.id.in_(test_id))
+            tests = (await db.execute(stmt)).scalars().all()
+            test_map = {t.id: t for t in tests}
 
-    for i, tid in enumerate(test_id):
-        t = test_map.get(tid)
-        if not t:
-            continue
+            for i, tid in enumerate(test_id):
+                t = test_map.get(tid)
+                if not t:
+                    continue
 
-        raw_analyzer = (default_analyzer_id[i] or "").strip()
-        t.default_analyzer_id = int(raw_analyzer) if raw_analyzer.isdigit() else None
+                # Update Analyzer Mapping
+                raw_analyzer = (default_analyzer_id[i] or "").strip()
+                t.default_analyzer_id = (
+                    int(raw_analyzer) if raw_analyzer.isdigit() else None
+                )
 
-        raw_price = (price_ghs[i] or "").strip()
-        try:
-            t.price_ghs = float(raw_price) if raw_price else None
-        except ValueError:
-            # ignore invalid prices; keep existing
-            pass
+                # Update Price
+                raw_price = (price_ghs[i] or "").strip()
+                try:
+                    t.price_ghs = float(raw_price) if raw_price else t.price_ghs
+                except ValueError:
+                    # Log invalid price but continue
+                    pass
 
-    await db.commit()
+        # Finalize
+        await db.commit()
+
+    except Exception as e:
+        await db.rollback()
+        print(f"Mapping Update Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update test mappings.",
+        )
+
     return RedirectResponse(
         url=request.url_for("settings_test_mapping"), status_code=303
     )
 
 
-# --- Settings: Analyzer registration (dynamic connectivity) ---
-
-
 @router.get(
     "/settings/analyzers", response_class=HTMLResponse, name="settings_analyzers"
 )
-async def settings_analyzers(request: Request, db: AsyncSession = Depends(get_db)):
+async def settings_analyzers(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     analyzers = (
         (await db.execute(select(Analyzer).order_by(Analyzer.name.asc())))
         .scalars()
@@ -943,11 +1310,21 @@ async def settings_analyzers(request: Request, db: AsyncSession = Depends(get_db
         active_page="settings_analyzers",
         active_group="settings",
         analyzers=analyzers,
+        current_user=current_user,
     )
 
 
+# --- ROLES & PERMISSIONS ---
 @router.get("/settings/roles", response_class=HTMLResponse, name="settings_roles")
-async def settings_roles(request: Request):
+async def settings_roles(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    # This is the most sensitive route in the app
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     return _render(
         request,
         "roles-and-permissions.html",
@@ -955,57 +1332,95 @@ async def settings_roles(request: Request):
         active_group="settings",
         title="Roles & Permissions",
         message="Roles & permissions management UI coming soon.",
+        current_user=current_user,
     )
 
 
+# --- INSURANCE CONFIG ---
 @router.get(
     "/settings/insurance", response_class=HTMLResponse, name="settings_insurance"
 )
-async def settings_insurance(request: Request):
+async def settings_insurance(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     return _render(
         request,
         "settings-placeholder.html",
         active_page="settings_insurance",
         active_group="settings",
         title="Insurance",
-        message="Insurance configuration will live here. Add carriers and plans to expose them to patients.",
+        message="Insurance configuration will live here.",
+        current_user=current_user,
     )
 
 
+# --- DOCUMENT TEMPLATES ---
 @router.get(
     "/settings/templates", response_class=HTMLResponse, name="settings_templates"
 )
-async def settings_templates(request: Request):
+async def settings_templates(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     return _render(
         request,
         "settings-placeholder.html",
         active_page="settings_templates",
         active_group="settings",
         title="Templates",
-        message="Document and notification templates will be configurable in this tab.",
+        message="Document and notification templates will be configurable here.",
+        current_user=current_user,
     )
 
 
+# --- PREFIXES & NUMBERING ---
 @router.get("/settings/prefixes", response_class=HTMLResponse, name="settings_prefixes")
-async def settings_prefixes(request: Request):
+async def settings_prefixes(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     return _render(
         request,
         "settings-and-prefixes.html",
         active_page="settings_prefixes",
         active_group="settings",
         title="Prefixes",
-        message="Prefix and numbering rules can be managed here. Connect to LIS numbering logic when ready.",
+        message="Prefix and numbering rules can be managed here.",
+        current_user=current_user,
     )
 
 
+# --- ADD ANALYZER FORM ---
 @router.get("/settings/analyzers/add", response_class=HTMLResponse, name="analyzer_add")
-async def analyzer_add_get(request: Request):
+async def analyzer_add_get(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+    # This requires 'write' access conceptually, but 'read' to see the form
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access Denied"
+        )
+
     return _render(
         request,
         "analyzer-form.html",
         active_page="settings_analyzers",
         active_group="settings",
         analyzer=None,
+        current_user=current_user,
     )
 
 
@@ -1028,13 +1443,27 @@ async def analyzer_add_post(
     notes: str | None = Form(None),
     is_active: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
 ):
+    # Permission Check
+    if not current_user.has_permission("settings", "write"):
+        return RedirectResponse(
+            url=f"{request.url_for('settings_analyzers')}?error=unauthorized",
+            status_code=303,
+        )
+
+    # Duplicate Check
     exists = (
         await db.execute(select(Analyzer).where(Analyzer.name == name.strip()))
     ).scalar_one_or_none()
+
     if exists:
+        # If using HTMX, you might prefer a 200 with an error message,
+        # but for standard forms, a 400 is appropriate.
         raise HTTPException(status_code=400, detail="Analyzer name already exists")
 
+    # Create Instance
     analyzer = Analyzer(
         name=name.strip(),
         connection_type=connection_type,
@@ -1051,9 +1480,23 @@ async def analyzer_add_post(
         model=(model.strip() if model else None),
         notes=notes,
         is_active=(is_active == "on"),
+        # Recommended: Track who added the hardware
+        # created_by_id=current_user.id
     )
-    db.add(analyzer)
-    await db.commit()
+
+    try:
+        db.add(analyzer)
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        # Log the error for debugging
+        print(f"Error adding analyzer: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error while saving analyzer.",
+        )
+
+    # Success Redirect
     return RedirectResponse(url=request.url_for("settings_analyzers"), status_code=303)
 
 
@@ -1063,19 +1506,37 @@ async def analyzer_add_post(
     name="analyzer_edit",
 )
 async def analyzer_edit_get(
-    request: Request, analyzer_id: int, db: AsyncSession = Depends(get_db)
+    request: Request,
+    analyzer_id: int,
+    db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated and active
+    current_user: User = Depends(deps.get_current_user),
 ):
+    #  Permission Check
+    # We check for 'read' permission to view the form;
+    # the POST route will handle the 'write' permission check.
+    if not current_user.has_permission("settings", "read"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access Denied: You do not have permission to edit analyzer settings.",
+        )
+
+    #  Fetch Analyzer
     analyzer = (
         await db.execute(select(Analyzer).where(Analyzer.id == analyzer_id))
     ).scalar_one_or_none()
+
     if not analyzer:
         raise HTTPException(status_code=404, detail="Analyzer not found")
+
+    #
     return _render(
         request,
         "analyzer-form.html",
         active_page="settings_analyzers",
         active_group="settings",
         analyzer=analyzer,
+        current_user=current_user,
     )
 
 
@@ -1099,13 +1560,25 @@ async def analyzer_edit_post(
     notes: str | None = Form(None),
     is_active: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
+    # Ensure user is authenticated
+    current_user: User = Depends(deps.get_current_user),
 ):
+    #  Permission Check
+    if not current_user.has_permission("settings", "write"):
+        return RedirectResponse(
+            url=f"{request.url_for('settings_analyzers')}?error=unauthorized",
+            status_code=303,
+        )
+
+    # Fetch Existing Analyzer
     analyzer = (
         await db.execute(select(Analyzer).where(Analyzer.id == analyzer_id))
     ).scalar_one_or_none()
+
     if not analyzer:
         raise HTTPException(status_code=404, detail="Analyzer not found")
 
+    # Update Fields
     analyzer.name = name.strip()
     analyzer.connection_type = connection_type
     analyzer.result_format = result_format
@@ -1122,7 +1595,18 @@ async def analyzer_edit_post(
     analyzer.notes = notes
     analyzer.is_active = is_active == "on"
 
-    await db.commit()
+    # Commit with Error Handling
+    try:
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        # Log error for technical review
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save analyzer updates.",
+        )
+
+    # Success Redirect
     return RedirectResponse(url=request.url_for("settings_analyzers"), status_code=303)
 
 
@@ -1138,8 +1622,6 @@ async def analyzer_delete(
         await db.commit()
     return RedirectResponse(url=request.url_for("settings_analyzers"), status_code=303)
 
-
-# --- Tasks / Lab workflow board ---
 
 STAGE_ORDER = [
     ("booking", "Booking"),
