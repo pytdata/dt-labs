@@ -147,6 +147,63 @@
             font-weight: bold;
         }
 
+
+/* Container alignment fix */
+.dataTables_wrapper .dataTables_paginate {
+    float: right !important;
+    margin-top: 10px;
+}
+
+/* Rectangular Button Styling */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 6px 14px !important;
+    margin: 0 !important; /* Removes gaps for a solid block look */
+    border: 1px solid #dcdfe8 !important;
+    border-radius: 0 !important; /* Makes it rectangular */
+    background: #ffffff !important;
+    color: #333 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* First and Last button rounding (optional but looks better) */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous {
+    border-top-left-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.next {
+    border-top-right-radius: 4px !important;
+    border-bottom-right-radius: 4px !important;
+    margin-left: -1px !important; /* Overlaps borders for a seamless look */
+}
+
+/* Active State */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #003366 !important; /* Your brand blue */
+    color: white !important;
+    border-color: #003366 !important;
+    z-index: 1;
+}
+
+/* Hover State */
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: #f1f5f9 !important;
+    color: #003366 !important;
+    border-color: #dcdfe8 !important;
+}
+
+/* Disabled State */
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    background: #fafafa !important;
+    color: #bbb !important;
+    cursor: default !important;
+}
+
+/* Hide the default DataTables 'Next/Previous' styles if they interfere */
+.dataTables_wrapper .dataTables_paginate .paginate_button:active {
+    box-shadow: none !important;
+}
 </style>
     
 
@@ -367,7 +424,7 @@
                         <h4 class="mb-1">Radiology</h4>
                         <div class="text-end">
                             <ol class="breadcrumb m-0 py-0">
-                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
                                 <li class="breadcrumb-item active">Radiology</li>
                             </ol>
                         </div>
@@ -400,86 +457,6 @@
                     <i class="ti ti-calendar text-primary fs-14 me-2"></i>
                     <span class="reportrange-picker-field">Select Date Range</span>
                 </div>
-
-                            <!-- patient dropdown -->
-                            <!-- <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-users me-1"></i>Patient
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                                </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-5.jpg" class="flex-shrink-0 rounded" alt="img"></span> James Carter
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-34.jpg" class="flex-shrink-0 rounded" alt="img"></span> Emily Davis
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/avatar-6.jpg" class="flex-shrink-0 rounded" alt="img"></span>Michael Johnson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-25.jpg" class="flex-shrink-0 rounded" alt="img"></span>Olivia Miller
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-14.jpg" class="flex-shrink-0 rounded" alt="img"></span>David Smith
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-22.jpg" class="flex-shrink-0 rounded" alt="img"></span>Sophia Wilson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-30.jpg" class="flex-shrink-0 rounded" alt="img"></span>Daniel Williams
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-24.jpg" class="flex-shrink-0 rounded" alt="img"></span>Isabella Anderson
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-15.jpg" class="flex-shrink-0 rounded" alt="img"></span>William Brown
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            <span class="avatar avatar-xs rounded-circle me-2"><img src="/static/img/users/user-39.jpg" class="flex-shrink-0 rounded" alt="img"></span>Charlotte Taylor
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div> -->
-
 
 
                         </div>

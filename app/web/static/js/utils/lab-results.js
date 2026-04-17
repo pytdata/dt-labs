@@ -1,4 +1,5 @@
 const laboratoryURL = "/api/v1/lab/active-appointments/";
+let currentActiveReportId = null;
 
 // DOM ELEMENTS
 const labTestsContainerEl = document.querySelector(".labtest__container");
@@ -209,13 +210,103 @@ function formatDate(dateStr) {
 }
 
 // Age calculator, Print, and viewFinalReport logic remains the same below
+// window.viewFinalReport = async function(itemId) {
+//     try {
+//         const [reportRes, companyRes] = await Promise.all([
+//             fetch(`/api/v1/lab/report/${itemId}`),
+//             fetch(`/api/v1/company`)
+//         ]);
+
+//         if (!reportRes.ok) throw new Error("Could not fetch report details.");
+        
+//         const data = await reportRes.json();
+//         const company = companyRes.ok ? await companyRes.json() : null;
+        
+//         const safeSet = (selector, value) => {
+//             const el = document.querySelector(selector);
+//             if (el) el.innerText = value || "--";
+//         };
+
+//         // 1. Set Company Info
+//         if (company) {
+//             const logoEl = document.querySelector("#report_company_logo");
+//             if (logoEl) logoEl.src = company.logo || "/static/img/logo-small.png";
+//             safeSet("#report_company_name", company.name);
+//             const contactInfo = `${company.address || ''} ${company.phone ? '| Tel: ' + company.phone : ''}`;
+//             safeSet("#report_company_contact", contactInfo);
+//             safeSet("#report_signature_brand", company.name);
+//         }
+
+//         // 2. Set Patient & Header Info (Using your specific JSON keys)
+//         const patient = data.patient;
+//         safeSet("#header_test_type", data.test_name);
+//         safeSet("#header_reported_on", formatDate(data.finalized_at));
+        
+//         // Handle Patient Name (Response has first_name and surname)
+//         const fullName = patient.full_name || `${patient.first_name} ${patient.surname}`;
+//         safeSet("#header_patient_name", fullName);
+        
+//         // Handle Age and Sex
+//         const age = patient.age || "--";
+//         safeSet("#header_patient_age_sex", `${age}Y / ${patient.sex || 'N/A'}`);
+//         safeSet("#header_blood_group", patient.blood_group || "N/A");
+
+//         // 3. Logic for Radiology vs Lab Results
+//         // In your new response, you have 'findings' directly. 
+//         // We can check if 'findings' is populated or based on a flag.
+//         const labDisplay = document.getElementById('lab_result_display');
+//         const radDisplay = document.getElementById('rad_result_display');
+
+//         // Logic check: If findings exists and isn't the default "No findings recorded", show Rad
+//         if (data.findings && data.findings !== "No findings recorded.") {
+//             labDisplay.style.display = 'none';
+//             radDisplay.style.display = 'block';
+//             safeSet("#view_rad_findings", data.findings);
+//             safeSet("#view_rad_impression", data.conclusion);
+//         } else {
+//             // Lab Result Logic: Access data.lab_result if it exists
+//             labDisplay.style.display = 'block';
+//             radDisplay.style.display = 'none';
+            
+//             if (data.results && Object.keys(data.results).length > 0) {
+//                 let tableHtml = `<div class="table-responsive"><table class="table table-bordered">
+//                     <thead><tr><th>Investigation</th><th>Result</th><th>Ref</th><th>Unit</th></tr></thead><tbody>`;
+//                 for (const [parameter, details] of Object.entries(data.results)) {
+//                     tableHtml += `<tr>
+//                         <td>${parameter}</td>
+//                         <td>${details.value}</td>
+//                         <td>${details.reference_range || '-'}</td>
+//                         <td>${details.unit || '-'}</td>
+//                     </tr>`;
+//                 }
+//                 tableHtml += `</tbody></table></div>`;
+//                 labDisplay.innerHTML = tableHtml;
+//             } else {
+//                 labDisplay.innerHTML = `<div class="p-3 text-center">No lab parameters found.</div>`;
+//             }
+//         }
+
+//         // Show Modal
+//         bootstrap.Modal.getOrCreateInstance(document.getElementById('viewReportModal')).show();
+//     } catch (error) {
+//         console.error(error);
+//         showToast("Error loading report", "error");
+//     }
+// };
+
+
 window.viewFinalReport = async function(itemId) {
+
+    currentActiveReportId = itemId;
+
     try {
         const [reportRes, companyRes] = await Promise.all([
-            fetch(`/api/v1/lab/report/item/${itemId}`),
+            fetch(`/api/v1/lab/report/${itemId}`),
             fetch(`/api/v1/company`)
         ]);
+
         if (!reportRes.ok) throw new Error("Could not fetch report details.");
+        
         const data = await reportRes.json();
         const company = companyRes.ok ? await companyRes.json() : null;
         
@@ -224,53 +315,79 @@ window.viewFinalReport = async function(itemId) {
             if (el) el.innerText = value || "--";
         };
 
+        // 1. Company Header
         if (company) {
             const logoEl = document.querySelector("#report_company_logo");
             if (logoEl) logoEl.src = company.logo || "/static/img/logo-small.png";
             safeSet("#report_company_name", company.name);
-            const contactInfo = `${company.address || ''} ${company.phone ? '| Tel: ' + company.phone : ''}`;
-            safeSet("#report_company_contact", contactInfo);
+            const contact = `${company.address || ''} ${company.phone ? '| Tel: ' + company.phone : ''}`;
+            safeSet("#report_company_contact", contact);
             safeSet("#report_signature_brand", company.name);
         }
 
-        const patient = data.order?.appointment?.patient || data.order?.patient;
-        safeSet("#header_test_type", data.test?.name);
-        safeSet("#header_collected_on", formatDate(data.order?.created_at)); 
-        safeSet("#header_reported_on", formatDate(data.updated_at));
-        safeSet("#header_patient_name", patient?.full_name || `${patient?.first_name} ${patient?.surname}`);
-        const age = patient?.dob ? calculateAge(patient.dob) : (patient?.age || "--");
-        safeSet("#header_patient_age_sex", `${age}Y / ${patient?.sex || 'N/A'}`);
-        safeSet("#header_blood_group", patient?.blood_group || "N/A");
+        // 2. Patient & Meta Info
+        const patient = data.patient || {};
+        safeSet("#header_test_type", data.test_name);
+        safeSet("#header_reported_on", formatDate(data.finalized_at));
+        safeSet("#header_patient_name", patient.full_name);
+        safeSet("#header_patient_age_sex", `${patient.age || '--'}Y / ${patient.sex || 'N/A'}`);
+        safeSet("#header_blood_group", patient.blood_group);
 
-        const isRad = data.test?.test_category?.category_name === "Radiology";
+        // 3. Result Display Logic
         const labDisplay = document.getElementById('lab_result_display');
         const radDisplay = document.getElementById('rad_result_display');
 
-        if (isRad) {
+        if (data.category === "Radiology") {
             labDisplay.style.display = 'none';
             radDisplay.style.display = 'block';
-            safeSet("#view_rad_findings", data.radiology_result?.result_value);
-            safeSet("#view_rad_impression", data.radiology_result?.comments);
+            safeSet("#view_rad_findings", data.findings);
+            safeSet("#view_rad_impression", data.conclusion);
         } else {
             labDisplay.style.display = 'block';
             radDisplay.style.display = 'none';
-            const resultsJson = data.lab_result?.results; 
-            if (resultsJson && Object.keys(resultsJson).length > 0) {
-                let tableHtml = `<div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Investigation</th><th>Result</th><th>Ref</th><th>Unit</th></tr></thead><tbody>`;
-                for (const [parameter, details] of Object.entries(resultsJson)) {
-                    tableHtml += `<tr><td>${parameter}</td><td>${details.value}</td><td>${details.reference_range || '-'}</td><td>${details.unit || '-'}</td></tr>`;
+            
+            if (data.results && Object.keys(data.results).length > 0) {
+                let html = `
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Investigation</th>
+                                <th>Result</th>
+                                <th>Reference Range</th>
+                                <th>Unit</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                for (const [param, details] of Object.entries(data.results)) {
+                    html += `
+                    <tr>
+                        <td class="fw-medium">${param}</td>
+                        <td class="text-dark fw-bold">${details.value}</td>
+                        <td class="text-muted small">${details.reference_range || '-'}</td>
+                        <td class="small">${details.unit || '-'}</td>
+                    </tr>`;
                 }
-                tableHtml += `</tbody></table></div>`;
-                labDisplay.innerHTML = tableHtml;
+                html += `</tbody></table></div>`;
+                labDisplay.innerHTML = html;
             } else {
-                labDisplay.innerHTML = `<div class="p-3 text-center">No results found.</div>`;
+                labDisplay.innerHTML = `<div class="alert alert-light text-center">No lab parameters found.</div>`;
             }
         }
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('viewReportModal')).show();
+
+        // 4. Open Modal
+        const modalEl = document.getElementById('viewReportModal');
+        modalEl.setAttribute('data-report-id', itemId);
+
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+
     } catch (error) {
-        showToast("Error loading report", "error");
+        console.error("Modal Error:", error);
+        if (typeof showToast === "function") showToast("Error loading report", "error");
     }
 };
+
 
 function calculateAge(dob) {
     const diff_ms = Date.now() - new Date(dob).getTime();
@@ -279,4 +396,25 @@ function calculateAge(dob) {
 
 window.printResult = function(itemId) {
     window.open(`/api/v1/lab/report/print/${itemId}`, '_blank');
+};
+
+
+window.printFromModal = function() {
+    if (currentActiveReportId) {
+        window.open(`/api/v1/lab/report/print/${currentActiveReportId}`, '_blank');
+    } else {
+        // Fallback in case the global ID wasn't set correctly
+        const modalEl = document.getElementById('viewReportModal');
+        const backupId = modalEl.getAttribute('data-report-id');
+        
+        if (backupId) {
+            window.open(`/api/v1/lab/report/print/${backupId}`, '_blank');
+        } else {
+            if (typeof showToast === "function") {
+                showToast("Could not identify the report ID for printing.", "error");
+            } else {
+                alert("Error: Report ID not found.");
+            }
+        }
+    }
 };

@@ -251,3 +251,68 @@ function formatDate(dateStr) {
     if (!dateStr) return "N/A";
     return moment(dateStr).format('DD MMM, YYYY');
 }
+
+
+(function initTransactionChart() {
+    let transactionChart = null;
+    const chartContainer = document.querySelector("#chart-7");
+    const yearPicker = document.querySelector(".yearpicker");
+
+    if (!chartContainer) return;
+
+    // 1. Chart Configuration
+    const options = {
+        series: [{ name: 'Revenue', data: [] }],
+        chart: {
+            type: 'area',
+            height: 300,
+            toolbar: { show: false },
+            sparkline: { enabled: false }
+        },
+        colors: ['#003366'], // Brand Navy
+        stroke: { curve: 'smooth', width: 2 },
+        fill: {
+            type: 'gradient',
+            gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 }
+        },
+        xaxis: {
+            categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        },
+        yaxis: { labels: { show: true } },
+        dataLabels: { enabled: false },
+        grid: { borderColor: '#f1f1f1' }
+    };
+
+    // 2. Data Fetcher
+    async function updateChart() {
+        const year = yearPicker ? yearPicker.value : 2026;
+        try {
+            const response = await fetch(`/api/v1/payments/stats/monthly?year=${year}`);
+            const data = await response.json();
+
+            if (!transactionChart) {
+                // First time render
+                transactionChart = new ApexCharts(chartContainer, options);
+                transactionChart.render();
+            }
+            
+            // Update only the data
+            transactionChart.updateSeries([{
+                name: 'Revenue',
+                data: data
+            }]);
+        } catch (error) {
+            console.error("Chart Error:", error);
+        }
+    }
+
+    // 3. Event Listeners
+    if (yearPicker) {
+        yearPicker.addEventListener('change', updateChart);
+    }
+
+    // Initial Load
+    updateChart();
+})();

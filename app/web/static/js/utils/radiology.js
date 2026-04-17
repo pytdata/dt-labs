@@ -98,6 +98,8 @@ window.fetchAndRender = async function(startDate, endDate) {
 function renderRadiologyTable(items) {
     const containerEl = document.querySelector('.lab__container');
     const tableSelector = '#radiologyMainTable';
+    console.log(items.length)
+    document.querySelector(".lab__results__total").textContent = items.length;
     const $table = $(tableSelector);
 
     if ($.fn.DataTable.isDataTable(tableSelector)) {
@@ -108,6 +110,7 @@ function renderRadiologyTable(items) {
         const patient = item.order?.appointment?.patient || {};
         const doctor = item.order?.appointment?.doctor || {};
         const testName = item.test.name.replace(/'/g, "\\'");
+        const gender = item.order?.patient.sex;
         const displayDate = moment(item.order?.appointment?.appointment_at || item.entered_at).format('DD MMM YYYY');
 
         const stage = item.stage.toLowerCase();
@@ -130,7 +133,7 @@ function renderRadiologyTable(items) {
             <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
             <td><span class="text-muted fw-bold">${item.display_id}</span></td>
             <td><h6 class="fs-14 mb-0 fw-medium">${patient.full_name || 'N/A'}</h6></td>
-            <td>${patient.gender || 'N/A'}</td>
+            <td>${gender || 'N/A'}</td>
             <td>${displayDate}</td>
             <td>Dr. ${doctor.full_name || 'Referral'}</td>
             <td><span class="text-dark fw-medium">${item.test.name}</span></td>
@@ -150,10 +153,19 @@ function renderRadiologyTable(items) {
     }).join('');
 
     window.radiologyDataTable = $table.DataTable({
-        dom: 'tpr', 
-        pageLength: 20,
-        responsive: true
-    });
+    // 't' is the table
+    // The stuff in brackets after 't' is the footer row containing info (i) and pagination (p)
+    dom: 't<"row mt-3 align-items-center"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
+    pageLength: 20,
+    responsive: true,
+    language: {
+        paginate: {
+            next: 'Next',
+            previous: 'Previous'
+        },
+        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+    }
+});
 }
 
 // 7. MODAL & API HANDLERS

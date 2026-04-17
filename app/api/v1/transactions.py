@@ -2,6 +2,8 @@ from datetime import date
 from typing import Annotated, List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import and_
+from sqlalchemy import extract
+
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi import status
@@ -243,7 +245,33 @@ async def get_transaction_stats(db: AsyncSession = Depends(get_db)):
         "today": await get_sum(today_start),
         "this_week": await get_sum(today_start - timedelta(days=now.weekday())),
         "this_month": await get_sum(this_month_start),
-        # ... add your other week/month logic here
     }
 
     return stats
+
+
+@router.get("/stats/monthly")
+async def get_monthly_transaction_stats(
+    year: int = Query(default=2026), db: AsyncSession = Depends(get_db)
+):
+    # Group by month and sum the payment amounts
+    stmt = (
+        select(
+            extract("month", Payment.received_at).label("month"),
+            func.sum(Payment.amount).label("total"),
+        )
+        .where(extract("year", Payment.received_at) == year)
+        .group_by(extract("month", Payment.received_at))
+        .order_by("month")
+    )
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    # Create a list of 12 zeros and fill in the months that have data
+    monthly_totals = [0.0] * 12
+    for row in rows:
+        month_index = int(row.month) - 1  # SQL months are 1-12
+        monthly_totals[month_index] = float(row.total)
+
+    return monthly_totals

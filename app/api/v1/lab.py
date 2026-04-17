@@ -261,47 +261,150 @@ async def get_all_finalized_results(
     return results
 
 
+# @router.get("/report/{item_id}")
+# async def get_radiology_report_data(item_id: int, db: AsyncSession = Depends(get_db)):
+#     # 1. Improved Query with comprehensive loading
+#     stmt = (
+#         select(LabOrderItem)
+#         .options(
+#             joinedload(LabOrderItem.test),
+#             joinedload(LabOrderItem.radiology_result),
+#             joinedload(LabOrderItem.order)
+#             .joinedload(LabOrder.appointment)
+#             .joinedload(Appointment.patient),
+#             joinedload(LabOrderItem.order)
+#             .joinedload(LabOrder.appointment)
+#             .joinedload(Appointment.doctor),
+#         )
+#         .where(LabOrderItem.id == item_id)
+#     )
+
+#     result = await db.execute(stmt)
+#     item = result.unique().scalar_one_or_none()
+
+#     # Debugging: See exactly what is missing in the console
+#     if item:
+#         print(f"DEBUG: Item Found. Result Data: {item.radiology_result}")
+#     else:
+#         print(f"DEBUG: Item {item_id} NOT found in Database")
+#         raise HTTPException(status_code=404, detail="Lab item not found")
+
+#     # 2. Relaxed Check: If result is missing, return empty findings instead of 404
+#     findings = (
+#         item.radiology_result.result_value
+#         if item.radiology_result
+#         else "No findings recorded."
+#     )
+#     conclusion = item.radiology_result.comments if item.radiology_result else "N/A"
+#     finalized_at = item.radiology_result.entered_at if item.radiology_result else None
+
+#     # 3. Safe Access to Appointment Data
+#     # Using .get() or direct access with default fallbacks
+#     try:
+#         appt = item.order.appointment
+#         patient_data = appt.patient
+#         doctor_data = appt.doctor
+#     except AttributeError:
+#         patient_data = None
+#         doctor_data = None
+
+#     return {
+#         "id": item.id,
+#         "test_name": item.test.name if item.test else "Unknown Test",
+#         "patient": patient_data,
+#         "doctor": doctor_data,
+#         "findings": findings,
+#         "conclusion": conclusion,
+#         "status": item.status,
+#         "finalized_at": finalized_at,
+#     }
+
+
 @router.get("/report/{item_id}")
-async def get_radiology_report_data(item_id: int, db: AsyncSession = Depends(get_db)):
+async def get_combined_report_data(item_id: int, db: AsyncSession = Depends(get_db)):
     """
-    Fetches comprehensive data for a finalized radiology report including
-    patient, doctor, and test details.
+    Fetches sanitized data for both Radiology and Laboratory results.
+    Excludes sensitive user data and handles potential null relationships.
     """
     stmt = (
         select(LabOrderItem)
         .options(
             joinedload(LabOrderItem.test),
             joinedload(LabOrderItem.radiology_result),
+            joinedload(LabOrderItem.lab_result),
             joinedload(LabOrderItem.order)
             .joinedload(LabOrder.appointment)
-            .joinedload(Appointment.patient),
-            joinedload(LabOrderItem.order)
-            .joinedload(LabOrder.appointment)
-            .joinedload(Appointment.doctor),
+            .options(joinedload(Appointment.patient), joinedload(Appointment.doctor)),
         )
         .where(LabOrderItem.id == item_id)
     )
 
     result = await db.execute(stmt)
-    # .unique() is required when using joinedload on many-to-one relationships in some versions
     item = result.unique().scalar_one_or_none()
 
     if not item:
         raise HTTPException(status_code=404, detail="Lab item not found")
 
-    if not item.radiology_result:
-        raise HTTPException(status_code=404, detail="No results found for this item")
+    # --- 1. Result Processing (Resolves Pylance Optional Errors) ---
+    findings = "No findings recorded."
+    results_json = None
+    conclusion = "N/A"
+    finalized_at = None
+    category = "General"
 
-    # Return a structured dictionary or a Pydantic model
+    # Explicit 'is not None' checks narrow the type for Pylance
+    if item.radiology_result is not None:
+        category = "Radiology"
+        findings = item.radiology_result.result_value
+        conclusion = item.radiology_result.comments or "N/A"
+        finalized_at = item.radiology_result.entered_at
+
+    elif item.lab_result is not None:
+        category = "Laboratory"
+        results_json = item.lab_result.results
+        conclusion = item.lab_result.comments or "N/A"
+        finalized_at = item.lab_result.verified_at or item.lab_result.received_at
+
+    # --- 2. Data Sanitization (Security & "Undefined" Fix) ---
+    patient_data = None
+    doctor_data = None
+
+    if item.order and item.order.appointment:
+        appt = item.order.appointment
+
+        # Patient: Construct full_name and blood_group safely
+        if appt.patient:
+            p = appt.patient
+            patient_data = {
+                "id": p.id,
+                "full_name": f"{p.first_name} {p.surname}",
+                "patient_no": p.patient_no,
+                "age": p.age,
+                "sex": p.sex,
+                "blood_group": getattr(p, "blood_group", "N/A"),
+            }
+
+        # Doctor: Pick only non-sensitive fields
+        if appt.doctor:
+            d = appt.doctor
+            doctor_data = {
+                "id": d.id,
+                "full_name": d.full_name,
+                "email": d.email,
+                "phone": d.phone_number,
+            }
+
     return {
         "id": item.id,
-        "test_name": item.test.name,
-        "patient": item.order.appointment.patient,
-        "doctor": item.order.appointment.doctor,
-        "findings": item.radiology_result.result_value,
-        "conclusion": item.radiology_result.comments,
+        "test_name": item.test.name if item.test else "Unknown Test",
+        "category": category,
+        "patient": patient_data,
+        "doctor": doctor_data,
+        "findings": findings,
+        "results": results_json,
+        "conclusion": conclusion,
         "status": item.status,
-        "finalized_at": item.radiology_result.entered_at,
+        "finalized_at": finalized_at,
     }
 
 
@@ -378,9 +481,9 @@ async def get_lab_queue(
     ).order_by(LabOrderItem.id.desc())
 
     if start_date:
-        stmt = stmt.where(LabOrder.created_at >= start_date)
+        stmt = stmt.where(func.date(LabOrder.created_at) >= start_date)
     if end_date:
-        stmt = stmt.where(LabOrder.created_at <= end_date)
+        stmt = stmt.where(func.date(LabOrder.created_at) <= end_date)
 
     if dept == "phlebotomy":
         stmt = stmt.where(
