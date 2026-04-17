@@ -1,10 +1,19 @@
 /**
  * STAFF MANAGEMENT MODULE
+ * Handles CRUD operations, Real-time Client-side Filtering, and Pagination
  */
 const StaffManager = {
     staffURL: "/api/v1/staffs/",
     isRequestPending: false,
     searchTimeout: null,
+    
+    // Data State
+    allStaffData: [],    // Master cache from server
+    filteredData: [],    // Currently filtered set
+    
+    // Pagination State
+    currentPage: 1,
+    pageSize: 10,
 
     elements: {
         listContainer: document.querySelector(".staff__list__container"),
@@ -14,7 +23,10 @@ const StaffManager = {
         searchName: document.querySelector(".search__staff"),
         searchRole: document.querySelector(".search__role"),
         genderFilters: document.querySelectorAll(".filter__gender"),
-        deleteBtn: document.querySelector(".delete__staff")
+        deleteBtn: document.querySelector(".delete__staff"),
+        // Pagination Elements
+        paginationInfo: document.querySelector("#staff-pagination-info"),
+        paginationControls: document.querySelector("#staff-pagination-controls")
     },
 
     async init() {
@@ -26,40 +38,164 @@ const StaffManager = {
         await this.fetchAndPopulateRoles("staff_role");
     },
 
+    /**
+     * Fetch all staff from server and update local cache
+     */
     async loadStaffData() {
         try {
             const res = await this.getRemoteData(this.staffURL);
-            this.render(res);
+            this.allStaffData = res; 
+            this.applyFilters(); // Initial render and pagination setup
         } catch (error) {
             window.showToast(error.message, "danger");
         }
     },
 
     bindEvents() {
-        // 1. CREATE STAFF
-        this.elements.addForm?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            if (this.isRequestPending) return;
-            
-            const submitBtn = e.target.querySelector('[type="submit"]');
-            await this.handleFormSubmission(e.target, "/api/v1/staffs/", "POST", "add_staff", submitBtn);
+        // --- 1. FILTERING & SEARCH EVENTS ---
+        
+        // Search by Name
+        this.elements.searchName?.addEventListener("input", () => {
+            this.currentPage = 1; // Reset to first page on new search
+            this.debounceFilter();
         });
 
-        // 2. UPDATE STAFF
+        // Search by Role
+        this.elements.searchRole?.addEventListener("input", () => {
+            this.currentPage = 1;
+            this.debounceFilter();
+        });
+
+        // Gender Checkboxes
+        this.elements.genderFilters.forEach(cb => {
+            cb.addEventListener("change", () => {
+                this.currentPage = 1;
+                this.applyFilters();
+            });
+        });
+
+        // --- 2. PAGINATION EVENTS ---
+        this.elements.paginationControls?.addEventListener("click", (e) => {
+            e.preventDefault();
+            const link = e.target.closest(".page-link");
+            if (!link) return;
+
+            const targetPage = link.dataset.page;
+            if (targetPage) {
+                this.currentPage = parseInt(targetPage);
+                this.updateTableView();
+            }
+        });
+
+        // --- 3. CRUD EVENTS ---
+
+        this.elements.addForm?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (this.isRequestPending) return;
+            const submitBtn = e.target.querySelector('[type="submit"]');
+            await this.handleFormSubmission(e.target, this.staffURL, "POST", "add_staff", submitBtn);
+        });
+
         this.elements.editForm?.addEventListener("submit", async (e) => {
             e.preventDefault();
-            e.stopImmediatePropagation();
             if (this.isRequestPending) return;
-
             const staffId = e.target.dataset.staffId;
             const submitBtn = e.target.querySelector('[type="submit"]');
-            await this.handleFormSubmission(e.target, `/api/v1/staffs/${staffId}/`, "PUT", "edit_staff", submitBtn);
+            await this.handleFormSubmission(e.target, `${this.staffURL}${staffId}/`, "PUT", "edit_staff", submitBtn);
         });
 
         this.elements.listContainer?.addEventListener("click", (e) => this.handleTableClick(e));
         this.elements.deleteBtn?.addEventListener("click", (e) => this.handleDelete(e));
         this.elements.refreshBtn?.addEventListener("click", () => this.loadStaffData());
+    },
+
+    /**
+     * Logic to filter the master cache
+     */
+    applyFilters() {
+        const nameQuery = this.elements.searchName?.value.toLowerCase().trim() || "";
+        const roleQuery = this.elements.searchRole?.value.toLowerCase().trim() || "";
+        
+        const activeGenders = Array.from(this.elements.genderFilters)
+            .filter(cb => cb.checked)
+            .map(cb => cb.getAttribute('data-gender').toLowerCase());
+
+        this.filteredData = this.allStaffData.filter(staff => {
+            const matchesName = staff.full_name.toLowerCase().includes(nameQuery);
+            
+            // Matches nested role object name or slug
+            const staffRoleName = (staff.role?.name || "").toLowerCase();
+            const matchesRole = staffRoleName.includes(roleQuery);
+            
+            const staffGender = (staff.gender || "").toLowerCase();
+            const matchesGender = activeGenders.length === 0 || activeGenders.includes(staffGender);
+
+            return matchesName && matchesRole && matchesGender;
+        });
+
+        this.updateTableView();
+    },
+
+    /**
+     * Slices the filtered data for pagination and triggers render
+     */
+    updateTableView() {
+        const totalItems = this.filteredData.length;
+        const totalPages = Math.ceil(totalItems / this.pageSize);
+        
+        // Safety check for current page bounds
+        if (this.currentPage > totalPages) this.currentPage = totalPages || 1;
+        if (this.currentPage < 1) this.currentPage = 1;
+
+        const start = (this.currentPage - 1) * this.pageSize;
+        const end = start + this.pageSize;
+        const paginatedSlice = this.filteredData.slice(start, end);
+
+        // 1. Render Table Rows
+        this.render(paginatedSlice);
+
+        // 2. Update "Showing X to Y of Z" text
+        if (this.elements.paginationInfo) {
+            const from = totalItems === 0 ? 0 : start + 1;
+            const to = Math.min(end, totalItems);
+            this.elements.paginationInfo.innerText = `Showing ${from} to ${to} of ${totalItems} entries`;
+        }
+
+        // 3. Render Pagination Buttons
+        this.renderPaginationControls(totalPages);
+    },
+
+    renderPaginationControls(totalPages) {
+        if (!this.elements.paginationControls) return;
+        
+        let html = '';
+        
+        // Previous Button
+        html += `
+            <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${this.currentPage - 1}">Previous</a>
+            </li>`;
+
+        // Page Number Buttons
+        for (let i = 1; i <= totalPages; i++) {
+            html += `
+                <li class="page-item ${this.currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${ i }">${ i }</a>
+                </li>`;
+        }
+
+        // Next Button
+        html += `
+            <li class="page-item ${this.currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${this.currentPage + 1}">Next</a>
+            </li>`;
+
+        this.elements.paginationControls.innerHTML = html;
+    },
+
+    debounceFilter() {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => this.applyFilters(), 300);
     },
 
     async handleFormSubmission(form, url, method, modalId, submitBtn = null) {
@@ -94,29 +230,17 @@ const StaffManager = {
             });
 
             const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Operation failed.");
 
-            if (!res.ok) {
-                // FastAPI returns errors in a 'detail' field. 
-                // We throw it so it's caught by the catch block below.
-                throw new Error(data.detail || "An unexpected error occurred.");
-            }
-
-            // --- SUCCESS FLOW ---
             window.showToast(method === "POST" ? "Staff created successfully!" : "Staff updated!", "success");
             
-            // Close Modal
             const modalEl = document.getElementById(modalId);
-            if (modalEl) {
-                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modalInstance.hide();
-            }
+            if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
             
             form.reset();
-            await this.loadStaffData();
+            await this.loadStaffData(); 
 
         } catch (error) {
-            // --- ERROR FLOW ---
-            // This triggers your custom showToast for backend validation errors (like 409 Conflict)
             window.showToast(error.message, "danger");
         } finally {
             this.isRequestPending = false;
@@ -135,7 +259,7 @@ const StaffManager = {
         const staffId = btn.dataset.staffId;
 
         try {
-            const res = await fetch(`/api/v1/staffs/${staffId}/`);
+            const res = await fetch(`${this.staffURL}${staffId}/`);
             if (!res.ok) throw new Error("Could not fetch staff details.");
             const staff = await res.json();
 
@@ -153,12 +277,11 @@ const StaffManager = {
         this.isRequestPending = true;
 
         try {
-            const res = await fetch(`/api/v1/staffs/${staffId}/`, { method: "DELETE" });
+            const res = await fetch(`${this.staffURL}${staffId}/`, { method: "DELETE" });
             if (!res.ok) throw new Error("Delete failed.");
 
             window.showToast("Staff deleted successfully.", "success");
-            const modalEl = document.getElementById('delete_modal');
-            bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('delete_modal')).hide();
             await this.loadStaffData();
         } catch (error) {
             window.showToast(error.message, "danger");
@@ -181,8 +304,7 @@ const StaffManager = {
                 if (role.slug === selectedValue) opt.selected = true;
                 roleSelect.appendChild(opt);
             });
-            if (window.jQuery && $(roleSelect).data('select2')) $(roleSelect).trigger('change');
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Role population error:", e); }
     },
 
     populateEditModal(staff) {
@@ -191,7 +313,7 @@ const StaffManager = {
         document.getElementById("edit_gender").value = staff.gender?.toLowerCase() || "male";
         document.getElementById("edit_phone").value = staff.phone_number;
         document.getElementById("edit_email").value = staff.email;
-        this.fetchAndPopulateRoles("edit_role", staff.role);
+        this.fetchAndPopulateRoles("edit_role", staff.role?.slug);
         
         const statusContainer = document.getElementById("edit_status");
         if (statusContainer) {
@@ -202,21 +324,21 @@ const StaffManager = {
 
     render(staffLists) {
         if (!staffLists.length) {
-            this.elements.listContainer.innerHTML = '<tr><td colspan="9" class="text-center">No staff found</td></tr>';
+            this.elements.listContainer.innerHTML = '<tr><td colspan="9" class="text-center">No staff found matching criteria.</td></tr>';
             return;
         }
         this.elements.listContainer.innerHTML = staffLists.map(staff => `
             <tr>
                 <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-                <td><a href="#" class="view__staff__btn" data-staff-id="${staff.id}">${staff.display_id}</a></td>
+                <td><a href="#" class="view__staff__btn" data-staff-id="${staff.id}">${staff.display_id || '#' + staff.id}</a></td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <span class="avatar avatar-xs me-2"><img src="${staff.avatar}" alt="img" class="rounded"></span>
+                        <span class="avatar avatar-xs me-2"><img src="${staff.avatar || '/static/img/defaults/default-user-icon.jpeg'}" alt="img" class="rounded"></span>
                         <h6 class="fs-14 mb-0 fw-medium">${staff.full_name}</h6>
                     </div>
                 </td>
                 <td>${staff.gender?.toUpperCase() || "-"}</td>
-                <td><span class="badge bg-primary-soft text-primary">${staff.role || "No Role"}</span></td>
+                <td><span class="badge bg-primary-soft text-primary">${staff.role?.name || "No Role"}</span></td>
                 <td>${staff.phone_number || "-"}</td>
                 <td>${staff.email}</td>
                 <td>${staff.is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>'}</td>
@@ -241,28 +363,5 @@ const StaffManager = {
     }
 };
 
+// Initialize the module
 StaffManager.init();
-
-
-
-window.showToast = window.showToast || function(message, type = 'success') {
-    const toastEl = document.getElementById('appCustomToast');
-    const toastText = document.getElementById('appCustomToastText');
-    const toastIcon = document.getElementById('toastIcon');
-    if (!toastEl) return;
-
-    toastEl.classList.remove('bg-success', 'bg-danger');
-    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
-    toastText.innerText = message;
-
-    if (type === 'success') {
-        toastEl.classList.add('bg-success');
-        if (toastIcon) toastIcon.classList.add('ti-circle-check');
-    } else {
-        toastEl.classList.add('bg-danger');
-        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
-    }
-
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-    toast.show();
-};

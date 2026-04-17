@@ -30,6 +30,7 @@ async def get_all_tests_categories(
     filter_query: Annotated[FilterParams, Query()],
     db: AsyncSession = Depends(get_db),
 ):
+    print("============================= came here ===================")
     if not filter_query:
         raise HTTPException("The query 'test_category; is required")
     stmt = (

@@ -1,5 +1,7 @@
 from datetime import date
 from typing import Annotated, List, Optional
+from datetime import datetime, timedelta
+from sqlalchemy import and_
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi import status
@@ -151,7 +153,6 @@ async def generate_invoice(
     payload: GenerateInvoicePayload,
     db: AsyncSession = Depends(get_db),
 ):
-    # ---- Fetch order with items ----
     stmt = (
         select(LabOrder)
         .where(LabOrder.id == payload.order_id)
@@ -170,7 +171,6 @@ async def generate_invoice(
     if not order.items:
         raise HTTPException(status_code=400, detail="Order has no tests")
 
-    # ---- Create invoice ----
     invoice = Invoice(
         invoice_no=f"INV-{uuid4().hex[:8].upper()}",
         patient_id=order.patient_id,
@@ -212,3 +212,38 @@ async def generate_invoice(
     await db.refresh(invoice)
 
     return invoice
+
+
+@router.get("/stats")
+async def get_transaction_stats(db: AsyncSession = Depends(get_db)):
+    now = datetime.utcnow()
+
+    today_start = datetime(now.year, now.month, now.day)
+    this_month_start = datetime(now.year, now.month, 1)
+
+    # helper for date ranges
+    async def get_sum(start_date, end_date=None):
+        query = select(func.coalesce(func.sum(Payment.amount), 0))
+        if end_date:
+            query = query.where(
+                and_(Payment.received_at >= start_date, Payment.received_at <= end_date)
+            )
+        else:
+            query = query.where(Payment.received_at >= start_date)
+
+        # Await the execution
+        result = await db.execute(query)
+        return result.scalar()
+
+    # Calculate all stats
+    total_res = await db.execute(select(func.coalesce(func.sum(Payment.amount), 0)))
+
+    stats = {
+        "total_all_time": total_res.scalar(),
+        "today": await get_sum(today_start),
+        "this_week": await get_sum(today_start - timedelta(days=now.weekday())),
+        "this_month": await get_sum(this_month_start),
+        # ... add your other week/month logic here
+    }
+
+    return stats

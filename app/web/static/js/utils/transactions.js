@@ -1,4 +1,8 @@
+/**
+ * TRANSACTION MANAGEMENT MODULE
+ */
 let transactionURL = "/api/v1/payments/";
+let statsURL = "/api/v1/payments/stats"; // New stats endpoint
 let paymentTableEL = document.querySelector(".payment__table");
 let totalTransactionEl = document.querySelector(".total__amount");
 let paymentDataTable = null;
@@ -20,16 +24,44 @@ let currentFilters = {
             
             setupDateFilter();
             setupTypeFilters();
-            setupSearchFilter(); // Fixed the "null" error here
+            setupSearchFilter();
             
-            // Initial load with default 30 days
+            // Initial load
             fetchAndRender(currentFilters.start, currentFilters.end);
+            fetchStats(); // Load the dashboard summary cards
         }
     }, 100);
 })();
 
 /**
- * 1. DATE FILTER SETUP
+ * 1. DASHBOARD STATS FETCHING
+ */
+async function fetchStats() {
+    try {
+        const res = await fetch(statsURL);
+        const stats = await res.json();
+        
+        const currency = "GH₵";
+        // Mapping backend keys to UI classes
+        const updateText = (cls, val) => {
+            const el = document.querySelector(cls);
+            if (el) el.innerText = `${currency}${parseFloat(val).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        };
+
+        updateText(".total-transactions-val", stats.total_all_time);
+        updateText(".last-month-val", stats.last_month);
+        updateText(".this-month-val", stats.this_month);
+        updateText(".last-week-val", stats.last_week);
+        updateText(".this-week-val", stats.this_week);
+        updateText(".today-val", stats.today);
+
+    } catch (error) {
+        console.error("Stats fetch error:", error);
+    }
+}
+
+/**
+ * 2. DATE FILTER SETUP
  */
 function setupDateFilter() {
     const $picker = $('#reportrange');
@@ -58,28 +90,19 @@ function setupDateFilter() {
 }
 
 /**
- * 2. PAYMENT TYPE FILTERS
+ * 3. PAYMENT TYPE & SEARCH FILTERS
  */
 function setupTypeFilters() {
     $('.payment__type').on('change', function() {
-        // Always pass current dates when a checkbox is toggled
         fetchAndRender(currentFilters.start, currentFilters.end);
     });
 }
 
-/**
- * 3. SEARCH FILTER (Fixed "addEventListener" error)
- */
 function setupSearchFilter() {
-    // Check multiple possible selectors based on common naming patterns
     const searchInput = document.querySelector(".search__transaction__patient") || 
-                        document.querySelector(".search-input input") ||
-                        document.querySelector(".btn-searchset").closest('.search-input')?.querySelector('input');
+                        document.querySelector(".search-input input");
 
-    if (!searchInput) {
-        console.warn("Search input element not found. Skipping search listener.");
-        return;
-    }
+    if (!searchInput) return;
 
     let searchTimeout = null;
     searchInput.addEventListener("input", (e) => {
@@ -98,16 +121,10 @@ async function fetchAndRender(startDate = '', endDate = '') {
     try {
         let url = new URL(transactionURL, window.location.origin);
         
-        if (startDate && endDate) {
-            url.searchParams.set('start_date', startDate);
-            url.searchParams.set('end_date', endDate);
-        }
+        if (startDate) url.searchParams.set('start_date', startDate);
+        if (endDate) url.searchParams.set('end_date', endDate);
+        if (currentFilters.search) url.searchParams.set('search', currentFilters.search);
 
-        if (currentFilters.search) {
-            url.searchParams.set('search', currentFilters.search);
-        }
-
-        // Add selected payment methods (handles multi-select)
         $('.payment__type:checked').each(function() {
             url.searchParams.append('method', $(this).data('payment-type'));
         });
@@ -126,7 +143,7 @@ async function fetchAndRender(startDate = '', endDate = '') {
 function render(transactionList) {
     if (!transactionList || !paymentTableEL) return;
     
-    totalTransactionEl.textContent = transactionList.length;
+    if (totalTransactionEl) totalTransactionEl.textContent = transactionList.length;
 
     if ($.fn.DataTable.isDataTable('.datatable')) {
         $('.datatable').DataTable().clear().destroy();
@@ -138,41 +155,92 @@ function render(transactionList) {
         columnDefs: [{ targets: 'no-sort', orderable: false }],
         dom: 'tpr',
         pageLength: 20,
-        buttons: [
-            { extend: 'excelHtml5', title: 'Transactions_' + moment().format('YYYY-MM-DD') },
-            { extend: 'pdfHtml5', title: 'Transaction Report' }
-        ]
+        language: {
+            paginate: {
+                next: 'Next <i class="ti ti-chevron-right ms-1"></i>',
+                previous: '<i class="ti ti-chevron-left me-1"></i> Previous'
+            }
+        }
     });
-
-    $('.export-excel').off('click').on('click', () => paymentDataTable.button(0).trigger());
-    $('.export-pdf').off('click').on('click', () => paymentDataTable.button(1).trigger());
 }
 
+// function renderData(transaction) {
+//     // Handling the nested patient object and avatar property from your model
+//     const patient = transaction.invoice?.patient;
+//     const patientName = patient?.full_name || 'Walk-in';
+//     const patientAvatar = patient?.avatar || '/static/img/defaults/default-user-icon.jpeg';
+    
+//     // Status Logic
+//     const status = (transaction.invoice?.status || "unpaid").toLowerCase();
+//     const statusClass = status === "paid" 
+//         ? "badge-soft-success text-success border-success" 
+//         : "badge-soft-warning text-warning border-warning";
+
+//     return `
+//     <tr>
+//         <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
+//         <td class="fw-bold">${transaction.invoice?.invoice_no || 'N/A'}</td>
+//         <td>
+//             <div class="d-flex align-items-center">
+//                 <img src="${patientAvatar}" class="avatar avatar-xs me-2 rounded">
+//                 <h6 class="fs-14 mb-0 fw-medium">${patientName}</h6>
+//             </div>
+//         </td>
+//         <td>${formatDate(transaction.received_at)}</td>
+//         <td><span class="text-uppercase small fw-bold">${transaction.method}</span></td>
+//         <td class="fw-bold text-dark">GH₵${parseFloat(transaction.amount).toFixed(2)}</td>
+//         <td><span class="badge badge-md ${statusClass}">${status}</span></td>
+//         <td class="text-end">
+//             <div class="dropdown">
+//                 <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
+//                 <ul class="dropdown-menu p-2">
+//                     <li><a href="/billing/invoices/${transaction.invoice_id}" class="dropdown-item"><i class="ti ti-file-text me-1"></i>View Invoice</a></li>
+//                 </ul>
+//             </div>
+//         </td>
+//     </tr>`;
+// }
+
+
 function renderData(transaction) {
-    const statusClass = (transaction.invoice?.status || "").toLowerCase() === "paid" 
+    const patient = transaction.invoice?.patient;
+    const patientName = patient?.full_name || 'Walk-in';
+    const patientAvatar = patient?.avatar || '/static/img/defaults/default-user-icon.jpeg';
+    
+    const status = (transaction.invoice?.status || "unpaid").toLowerCase();
+    const statusClass = status === "paid" 
         ? "badge-soft-success text-success border-success" 
         : "badge-soft-warning text-warning border-warning";
 
+    // MATCHING THE 9 COLUMNS IN HTML
     return `
     <tr>
         <td><div class="form-check form-check-md"><input class="form-check-input" type="checkbox"></div></td>
-        <td class="fw-bold">${transaction.display_id}</td>
+        
+        <td class="fw-bold">${transaction.invoice?.invoice_no || 'N/A'}</td>
+        
         <td>
             <div class="d-flex align-items-center">
-                <img src="${transaction.invoice?.patient?.profile_image || '/static/img/profiles/avatar-01.jpg'}" class="avatar avatar-xs me-2 rounded">
-                <h6 class="fs-14 mb-0 fw-medium">${transaction.invoice?.patient?.full_name || 'Unknown'}</h6>
+                <img src="${patientAvatar}" class="avatar avatar-xs me-2 rounded">
+                <h6 class="fs-14 mb-0 fw-medium">${patientName}</h6>
             </div>
         </td>
-        <td>${formatDate(transaction.received_at || transaction.transaction_date)}</td>
-        <td><p class="text-truncate mb-0" style="max-width: 150px;">${transaction.description || 'N/A'}</p></td>
-        <td class="fw-bold text-dark">${transaction.amount || transaction.invoice?.amount_paid || '0.00'}</td>
+        
+        <td>${formatDate(transaction.received_at)}</td>
+        
+        <td><p class="text-truncate mb-0" style="max-width: 150px;">${transaction.description || 'Lab Services'}</p></td>
+        
+        <td class="fw-bold text-dark">GH₵${parseFloat(transaction.amount).toFixed(2)}</td>
+        
         <td><span class="text-uppercase small fw-bold">${transaction.method}</span></td>
-        <td><span class="badge badge-md ${statusClass}">${transaction.invoice?.status || 'unpaid'}</span></td>
+        
+        <td><span class="badge badge-md ${statusClass}">${status}</span></td>
+        
         <td class="text-end">
             <div class="dropdown">
                 <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
                 <ul class="dropdown-menu p-2">
-                    <li><a href="#" class="dropdown-item"><i class="ti ti-eye me-1"></i>Details</a></li>
+                    <li><a href="/billing/invoices/${transaction.invoice_id}" class="dropdown-item"><i class="ti ti-file-text me-1"></i>View Invoice</a></li>
                 </ul>
             </div>
         </td>
@@ -181,6 +249,5 @@ function renderData(transaction) {
 
 function formatDate(dateStr) {
     if (!dateStr) return "N/A";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    return moment(dateStr).format('DD MMM, YYYY');
 }
