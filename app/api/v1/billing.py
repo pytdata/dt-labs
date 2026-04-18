@@ -12,6 +12,10 @@ from app.models.lab import Appointment
 from app.schemas import billing_service
 from app.schemas.billing import BillingRead, PaymentCreate
 
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import and_
+
 router = APIRouter()
 
 
@@ -277,3 +281,45 @@ async def print_receipt_page(payment_id: int, db: AsyncSession = Depends(get_db)
     </body>
     </html>
     """
+
+
+@router.get("/stats/billing-summary")
+async def get_billing_summary(db: AsyncSession = Depends(get_db)):
+    now = datetime.utcnow()
+
+    # Define time boundaries
+    start_of_current_month = datetime(now.year, now.month, 1)
+    start_of_last_month = start_of_current_month - relativedelta(months=1)
+    end_of_last_month = start_of_current_month - relativedelta(seconds=1)
+
+    # 1. Query Current Month Total
+    curr_stmt = select(func.coalesce(func.sum(Invoice.total_amount), 0)).where(
+        Invoice.created_at >= start_of_current_month
+    )
+
+    # 2. Query Last Month Total
+    prev_stmt = select(func.coalesce(func.sum(Invoice.total_amount), 0)).where(
+        and_(
+            Invoice.created_at >= start_of_last_month,
+            Invoice.created_at <= end_of_last_month,
+        )
+    )
+
+    curr_res = await db.execute(curr_stmt)
+    prev_res = await db.execute(prev_stmt)
+
+    current_total = float(curr_res.scalar())
+    previous_total = float(prev_res.scalar())
+
+    # 3. Calculate Percentage Change
+    percentage_change = 0
+    if previous_total > 0:
+        percentage_change = ((current_total - previous_total) / previous_total) * 100
+    elif current_total > 0:
+        percentage_change = 100  # From 0 to something is 100% growth
+
+    return {
+        "current_month_total": current_total,
+        "percentage_change": round(percentage_change, 2),
+        "is_improvement": percentage_change >= 0,
+    }

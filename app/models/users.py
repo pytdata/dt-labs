@@ -22,9 +22,7 @@ class User(Base):
     role_id: Mapped[Optional[int]] = mapped_column(ForeignKey("roles.id"))
 
     phone_number: Mapped[str | None] = mapped_column(default="", nullable=True)
-    gender: Mapped[str | None] = mapped_column(
-        default="MALE", nullable=True
-    )  # Assuming 'MALE' or Gender.MALE
+    gender: Mapped[str | None] = mapped_column(default="MALE", nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     profile_picture: Mapped[str | None] = mapped_column(String(255), nullable=True)
 

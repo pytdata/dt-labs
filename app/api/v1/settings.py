@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.core import deps, constants
 from app.db.session import get_db
-from app.models.company import OrganizationPrefix
+from app.models.company import InsuranceCompany, OrganizationPrefix
 from app.models.users import User
-from app.schemas.settings import PrefixUpdate
+from app.schemas.settings import InsuranceCreate, InsuranceResponse, PrefixUpdate
 from typing import List
 
 from app.core.rbac import PermissionChecker
@@ -180,3 +180,95 @@ async def get_system_resources(
         raise HTTPException(status_code=403, detail="Forbidden")
 
     return constants.SYSTEM_RESOURCES
+
+
+@router.get("/insurance", response_model=List[InsuranceResponse])
+async def get_insurance_companies(db: AsyncSession = Depends(get_db)):
+    """
+    Retrieve all registered insurance companies asynchronously.
+    """
+    result = await db.execute(select(InsuranceCompany))
+    return result.scalars().all()
+
+
+@router.post(
+    "/insurance", response_model=InsuranceResponse, status_code=status.HTTP_201_CREATED
+)
+async def add_insurance_company(
+    insurance: InsuranceCreate, db: AsyncSession = Depends(get_db)
+):
+    """
+    Register a new insurance provider asynchronously.
+    """
+    # 1. Check for existing company name
+    stmt = select(InsuranceCompany).where(InsuranceCompany.name == insurance.name)
+    result = await db.execute(stmt)
+    existing_company = result.scalar_one_or_none()
+
+    if existing_company:
+        raise HTTPException(
+            status_code=400,
+            detail="An insurance company with this name already exists.",
+        )
+
+    # 2. Create the new record
+    new_company = InsuranceCompany(
+        name=insurance.name,
+        type=insurance.type,  # Enum value handled by SQLAlchemy
+        phone=insurance.phone,
+        email=insurance.email,
+    )
+
+    try:
+        db.add(new_company)
+        await db.commit()
+        await db.refresh(new_company)
+        return new_company
+    except Exception as e:
+        await db.rollback()
+        # Log the error here if you have a logger configured
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while saving the insurance provider.",
+        )
+
+
+@router.delete("/insurance/{insurance_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_insurance_company(
+    insurance_id: int, db: AsyncSession = Depends(get_db)
+):
+    """
+    Remove an insurance provider.
+    """
+    stmt = select(InsuranceCompany).where(InsuranceCompany.id == insurance_id)
+    result = await db.execute(stmt)
+    company = result.scalar_one_or_none()
+
+    if not company:
+        raise HTTPException(status_code=404, detail="Insurance company not found")
+
+    await db.delete(company)
+    await db.commit()
+    return None
+
+
+@router.get("/insurance/{insurance_id}", response_model=InsuranceResponse)
+async def get_insurance_company(insurance_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Fetch a specific insurance provider by ID.
+    """
+    # Create the selection statement
+    stmt = select(InsuranceCompany).where(InsuranceCompany.id == insurance_id)
+
+    # Execute asynchronously
+    result = await db.execute(stmt)
+
+    # Extract the single result or return None
+    company = result.scalar_one_or_none()
+
+    if not company:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Insurance company not found"
+        )
+
+    return company

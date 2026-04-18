@@ -44,16 +44,21 @@ async function init() {
     if (data) renderQueue(data);
 }
 
+
 function renderQueue(list) {
     const container = document.querySelector(".labtest__container");
+    document.querySelector("#total__test__count").textContent = list.length;
     
     container.innerHTML = list.map(item => {
-        console.log(item, "=========?????>>>>>>>")
         // Construct Full Name from JSON fields
         const patient = item.order.patient;
         const fullName = `${patient.full_name}`;
         const testName = item.test.name;
-        const dateCreated = formatDate(item.order.created_at);
+
+        // --- CHANGE START: Accessing Appointment Date instead of Order Creation Date ---
+        const appointmentDate = item.order.appointment ? item.order.appointment.appointment_at : null;
+        const displayDate = formatDate(appointmentDate);
+        // --- CHANGE END ---
 
         return `
         <tr class="align-middle">
@@ -67,7 +72,7 @@ function renderQueue(list) {
             </td>
             <td>${testName}</td>
             <td><span class="badge bg-outline-info text-info border-info">${item.test.test_category.category_name}</span></td>
-            <td>${dateCreated}</td>
+            <td>${displayDate}</td>
             <td><span class="badge bg-soft-warning text-warning border-warning">Awaiting Results</span></td>
             <td class="text-end">
                 <button class="btn btn-sm btn-primary shadow-sm" 
@@ -256,17 +261,15 @@ init();
 
 
 function formatDate(dateStr) {
-    if (!dateStr) return "N/A";
+    if (!dateStr) return "No Appointment";
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
-        year: "numeric",
         hour: "2-digit",
         minute: "2-digit"
     });
 }
-
 
 
 // --- UTILS ---

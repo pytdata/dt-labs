@@ -178,7 +178,8 @@ async function refreshPatientRecords() {
         `).join('');
 
     } catch (error) {
-        console.error("Error loading patient records:", error);
+        // console.error("Error loading patient records:", error);
+        showToast("Error loading patient records", "error")
     }
 }
 

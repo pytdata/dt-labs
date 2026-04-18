@@ -42,10 +42,8 @@ class InsuranceCompany(Base):
 class OrganizationPrefix(Base):
     __tablename__ = "organization_prefixes"
 
-    # We force id=1 to ensure there is only ever one configuration row
     id: Mapped[int] = mapped_column(primary_key=True, default=1)
 
-    # Master Code (e.g., YKG)
     org_identifier: Mapped[str] = mapped_column(default="YKG", nullable=False)
 
     # Module Specifics

@@ -11,7 +11,7 @@
     <meta name="description" content="Modern Integrated Laboratory Information System">
     <meta name="keywords" content="dt-labs, laboratory, laboratory information system, web app, desktop app">
     <meta name="author" content="DataGlow">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="/static/img/favicon.png">
@@ -46,13 +46,11 @@
 
        <style>
 
-/* Target the range list in the daterangepicker */
         .daterangepicker .ranges ul {
             display: flex;
             flex-direction: column;
         }
 
-        /* Force the "Custom Range" (which is the last <li>) to the top */
         .daterangepicker .ranges ul li:last-child {
             order: -1; 
             border-bottom: 1px solid #eee;
@@ -292,27 +290,32 @@
                 <!-- start row -->
                 <div class="row">
 
-                    <div class="col-xl-3 col-sm-6">
-                        <div class="card flex-fill">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center overflow-hidden mb-2">
-                                    <div>
-                                        <p class="mb-1 text-truncate">Total Billing</p>
-                                        <h6>$3,237.94</h6>
-                                    </div>
-                                </div>
-                                <div class="attendance-report-bar mb-2">
-                                    <div class="progress" role="progressbar" aria-label="Success example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="height: 5px;">
-                                        <div class="progress-bar bg-pink" style="width: 85%"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="d-flex align-items-center text-truncate mb-0"><span class="text-success fs-12 d-flex align-items-center me-1"><i class="ti ti-arrow-wave-right-up me-1"></i>+32.40%</span>from last month</p>
-                                </div>
-                            </div><!-- end card body -->
-                        </div><!-- end card -->
-                    </div><!-- end col -->
-
+                   <div class="col-xl-3 col-sm-6">
+    <div class="card flex-fill">
+        <div class="card-body">
+            <div class="d-flex align-items-center overflow-hidden mb-2">
+                <div>
+                    <p class="mb-1 text-truncate">Total Billing</p>
+                    <h6 id="billing_total_display">GH₵ 0.00</h6>
+                </div>
+            </div>
+            <div class="attendance-report-bar mb-2">
+                <div class="progress" role="progressbar" style="height: 5px;">
+                    <div id="billing_progress_bar" class="progress-bar bg-pink" style="width: 0%"></div>
+                </div>
+            </div>
+            <div>
+                <p class="d-flex align-items-center text-truncate mb-0">
+                    <span id="billing_pct_color" class="fs-12 d-flex align-items-center me-1">
+                        <i id="billing_pct_icon" class="ti"></i>
+                        <span id="billing_pct_text">0%</span>
+                    </span>
+                    from last month
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
                   
 
                 </div>

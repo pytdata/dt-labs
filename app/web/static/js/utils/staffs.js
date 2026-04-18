@@ -124,7 +124,9 @@ const StaffManager = {
             const matchesName = staff.full_name.toLowerCase().includes(nameQuery);
             
             // Matches nested role object name or slug
-            const staffRoleName = (staff.role?.name || "").toLowerCase();
+            const staffRoleName = typeof staff.role === 'object' 
+            ? (staff.role?.name || "").toLowerCase() 
+            : (staff.role || "").toLowerCase();
             const matchesRole = staffRoleName.includes(roleQuery);
             
             const staffGender = (staff.gender || "").toLowerCase();
@@ -211,14 +213,17 @@ const StaffManager = {
             gender: formData.get("gender"),
             email: formData.get("staff_email"),
             phone_number: formData.get("phone"),
-            role: formData.get("staff_role"),
+            role: formData.get("staff_role"), // This gets the slug from the <select>
         };
 
+        // Only include password if the user actually typed something
         const pwd = formData.get("password");
-        if (pwd) payload.password = pwd;
+        if (pwd && pwd.trim().length > 0) {
+            payload.password = pwd;
+        }
         
         if (method === "PUT") {
-            const statusCheckbox = document.querySelector(".edit_status_checked");
+            const statusCheckbox = form.querySelector(".edit_status_checked");
             payload.is_active = statusCheckbox ? statusCheckbox.checked : true;
         }
 
@@ -232,13 +237,18 @@ const StaffManager = {
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || "Operation failed.");
 
-            window.showToast(method === "POST" ? "Staff created successfully!" : "Staff updated!", "success");
+            window.showToast(method === "POST" ? "Staff created successfully!" : "Staff updated successfully!", "success");
             
-            const modalEl = document.getElementById(modalId);
-            if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            // Hide modal
+            const modalEl = document.getElementById(modalId === "add_staff" ? "staffForm" : "edit_staff");
+            if (modalEl) {
+                // Find the parent modal div if modalId was actually the form id
+                const actualModal = modalEl.closest('.modal') || modalEl;
+                bootstrap.Modal.getOrCreateInstance(actualModal).hide();
+            }
             
             form.reset();
-            await this.loadStaffData(); 
+            await this.loadStaffData(); // Refresh the table
 
         } catch (error) {
             window.showToast(error.message, "danger");
@@ -307,19 +317,81 @@ const StaffManager = {
         } catch (e) { console.error("Role population error:", e); }
     },
 
-    populateEditModal(staff) {
-        document.getElementById("edit_staff_edit").value = staff.id;
-        document.getElementById("edit_name").value = staff.full_name;
-        document.getElementById("edit_gender").value = staff.gender?.toLowerCase() || "male";
-        document.getElementById("edit_phone").value = staff.phone_number;
-        document.getElementById("edit_email").value = staff.email;
-        this.fetchAndPopulateRoles("edit_role", staff.role?.slug);
-        
+   /**
+     * Populates the Edit Modal with staff details
+     */
+    async populateEditModal(staff) {
+        // 1. Identity & IDs
+        document.getElementById("edit_staff_edit").value = staff.display_id || staff.id;
+        this.elements.editForm.dataset.staffId = staff.id;
+
+        // 2. Text Fields
+        document.getElementById("edit_name").value = staff.full_name || "";
+        document.getElementById("edit_gender").value = (staff.gender || "male").toLowerCase();
+        document.getElementById("edit_phone").value = staff.phone_number || "";
+        document.getElementById("edit_email").value = staff.email || "";
+
+        // 3. Current Role Label (The workaround)
+        const roleLabel = document.getElementById("current_role_label");
+        if (roleLabel) {
+            const roleName = typeof staff.role === 'object' ? (staff.role?.name || "No Role") : (staff.role || "No Role");
+            roleLabel.innerText = `Current: ${roleName}`;
+        }
+
+        // 4. Populate Dropdown (Still runs in background)
+        const roleSlug = typeof staff.role === 'object' ? staff.role?.slug : staff.role;
+        this.fetchAndPopulateRoles("edit_role", roleSlug);
+
+        // 5. Avatar Update
+        const editAvatarImg = document.querySelector("#edit_staff .avatar-xl");
+        if (editAvatarImg) {
+            editAvatarImg.src = staff.avatar || '/static/img/defaults/default-user-icon.jpeg';
+        }
+
+        // 6. Status Toggle
         const statusContainer = document.getElementById("edit_status");
         if (statusContainer) {
-            statusContainer.innerHTML = `<input name="status" class="form-check-input m-0 edit_status_checked" type="checkbox" role="switch" ${staff.is_active ? 'checked' : ''}>`;
+            statusContainer.innerHTML = `
+                <input name="status" class="form-check-input m-0 edit_status_checked" 
+                type="checkbox" role="switch" ${staff.is_active ? 'checked' : ''}>`;
         }
-        this.elements.editForm.dataset.staffId = staff.id;
+    },
+
+    /**
+     * Populates the View Modal with staff details
+     */
+    populateViewModal(staff) {
+        // 1. Header & Identity
+        document.getElementById("staff_id").innerText = staff.display_id || `#${staff.id}`;
+        document.getElementById("staff_name").innerText = staff.full_name;
+        
+        // Handle Role (string vs object)
+        const roleName = typeof staff.role === 'object' ? (staff.role?.name || "N/A") : (staff.role || "N/A");
+        document.getElementById("view_staff_role").innerText = roleName;
+
+        // 2. Avatar
+        const avatarImg = document.getElementById("view_staff_avatar");
+        if (avatarImg) {
+            avatarImg.src = staff.avatar || '/static/img/defaults/default-user-icon.jpeg';
+        }
+
+        // 3. Status Switch & Text
+        const statusToggle = document.getElementById("view_staff_status_toggle");
+        const statusText = document.getElementById("view_staff_status_text");
+        if (statusToggle) {
+            statusToggle.checked = staff.is_active;
+        }
+        if (statusText) {
+            statusText.innerText = staff.is_active ? "Active" : "Inactive";
+            statusText.className = `fs-13 mb-0 text-truncate ${staff.is_active ? 'text-success' : 'text-danger'}`;
+        }
+
+        // 4. Basic Info
+        document.getElementById("staff_mobile").innerText = staff.phone_number || "N/A";
+        
+        console.log("=======", staff.email, document.getElementById("staff_email"))
+        document.getElementById("view_email").innerText = staff.email || "N/A";
+        document.getElementById("staff_gender").innerText = staff.gender ? staff.gender.charAt(0).toUpperCase() + staff.gender.slice(1) : "N/A";
     },
 
     render(staffLists) {
@@ -338,7 +410,11 @@ const StaffManager = {
                     </div>
                 </td>
                 <td>${staff.gender?.toUpperCase() || "-"}</td>
-                <td><span class="badge bg-primary-soft text-primary">${staff.role?.name || "No Role"}</span></td>
+                <td>
+                 <span class="badge bg-primary-soft text-primary">
+                    ${typeof staff.role === 'object' ? (staff.role?.name || "No Role") : (staff.role || "No Role")}
+                </span>
+            </td>
                 <td>${staff.phone_number || "-"}</td>
                 <td>${staff.email}</td>
                 <td>${staff.is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>'}</td>
@@ -365,3 +441,40 @@ const StaffManager = {
 
 // Initialize the module
 StaffManager.init();
+
+
+
+window.showToast  = function(message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};

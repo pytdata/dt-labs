@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
+from dateutil.relativedelta import relativedelta
 
 
 from app.models.lab import LabOrder, LabOrderItem
@@ -30,13 +31,16 @@ router = APIRouter()
 @router.get("/", response_model=list[PaymentResponse])
 async def get_all_transactions(
     filters: Annotated[PaymentFilterParams, Depends()],
-    method: Annotated[Optional[List[str]], Query()] = None,
     db: AsyncSession = Depends(get_db),
+    # Use = Query(None) to handle multiple checkbox values and avoid Annotated conflicts
+    method: Optional[List[str]] = Query(None),
+    status: Optional[List[str]] = Query(None),
     limit: int = 100,
     offset: int = 0,
 ):
     try:
         # 1. Base query with optimized relationship loading
+        # We join Invoice so we can filter by Invoice.status and Invoice.patient_id
         stmt = (
             select(Payment)
             .join(Payment.invoice)
@@ -48,23 +52,29 @@ async def get_all_transactions(
             .order_by(Payment.received_at.desc())
         )
 
-        # 2. Date Range & Invoice/Patient Filtering
+        # 2. Date Range & ID Filtering
         if filters.start_date:
             stmt = stmt.where(func.date(Payment.received_at) >= filters.start_date)
+
         if filters.end_date:
             stmt = stmt.where(func.date(Payment.received_at) <= filters.end_date)
+
         if filters.invoice_id:
             stmt = stmt.where(Payment.invoice_id == filters.invoice_id)
+
         if filters.patient_id:
             stmt = stmt.where(Invoice.patient_id == filters.patient_id)
 
-        # 3. Multi-Method Filtering (Cash, Momo, etc.)
+        # 3. Multi-Method Filtering (from query params: ?method=cash&method=momo)
         if method:
             stmt = stmt.where(Payment.method.in_(method))
-        elif filters.method:
-            stmt = stmt.where(Payment.method == filters.method)
 
-        # 4. Pagination & Execution
+        # 4. Status Filtering (from query params: ?status=paid&status=unpaid)
+        # We filter based on the status field in the Invoice table
+        if status:
+            stmt = stmt.where(Invoice.status.in_(status))
+
+        # 5. Pagination & Execution
         stmt = stmt.limit(limit).offset(offset)
         result = await db.execute(stmt)
         payments = result.scalars().all()
@@ -72,6 +82,7 @@ async def get_all_transactions(
         return payments
 
     except Exception as e:
+        # It's better to log this properly in production
         print(f"Transaction Fetch Error: {e}")
         return []
 
@@ -214,6 +225,47 @@ async def generate_invoice(
     await db.refresh(invoice)
 
     return invoice
+
+
+@router.get("/summary")
+async def get_invoice_summary(db: AsyncSession = Depends(get_db)):
+    now = datetime.utcnow()
+    this_month_start = datetime(now.year, now.month, 1)
+    last_month_start = this_month_start - relativedelta(months=1)
+    last_month_end = this_month_start - timedelta(seconds=1)
+
+    # 1. Total Invoice Amount (All time)
+    total_stmt = select(func.coalesce(func.sum(Invoice.total_amount), 0))
+    total_res = await db.execute(total_stmt)
+    total_all_time = total_res.scalar()
+
+    # 2. Current Month Revenue
+    current_month_stmt = select(func.coalesce(func.sum(Invoice.total_amount), 0)).where(
+        Invoice.created_at >= this_month_start
+    )
+    current_month_res = await db.execute(current_month_stmt)
+    current_month_total = current_month_res.scalar()
+
+    # 3. Last Month Revenue (for % change)
+    last_month_stmt = select(func.coalesce(func.sum(Invoice.total_amount), 0)).where(
+        and_(
+            Invoice.created_at >= last_month_start, Invoice.created_at <= last_month_end
+        )
+    )
+    last_month_res = await db.execute(last_month_stmt)
+    last_month_total = last_month_res.scalar()
+
+    # 4. Calculate Percentage Change
+    pct_change = 0
+    if last_month_total > 0:
+        pct_change = ((current_month_total - last_month_total) / last_month_total) * 100
+
+    return {
+        "total_all_time": float(total_all_time),
+        "this_month": float(current_month_total),
+        "percentage_change": round(pct_change, 2),
+        "is_up": pct_change >= 0,
+    }
 
 
 @router.get("/stats")

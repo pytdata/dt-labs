@@ -1,15 +1,23 @@
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, PrivateAttr, computed_field
 
 from app.schemas.lab import PatientOut
 
 
+# class PaymentFilterParams(BaseModel):
+#     invoice_id: int | None = None
+#     patient_id: int | None = None
+#     method: str | None = None
+#     start_date: Optional[date] = None
+#     end_date: Optional[date] = None
+#     status: Optional[List[str]] = None
+
+
 class PaymentFilterParams(BaseModel):
     invoice_id: int | None = None
     patient_id: int | None = None
-    method: str | None = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
 

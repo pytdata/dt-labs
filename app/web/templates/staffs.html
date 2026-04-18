@@ -11,7 +11,7 @@
     <meta name="description" content="Modern Integrated Laboratory Information System">
     <meta name="keywords" content="dt-labs, laboratory, laboratory information system, web app, desktop app">
     <meta name="author" content="DataGlow">
-        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
 
     <!-- Favicon -->
@@ -353,12 +353,13 @@
                                 <ul class="dropdown-menu dropdown-menu-sm p-2">
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                                            <span class="px-2">Male</span>
                                             <input class="form-check-input filter__gender" data-gender="male" type="checkbox">
                                         </label>
                                     </li>
                                     <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            
+                                            <span class="px-2">Female</span>
 <input class="form-check-input filter__gender" data-gender="female" type="checkbox">
                                         </label>
                                     </li>
@@ -791,7 +792,7 @@
                         <div class="add-satff">
                             <div class="nav nav-pills nav-pills-outline gap-2 mb-4" id="staff-tabs-1">
                                 <a href="javascript:void(0);" class="nav-link fw-semibold border active" id="staff-tab-one-1">Basic Info</a>
-                                <a href="javascript:void(0);" class="nav-link fw-semibold border" id="staff-tab-two-1">Salary Info</a>
+                                <!-- <a href="javascript:void(0);" class="nav-link fw-semibold border" id="staff-tab-two-1">Salary Info</a> -->
                             </div>
 
                             <div class="patient-form-wizard flex-fill" id="staff-tab-Contents-1">
@@ -868,128 +869,19 @@
                                                 </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Role</label>
-                                                    <select class="select2" name="staff_role" data-toggle="select2" id="edit_role">
-                                                        
-                                                        <option value="admin">Admin</option>
-                                                        <option value="lab_scientist">Lab Scientist</option>
-                                                       <option value="receptionist">Receptionist</option>
-                                                    </select>
+                                            <div class="mb-3">
+                                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                                    <label class="form-label mb-0">Role</label>
+                                                    <span class="badge bg-info-light text-info fs-11" id="current_role_label">Current: Loading...</span>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <!-- <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Joining Date</label>
-                                                    <div class="input-group w-auto input-group-flat">
-                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y" placeholder="17 Jun, 2024">
-                                                        <span class="input-group-text">
-                                                            <i class="ti ti-calendar"></i>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Staff Type</label>
-                                                    <select class="select">
-                                                        <option>Select</option>
-                                                        <option selected="">Permanent</option>
-                                                        <option>Temporary</option>
-                                                    </select>
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Job Type</label>
-                                                    <select class="select">
-                                                        <option>Select</option>
-                                                        <option selected="">Full Time</option>
-                                                        <option>Half Time</option>
-                                                    </select>
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Address Line 1</label>
-                                                    <input type="text" class="form-control" value="10 Elizabeth town Plaza">
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Address Line 2</label>
-                                                    <input type="text" class="form-control" value="Downer's Grove">
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">City</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option>New York City</option>
-                                                        <option selected="">Los Angeles</option>
-                                                        <option>Chicago</option>
-                                                        <option>Houston</option>
-                                                        <option>Phoenix</option>
-                                                        <option>Philadelphia</option>
-                                                        <option>San Antonio</option>
-                                                        <option>San Diego</option>
-                                                        <option>Dallas</option>
-                                                        <option>San Jose</option>
-                                                    </select>
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">State</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option selected="">California</option>
-                                                        <option>Texas</option>
-                                                        <option>Florida</option>
-                                                        <option>New York</option>
-                                                        <option>Illinois</option>
-                                                        <option>Pennsylvania</option>
-                                                        <option>Ohio</option>
-                                                        <option>Georgia</option>
-                                                        <option>North Carolina</option>
-                                                        <option>Michigan</option>
-                                                    </select>
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Country</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option selected="">United States</option>
-                                                        <option>Canada</option>
-                                                        <option>United Kingdom</option>
-                                                        <option>Australia</option>
-                                                        <option>Germany</option>
-                                                        <option>France</option>
-                                                        <option>India</option>
-                                                        <option>Japan</option>
-                                                        <option>Brazil</option>
-                                                        <option>South Africa</option>
-                                                    </select>
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Pin Code</label>
-                                                    <input type="text" class="form-control" value="07202">
-                                                </div>
-                                            </div> -->
-                                            <!-- end col -->
+                                                <select class="select2" name="staff_role" data-toggle="select2" id="edit_role">
+                                                    <option value="admin">Admin</option>
+                                                    <option value="lab_scientist">Lab Scientist</option>
+                                                    <option value="receptionist">Receptionist</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
                                             <div class="col-md-12">
                                                 <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
                                                     <h6 class="fw-medium mb-0">Status</h6>
@@ -1130,253 +1022,60 @@
     <!-- End add Modal -->
 
     <!-- Start view Modal -->
-    <div id="view_modal" class="modal fade">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header justify-content-between">
-                    <h4 class="text-dark modal-title fw-bold text-truncate d-flex align-items-center">Staff Details</h4>
-                    <div class="form-check form-switch ms-3" id="is_staff_active">
-                        <input class="form-check-input me-0" type="checkbox" role="switch" checked>
-                    </div>
-                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+   <div id="view_modal" class="modal fade">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header justify-content-between">
+                <h4 class="text-dark modal-title fw-bold text-truncate d-flex align-items-center">Staff Details</h4>
+                <div class="form-check form-switch ms-3">
+                    <input class="form-check-input me-0" type="checkbox" role="switch" id="view_staff_status_toggle" disabled>
                 </div>
-                <div class="modal-body">
-                    <div class="d-flex align-items-center mb-4">
-                        <a href="javascript:void(0);" class="avatar avatar-xl flex-shrink-0">
-                            <img src="/static/img/users/avatar-6.jpg" class="rounded" alt="img">
-                        </a>
-                        <div class="ms-2">
-                            <div>
-                                <span class="badge badge-sm badge-soft-danger mb-1" id="staff_id"></span>
-                                <h6 class="fw-semibold text-truncate mb-1"><a href="javascript:void(0);" id="staff_name">Loading...</a></h6>
-                                <!-- <p class="fs-13 mb-0">Date Joined : 17 Jun 2024</p> -->
+                <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="avatar avatar-xl flex-shrink-0">
+                        <img src="/static/img/defaults/default-user-icon.jpeg" id="view_staff_avatar" class="rounded" alt="img">
+                    </div>
+                    <div class="ms-2">
+                        <div>
+                            <span class="badge badge-sm badge-soft-danger mb-1" id="staff_id"></span>
+                            <h6 class="fw-semibold text-truncate mb-1" id="staff_name">Loading...</h6>
+                            <p class="fs-13 mb-0 text-muted" id="view_staff_role">Role Name</p>
+                        </div>
+                    </div>
+                </div>
+                <ul class="nav nav-tabs nav-solid-primary mb-3">
+                    <li class="nav-item"><a class="nav-link py-1 px-2 rounded active" href="#solid-tab1" data-bs-toggle="tab">Basic Information</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane show active" id="solid-tab1">
+                        <h6 class="mb-3">Basic Information</h6>
+                        <div class="row row-gap-3">
+                            <div class="col-6 col-md-4">
+                                <h6 class="fs-14 fw-semibold mb-1 text-truncate">Mobile</h6>
+                                <p class="fs-13 mb-0 text-truncate" id="staff_mobile">N/A</p>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <h6 class="fs-14 fw-semibold mb-1 text-truncate">Email</h6>
+                                <p class="fs-13 mb-0 text-truncate" id="view_email">N/A</p>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <h6 class="fs-14 fw-semibold mb-1 text-truncate">Gender</h6>
+                                <p class="fs-13 mb-0 text-truncate" id="staff_gender">N/A</p>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <h6 class="fs-14 fw-semibold mb-1 text-truncate">Account Status</h6>
+                                <p class="fs-13 mb-0 text-truncate" id="view_staff_status_text">Active</p>
                             </div>
                         </div>
                     </div>
-                    <ul class="nav nav-tabs nav-solid-primary mb-3">
-                        <li class="nav-item"><a class="nav-link py-1 px-2 rounded active" href="#solid-tab1" data-bs-toggle="tab">Basic Information</a></li>
-                        <!-- <li class="nav-item"><a class="nav-link py-1 px-2 rounded" href="#solid-tab2" data-bs-toggle="tab">Salary Info</a></li> -->
-                    </ul>
-
-                    <div class="tab-content">
-                        <div class="tab-pane show active" id="solid-tab1">
-                            <h6 class="mb-3">Basic Information</h6>
-                            <div class="row row-gap-2">
-                                <!-- <div class="col-6 col-md-4">
-                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate">Job Type</h6>
-                                    <p class="fs-13 mb-0 text-truncate">Full Time</p>
-                                </div> -->
-                                <div class="col-6 col-md-4">
-                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate">Mobile</h6>
-                                    <p class="fs-13 mb-0 text-truncate" id="staff_mobile">+1 48902 78194</p>
-                                </div>
-                                <div class="col-6 col-md-4">
-                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate">Email</h6>
-                                    <p class="fs-13 mb-0 text-truncate" id="staff_email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e082858e8a818d89898ea08598818d908c85ce838f8d"></a></p>
-                                </div>
-                                <div class="col-6 col-md-4">
-                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate" >Gender</h6>
-                                    <p class="fs-13 mb-0 text-truncate" id="staff_gender">Male</p>
-                                </div>
-                                <!-- <div class="col-6 col-md-4">
-                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate">DOB</h6>
-                                    <p class="fs-13 mb-0 text-truncate">01 Jan 1995</p>
-                                </div>
-                                <div class="col-6 col-md-4">
-                                    <h6 class="fs-14 fw-semibold mb-1 text-truncate">Staff Type</h6>
-                                    <p class="fs-13 mb-0 text-truncate">Permanent</p>
-                                </div>
-                                <div class="col-12 col-md-12">
-                                    <h6 class="fw-semibold fs-14 mb-2">Address</h6>
-                                    <p class="mb-0 fs13">10 Elizabethtown Plaza, Downers Grove, Elizabeth UK07202 </p>
-                                </div> -->
-                            </div>
-                        </div>
-                        <div class="tab-pane show" id="solid-tab2">
-                            <!-- table start -->
-                            <div class="table-responsive table-nowrap">
-                                <table class="table mb-0 border">
-                                    <thead>
-                                        <tr>
-                                            <th class="no-sort">Transaction ID</th>
-                                            <th class="no-sort">Amount</th>
-                                            <th class="no-sort">Credit On</th>
-                                            <th class="no-sort">Salary For</th>
-                                            <th class="no-sort"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578193</a></td>
-                                            <td>$18600</td>
-                                            <td>16 Feb 2025</td>
-                                            <td>Jan 2025</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578192</a></td>
-                                            <td>$18600</td>
-                                            <td>18 Jan 2025</td>
-                                            <td>Dec 2024</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578190</a></td>
-                                            <td>$18600</td>
-                                            <td>15 Dec 2024</td>
-                                            <td>Nov 2024</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578189</a></td>
-                                            <td>$18600</td>
-                                            <td>17 Nov 2024</td>
-                                            <td> Oct 2024</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578188</a></td>
-                                            <td>$18600</td>
-                                            <td>15 Oct 2024</td>
-                                            <td>Sep 2024</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578187</a></td>
-                                            <td>$18600</td>
-                                            <td>18 Sep 2024</td>
-                                            <td>Aug 2024</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578186</a></td>
-                                            <td>$18600</td>
-                                            <td>15 Aug 2024</td>
-                                            <td>Jul 2024</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="javascript:void(0);">#TN578185</a></td>
-                                            <td>$18600</td>
-                                            <td>16 Jul 2024</td>
-                                            <td>Jun 2024</td>
-                                            <td class="text-end">
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                                                <ul class="dropdown-menu p-2">
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-eye me-1"></i>View Details</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-edit me-1"></i>Edit</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center"><i class="ti ti-trash me-1"></i>Delete</a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <!-- table start -->
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>
     </div>
+</div>
     <!-- End view Modal -->
 
     <!-- Start Delete Modal  -->

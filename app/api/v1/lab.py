@@ -46,7 +46,7 @@ async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
     pat_prefix = settings.patient if settings else "PAT"
     apt_prefix = settings.appointment if settings else "APT"
 
-    # 2. Build Query with explicit Eager Loading for the Doctor
+    # 2. Build Query
     stmt = (
         select(LabOrderItem)
         .join(Test, LabOrderItem.test_id == Test.id)
@@ -60,12 +60,13 @@ async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
                 selectinload(LabOrder.patient),
                 selectinload(LabOrder.appointment).options(
                     selectinload(Appointment.patient),
-                    selectinload(Appointment.doctor),  # <--- ADD THIS LINE
+                    selectinload(Appointment.doctor),
                 ),
             ),
             selectinload(LabOrderItem.test).selectinload(Test.test_category),
         )
-        .order_by(LabOrder.created_at.asc())
+        # CHANGE: Order by LabOrderItem.created_at instead of LabOrder
+        .order_by(LabOrderItem.created_at.desc())
     )
 
     result = await db.execute(stmt)
@@ -74,7 +75,6 @@ async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
     # 3. Transform and Inject
     queue_out = []
     for item in items:
-        # Now model_validate won't trigger a lazy-load error for the doctor
         q_dto = LabQueueResponse2.model_validate(item)
 
         setattr(q_dto, "_org_code", org_code)

@@ -9,7 +9,7 @@ from app.core.rbac import PermissionChecker
 from app.db.session import get_db
 from app.models import Patient
 from app.models.company import OrganizationPrefix
-from app.models.lab import LabOrder, LabOrderItem, LabResult, Visit
+from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Visit
 from app.models.users import User
 from app.schemas import PatientCreate, PatientOut
 from sqlalchemy import or_
@@ -89,36 +89,25 @@ async def create_patient(
 async def list_patients(
     filter_query: Annotated[FilterParams, Query()],
     db: AsyncSession = Depends(get_db),
-    # current_user: User = Depends(get_current_user),
 ):
-    """
-    List all patients with prefix-aware IDs and last visit tracking.
-    Access restricted to users with 'patients:read' permission.
-    """
-
     # 1. Fetch Global Prefix Settings
     prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
     prefix_res = await db.execute(prefix_stmt)
     settings = prefix_res.scalar_one_or_none()
 
-    # Defaults if settings haven't been configured yet
     org_code = settings.org_identifier if settings else "YKG"
     pat_prefix = settings.patient if settings else "PAT"
 
-    # 2. Build Query with Last Visit Subquery
-    last_visit_subq = (
-        select(
-            Visit.patient_id,
-            func.max(Visit.visit_date).label("last_visit_date"),
-        )
-        .group_by(Visit.patient_id)
-        .subquery()
+    # 2. Build Scalar Subquery targeting Appointment table
+    # Replace 'appointment_date' with whatever your date column is named
+    last_appt_stmt = (
+        select(func.max(Appointment.appointment_at))
+        .where(Appointment.patient_id == Patient.id)
+        .scalar_subquery()
     )
 
-    stmt = select(Patient, last_visit_subq.c.last_visit_date).outerjoin(
-        last_visit_subq,
-        last_visit_subq.c.patient_id == Patient.id,
-    )
+    # 3. Main Query: Select Patient AND the calculated field
+    stmt = select(Patient, last_appt_stmt.label("last_visit_date"))
 
     # --- Apply Filters ---
     if filter_query.search:
@@ -133,38 +122,36 @@ async def list_patients(
         )
 
     if filter_query.sex:
-        # Standardize input to match your DB storage (e.g., 'Male', 'Female')
         stmt = stmt.where(Patient.sex.in_(filter_query.sex))
 
-    # Apply Date Range Filters
     if filter_query.start_date:
         stmt = stmt.where(func.date(Patient.created_at) >= filter_query.start_date)
     if filter_query.end_date:
         stmt = stmt.where(func.date(Patient.created_at) <= filter_query.end_date)
 
-    # 3. Sorting and Pagination
+    # Sorting
     if filter_query.sort_by == "oldest":
         stmt = stmt.order_by(Patient.id.asc())
     else:
         stmt = stmt.order_by(Patient.id.desc())
 
+    # Pagination
     stmt = stmt.limit(filter_query.limit).offset(filter_query.offset)
 
-    # 4. Execute and Transform
+    # 4. Execute and Map
     result = await db.execute(stmt)
-    rows = result.all()
+    rows = result.all()  # Returns [(Patient, datetime), ...]
 
     patients_out = []
-    for patient, last_visit_date in rows:
-        # Validate into Pydantic
-        p_dto = PatientOut.model_validate(patient)
+    for patient_obj, last_date in rows:
+        p_dto = PatientOut.model_validate(patient_obj)
 
-        # Inject Prefix Data (Essential for the display_id computed field)
+        # Inject prefix data for display_id
         p_dto._org_code = org_code
         p_dto._mod_prefix = pat_prefix
 
-        # Attach the last visit date from the outer join
-        p_dto.last_visit_date = last_visit_date
+        # Now last_date will pull from Appointment table
+        p_dto.last_visit_date = last_date
 
         patients_out.append(p_dto)
 
@@ -173,7 +160,6 @@ async def list_patients(
 
 @router.get(
     "/search",
-    # --- PERMISSION INTEGRATION ---
     dependencies=[Depends(PermissionChecker("patients", "read"))],
 )
 async def search_patients(

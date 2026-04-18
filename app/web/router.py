@@ -1350,7 +1350,7 @@ async def settings_insurance(
 
     return _render(
         request,
-        "settings-placeholder.html",
+        "insurance-settings.html",
         active_page="settings_insurance",
         active_group="settings",
         title="Insurance",

@@ -379,26 +379,23 @@
                             </div>
 
                             <!-- status dropdown -->
-                            <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-shield-half me-1"></i>Status
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-sm p-2">
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            paid
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            unpaid
-                                        </label>
-                                    </li>
-                                </ul>
-                            </div>
-
+                           <div class="dropdown" id="status-filter-container">
+    <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+        <i class="ti ti-shield-half me-1"></i>Status
+    </a>
+    <ul class="dropdown-menu dropdown-menu-sm p-2">
+        <li>
+            <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                <input class="form-check-input m-0 me-2" type="checkbox" value="paid"> paid
+            </label>
+        </li>
+        <li>
+            <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
+                <input class="form-check-input m-0 me-2" type="checkbox" value="unpaid"> unpaid
+            </label>
+        </li>
+    </ul>
+</div>
                         </div>
 
                                  <!-- EXPORT BUTTON -->
@@ -638,6 +635,99 @@
         </div>
     </div>
     <!-- End view Modal -->
+
+
+        <!-- INVOICE DETAIL -->
+     <div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-file-invoice fs-4 me-2 text-primary"></i>
+                    <h5 class="modal-title fw-bold">Invoice Details</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4" id="invoice_print_area">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="d-flex align-items-center">
+                        <img src="/static/img/logo.png" alt="Logo" style="height: 35px;" class="me-2">
+                        <h4 class="mb-0 fw-bold" style="color: #003366;">Dreams EMR</h4>
+                    </div>
+                    <div class="text-end">
+                        <span id="modal_inv_status_badge"></span>
+                        <h5 class="fw-bold mb-0 mt-2" id="modal_inv_number">#INV-0000</h5>
+                    </div>
+                </div>
+
+                <div class="row mb-4 p-3 rounded" style="background-color: #f8faff;">
+                    <div class="col-4">
+                        <p class="text-muted small mb-1 fw-bold text-uppercase">Invoice From</p>
+                        <h6 class="fw-bold mb-1" id="modal_from_name">Dreams Medical Center</h6>
+                        <p class="small text-muted mb-0" id="modal_from_details">Teshie North <br>Ghana<br>+233 5039 2342 234</p>
+                    </div>
+                    <div class="col-4 border-start">
+                        <p class="text-muted small mb-1 fw-bold text-uppercase">Bill To</p>
+                        <h6 class="fw-bold mb-1" id="modal_to_name">--</h6>
+                        <p class="small text-muted mb-0" id="modal_to_details">--</p>
+                    </div>
+                    <div class="col-4 text-end">
+                        <div id="modal_inv_qr">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=INV" alt="QR" style="width: 70px;">
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3">Items Details</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-dark text-white">
+                            <tr class="small text-uppercase">
+                                <th style="width: 50px;">#</th>
+                                <th>Item Details</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-end">Rate</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal_invoice_items">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div class="row justify-content-end">
+                    <div class="col-md-5">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Sub Total</span>
+                            <span class="fw-medium" id="modal_subtotal">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tax (0%)</span>
+                            <span class="fw-medium" id="modal_tax">₵0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <h5 class="fw-bold">Total</h5>
+                            <h5 class="fw-bold text-primary" id="modal_total">$0.00</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mt-5">
+                    <h5 class="signature-font mb-0" style="font-family: 'Cursive', sans-serif;">Dreamsemr</h5>
+                    <p class="small text-muted border-top d-inline-block pt-1 px-4">Authorized Sign</p>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printInvoice()">
+                    <i class="ti ti-printer me-1"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- jQuery -->
     <script src="/static/js/jquery-3.7.1.min.js"></script>

@@ -289,3 +289,47 @@ window.viewBillDetails = async function(billId) {
         console.error("Error loading bill details:", error);
     }
 }
+
+
+async function updateBillingStats() {
+    try {
+        const response = await fetch('/api/v1/billing/stats/billing-summary');
+        const data = await response.json();
+
+        // 1. Update Total Amount
+        const totalFormatted = data.current_month_total.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        document.getElementById('billing_total_display').innerText = `GH₵ ${totalFormatted}`;
+
+        // 2. Update Progress Bar 
+        // Example: Monthly target is 20,000. Adjust as needed.
+        const monthlyTarget = 20000;
+        const progress = Math.min((data.current_month_total / monthlyTarget) * 100, 100);
+        document.getElementById('billing_progress_bar').style.width = `${progress}%`;
+
+        // 3. Update Percentage Trend
+        const pctContainer = document.getElementById('billing_pct_color');
+        const pctIcon = document.getElementById('billing_pct_icon');
+        const pctText = document.getElementById('billing_pct_text');
+
+        if (data.is_improvement) {
+            pctContainer.classList.add('text-success');
+            pctContainer.classList.remove('text-danger');
+            pctIcon.className = 'ti ti-arrow-wave-right-up me-1';
+            pctText.innerText = `+${data.percentage_change}%`;
+        } else {
+            pctContainer.classList.add('text-danger');
+            pctContainer.classList.remove('text-success');
+            pctIcon.className = 'ti ti-arrow-wave-right-down me-1';
+            pctText.innerText = `${data.percentage_change}%`;
+        }
+
+    } catch (error) {
+        console.error("Error fetching billing stats:", error);
+    }
+}
+
+// Call on load
+updateBillingStats();
