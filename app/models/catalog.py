@@ -30,6 +30,10 @@ class Analyzer(Base):
     test_mappings = relationship(
         "AnalyzerTestMapping", back_populates="analyzer", cascade="all, delete-orphan"
     )
+    serial_port: Mapped[str | None] = mapped_column(
+        String(50), nullable=True
+    )  # e.g., COM3 or /dev/ttyUSB0
+    baud_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Dynamic connectivity
     # tcp | serial | manual
@@ -52,10 +56,6 @@ class Analyzer(Base):
     tcp_port: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     # Serial
-    serial_port: Mapped[str | None] = mapped_column(
-        String(50), nullable=True
-    )  # e.g., COM3 or /dev/ttyUSB0
-    baud_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
     parity: Mapped[str | None] = mapped_column(
         String(10), nullable=True
     )  # none|even|odd
