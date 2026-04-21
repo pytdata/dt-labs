@@ -1088,6 +1088,23 @@ async def payments(
     return _render(request, tpl, active_page="payments", current_user=current_user)
 
 
+@router.get(
+    "/roles-and-permissions", response_class=HTMLResponse, name="roles_and_perms"
+)
+async def roles_and_permissions(
+    request: Request, current_user: User = Depends(deps.get_current_user)
+):
+
+    tpl = (
+        "roles-and-permissions.html"
+        if (settings.TEMPLATES_PATH / "roles-and-permissions.html").exists()
+        else "roles-and-permissions.html"
+    )
+    return _render(
+        request, tpl, active_page="roles-and-perms", current_user=current_user
+    )
+
+
 @router.get("/notifications", response_class=HTMLResponse, name="notifications")
 async def notifications(
     request: Request, current_user: User = Depends(deps.get_current_user)

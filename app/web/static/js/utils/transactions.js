@@ -32,6 +32,25 @@ let currentFilters = {
             fetchStats();
         }
     }, 100);
+
+    // enable selective export
+    $(document).on('change', '#select-all', function() {
+    const checked = $(this).prop('checked');
+    $('.payment__table .form-check-input').prop('checked', checked);
+    
+    // Visual cue: highlight selected rows
+    $('.payment__table tr').toggleClass('table-active', checked);
+});
+
+// Also handle individual checkbox changes for highlighting
+$(document).on('change', '.payment__table .form-check-input', function() {
+    $(this).closest('tr').toggleClass('table-active', $(this).prop('checked'));
+    
+    // Uncheck "Select All" if one item is unchecked
+    if (!$(this).prop('checked')) {
+        $('#select-all').prop('checked', false);
+    }
+});
 })();
 
 /**
@@ -45,15 +64,25 @@ async function fetchStats() {
         const currency = "GH₵";
         const updateText = (cls, val) => {
             const el = document.querySelector(cls);
-            if (el) el.innerText = `${currency}${parseFloat(val || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            if (el) {
+                el.innerText = `${currency}${parseFloat(val || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            }
         };
 
+        // Existing
         updateText(".total-transactions-val", stats.total_all_time);
-        updateText(".last-month-val", stats.last_month);
         updateText(".this-month-val", stats.this_month);
-        updateText(".last-week-val", stats.last_week);
-        updateText(".this-week-val", stats.this_week);
-        updateText(".today-val", stats.today);
+        updateText(".today-val", stats.today_total);
+        
+        // New Daily Breakdown
+        updateText(".today-cash-val", stats.today_cash);
+        updateText(".today-momo-val", stats.today_momo);
+
+        // Optional All-time Momo
+        updateText(".total-momo-val", stats.total_momo);
 
     } catch (error) {
         console.error("Stats fetch error:", error);
@@ -122,20 +151,21 @@ function setupSearchFilter() {
 /**
  * 4. DATA FETCHING
  */
-async function fetchAndRender(startDate = '', endDate = '') {
+async function fetchAndRender() {
     try {
         let url = new URL(transactionURL, window.location.origin);
         
-        if (startDate) url.searchParams.set('start_date', startDate);
-        if (endDate) url.searchParams.set('end_date', endDate);
+        // Use the currentFilters state consistently
+        if (currentFilters.start) url.searchParams.set('start_date', currentFilters.start);
+        if (currentFilters.end) url.searchParams.set('end_date', currentFilters.end);
         if (currentFilters.search) url.searchParams.set('search', currentFilters.search);
 
-        // Methods
+        // Payment Method (collecting from DOM)
         $('.payment__type:checked').each(function() {
             url.searchParams.append('method', $(this).data('payment-type'));
         });
 
-        // Statuses
+        // Invoice Status (from the state array)
         currentFilters.status.forEach(status => {
             url.searchParams.append('status', status);
         });
@@ -164,7 +194,39 @@ function render(transactionList) {
 
     paymentDataTable = $('.datatable').DataTable({
         columnDefs: [{ targets: 'no-sort', orderable: false }],
-        dom: 'tpr',
+    dom: 'tprB', // B is required for buttons to exist in the background
+    buttons: [
+        {
+            extend: 'excelHtml5',
+            title: 'Transaction_Report',
+            className: 'd-none',
+            exportOptions: {
+                columns: [1, 2, 3, 4, 5, 6, 7],
+                // This function runs for every row during export
+                rows: function (idx, data, node) {
+                    const selectedBoxes = $('.payment__table .form-check-input:checked');
+                    // If no checkboxes are selected, export everything currently filtered
+                    if (selectedBoxes.length === 0) return true;
+                    // Otherwise, only export if the checkbox in THIS row is checked
+                    return $(node).find('.form-check-input').prop('checked');
+                }
+            }
+        },
+        {
+            extend: 'pdfHtml5',
+            title: 'Transaction_Report',
+            className: 'd-none',
+            orientation: 'landscape',
+            exportOptions: {
+                columns: [1, 2, 3, 4, 5, 6, 7],
+                rows: function (idx, data, node) {
+                    const selectedBoxes = $('.payment__table .form-check-input:checked');
+                    if (selectedBoxes.length === 0) return true;
+                    return $(node).find('.form-check-input').prop('checked');
+                }
+            }
+        }
+    ],
         pageLength: 20,
         language: {
             paginate: {
@@ -333,34 +395,73 @@ function showToast(message, type = 'success') {
     bootstrap.Toast.getOrCreateInstance(toastEl).show();
 }
 
-(function initTransactionChart() {
-    let transactionChart = null;
-    const chartContainer = document.querySelector("#chart-7");
-    const yearPicker = document.querySelector(".yearpicker");
-    if (!chartContainer) return;
 
-    const options = {
-        series: [{ name: 'Revenue', data: [] }],
-        chart: { type: 'area', height: 300, toolbar: { show: false } },
-        colors: ['#003366'],
-        stroke: { curve: 'smooth', width: 2 },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 } },
-        xaxis: { categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] }
-    };
+/**
+ * Selective Export Logic
+ */
+function handleExport(type) {
+    if (!paymentDataTable) return;
 
-    async function updateChart() {
-        const year = yearPicker ? yearPicker.value : new Date().getFullYear();
-        try {
-            const res = await fetch(`/api/v1/payments/stats/monthly?year=${year}`);
-            const data = await res.json();
-            if (!transactionChart) {
-                transactionChart = new ApexCharts(chartContainer, options);
-                transactionChart.render();
-            }
-            transactionChart.updateSeries([{ name: 'Revenue', data: data }]);
-        } catch (err) { console.error("Chart Error:", err); }
+    // Find all rows where the checkbox is checked
+    const selectedCheckboxes = $('.payment__table .form-check-input:checked');
+    let rowSelector = { search: 'applied' }; // Default: Export all filtered data
+
+    if (selectedCheckboxes.length > 0) {
+        // If items are checked, tell DataTable to only export those rows
+        const selectedRows = selectedCheckboxes.closest('tr');
+        rowSelector = selectedRows;
     }
 
-    if (yearPicker) yearPicker.addEventListener('change', updateChart);
-    updateChart();
-})();
+    // Trigger the actual DataTables button with the specific row selector
+    if (type === 'excel') {
+        paymentDataTable.button('.buttons-excel').trigger({
+            exportOptions: {
+                rows: rowSelector,
+                columns: [1, 2, 3, 4, 5, 6, 7]
+            }
+        });
+    } else {
+        paymentDataTable.button('.buttons-pdf').trigger({
+            exportOptions: {
+                rows: rowSelector,
+                columns: [1, 2, 3, 4, 5, 6, 7]
+            }
+        });
+    }
+}
+
+
+/**
+ * Simple Trigger for Export
+ */
+function triggerExport(type) {
+    if (!paymentDataTable) return;
+
+    if (type === 'excel') {
+        paymentDataTable.button('.buttons-excel').trigger();
+    } else {
+        paymentDataTable.button('.buttons-pdf').trigger();
+    }
+}
+
+// Re-bind your existing dropdown links
+document.querySelector('.export-excel').onclick = (e) => {
+    e.preventDefault();
+    triggerExport('excel');
+};
+
+document.querySelector('.export-pdf').onclick = (e) => {
+    e.preventDefault();
+    triggerExport('pdf');
+};
+
+// Bind to your existing HTML export buttons
+document.querySelector('.export-excel').addEventListener('click', (e) => {
+    e.preventDefault();
+    handleExport('excel');
+});
+
+document.querySelector('.export-pdf').addEventListener('click', (e) => {
+    e.preventDefault();
+    handleExport('pdf');
+});

@@ -20,6 +20,7 @@ class PaymentFilterParams(BaseModel):
     patient_id: int | None = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+    search: Optional[str] = None
 
 
 class PatientMiniResponse(BaseModel):

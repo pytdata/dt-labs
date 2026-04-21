@@ -6,6 +6,12 @@ const labTestsContainerEl = document.querySelector(".labtest__container");
 const totalLabTestsEl = document.querySelector("#total__test__count");
 let labDataTable = null;
 
+let currentFilters = {
+    
+    start: moment().subtract(30, 'days').format('YYYY-MM-DD'),
+    end: moment().format('YYYY-MM-DD'),
+    search: ''
+};
 /**
  * 1. INITIALIZATION & DEPENDENCY CHECK
  */
@@ -15,12 +21,22 @@ let labDataTable = null;
         if (window.jQuery && window.moment && jQuery.fn.daterangepicker && jQuery.fn.DataTable) {
             clearInterval(checkDeps);
             setupDateFilter();
+            setupSearchFilter();
             fetchAndRender(); // Initial load
         }
     }, 100);
 })();
 
-
+function setupSearchFilter() {
+    $('body').on('input', '.search__lab__results', function() {
+        const query = $(this).val();
+        clearTimeout(this.delay);
+        this.delay = setTimeout(() => {
+            currentFilters.search = query;
+            fetchAndRender();
+        }, 500);
+    });
+}
 
 function showToast (message, type = 'success') {
     const toastEl = document.getElementById('appCustomToast');
@@ -66,12 +82,10 @@ function setupDateFilter() {
     const $picker = $('#reportrange');
     if (!$picker.length) return;
 
-    const start = moment().subtract(29, 'days');
-    const end = moment();
-
     $picker.daterangepicker({
-        startDate: start,
-        endDate: end,
+        startDate: moment(currentFilters.start),
+        endDate: moment(currentFilters.end),
+        alwaysShowCalendars: true, // Shows calendars immediately for Custom Range
         ranges: {
             'Today': [moment(), moment()],
             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -80,40 +94,45 @@ function setupDateFilter() {
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
         }
-    }, function(start, end) {
-        $('.reportrange-picker-field').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-        fetchAndRender(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+    }, function(start, end, label) {
+        currentFilters.start = start.format('YYYY-MM-DD');
+        currentFilters.end = end.format('YYYY-MM-DD');
+        
+        // Show the range name (e.g., 'Today') or the date string if 'Custom Range'
+        const displayText = (label === 'Custom Range') 
+            ? start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY')
+            : label;
+
+        $('.reportrange-picker-field').html(displayText);
+        fetchAndRender();
     });
 
-    $('.reportrange-picker-field').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    // Initialize the label on page load
+    $('.reportrange-picker-field').html(
+        moment(currentFilters.start).format('MMMM D, YYYY') + ' - ' + moment(currentFilters.end).format('MMMM D, YYYY')
+    );
 }
 
 /**
  * 3. FETCH AND RENDER LOGIC
  */
-async function fetchAndRender(startDate = '', endDate = '') {
+async function fetchAndRender() {
     try {
-        let url = laboratoryURL;
-        if (startDate && endDate) {
-            url += `?start_date=${startDate}&end_date=${endDate}`;
-        }
+        let url = new URL(laboratoryURL, window.location.origin);
+        url.searchParams.set('start_date', currentFilters.start);
+        url.searchParams.set('end_date', currentFilters.end);
+        if (currentFilters.search) url.searchParams.set('search', currentFilters.search);
         
-        const res = await getRemoteData(url);
+        const res = await getRemoteData(url.toString());
         if (!res) return;
 
-        // Update Counter
         if (totalLabTestsEl) totalLabTestsEl.textContent = res.length;
 
-        // Destroy existing table if it exists
         if ($.fn.DataTable.isDataTable('.datatable')) {
-            $('.datatable').DataTable().destroy();
+            $('.datatable').DataTable().clear().destroy();
         }
 
-        // Render Rows
-        const renderedHTML = res.map((lab) => renderData(lab)).join("");
-        labTestsContainerEl.innerHTML = renderedHTML;
-
-        // Re-initialize DataTable with Export Buttons
+        labTestsContainerEl.innerHTML = res.map((lab) => renderData(lab)).join("");
         initDataTable();
 
     } catch (error) {
@@ -121,42 +140,44 @@ async function fetchAndRender(startDate = '', endDate = '') {
     }
 }
 
+
 function initDataTable() {
     labDataTable = $('.datatable').DataTable({
         "bFilter": true,
-        "sDom": 'fBtlpi', 
+        "sDom": 'tpr', 
         "ordering": true,
-        "columnDefs": [
-            { "targets": 'no-sort', "orderable": false }
-        ],
-        "language": {
-            search: ' ',
-            searchPlaceholder: "Search...",
-            info: "_START_ - _END_ of _TOTAL_ items",
-            paginate: {
-                next: ' <i class=" ti ti-chevron-right"></i>',
-                previous: '<i class=" ti ti-chevron-left"></i> '
-            }
-        },
+        "columnDefs": [{ "targets": 'no-sort', "orderable": false }],
         "buttons": [
             {
                 extend: 'excelHtml5',
-                className: 'd-none', // Hide default buttons
-                exportOptions: { columns: ':not(:first-child):not(:last-child)' }
+                title: 'Lab_Results_' + moment().format('YYYYMMDD'),
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6],
+                    rows: function (idx, data, node) {
+                        const checked = $('.labtest__container .form-check-input:checked');
+                        return checked.length === 0 ? true : $(node).find('.form-check-input').prop('checked');
+                    }
+                }
             },
             {
                 extend: 'pdfHtml5',
-                className: 'd-none',
-                exportOptions: { columns: ':not(:first-child):not(:last-child)' }
+                title: 'Lab_Results_' + moment().format('YYYYMMDD'),
+                orientation: 'landscape',
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6],
+                    rows: function (idx, data, node) {
+                        const checked = $('.labtest__container .form-check-input:checked');
+                        return checked.length === 0 ? true : $(node).find('.form-check-input').prop('checked');
+                    }
+                }
             }
         ]
     });
 
-    // Link Custom Export Dropdown to DataTable Buttons
-    $('.export-excel').on('click', () => labDataTable.button('.buttons-excel').trigger());
-    $('.export-pdf').on('click', () => labDataTable.button('.buttons-pdf').trigger());
+    // Re-link Export Buttons
+    $('.export-excel').off('click').on('click', () => labDataTable.button(0).trigger());
+    $('.export-pdf').off('click').on('click', () => labDataTable.button(1).trigger());
 }
-
 /**
  * 4. ROW TEMPLATE
  */
@@ -208,92 +229,6 @@ function formatDate(dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
-
-// Age calculator, Print, and viewFinalReport logic remains the same below
-// window.viewFinalReport = async function(itemId) {
-//     try {
-//         const [reportRes, companyRes] = await Promise.all([
-//             fetch(`/api/v1/lab/report/${itemId}`),
-//             fetch(`/api/v1/company`)
-//         ]);
-
-//         if (!reportRes.ok) throw new Error("Could not fetch report details.");
-        
-//         const data = await reportRes.json();
-//         const company = companyRes.ok ? await companyRes.json() : null;
-        
-//         const safeSet = (selector, value) => {
-//             const el = document.querySelector(selector);
-//             if (el) el.innerText = value || "--";
-//         };
-
-//         // 1. Set Company Info
-//         if (company) {
-//             const logoEl = document.querySelector("#report_company_logo");
-//             if (logoEl) logoEl.src = company.logo || "/static/img/logo-small.png";
-//             safeSet("#report_company_name", company.name);
-//             const contactInfo = `${company.address || ''} ${company.phone ? '| Tel: ' + company.phone : ''}`;
-//             safeSet("#report_company_contact", contactInfo);
-//             safeSet("#report_signature_brand", company.name);
-//         }
-
-//         // 2. Set Patient & Header Info (Using your specific JSON keys)
-//         const patient = data.patient;
-//         safeSet("#header_test_type", data.test_name);
-//         safeSet("#header_reported_on", formatDate(data.finalized_at));
-        
-//         // Handle Patient Name (Response has first_name and surname)
-//         const fullName = patient.full_name || `${patient.first_name} ${patient.surname}`;
-//         safeSet("#header_patient_name", fullName);
-        
-//         // Handle Age and Sex
-//         const age = patient.age || "--";
-//         safeSet("#header_patient_age_sex", `${age}Y / ${patient.sex || 'N/A'}`);
-//         safeSet("#header_blood_group", patient.blood_group || "N/A");
-
-//         // 3. Logic for Radiology vs Lab Results
-//         // In your new response, you have 'findings' directly. 
-//         // We can check if 'findings' is populated or based on a flag.
-//         const labDisplay = document.getElementById('lab_result_display');
-//         const radDisplay = document.getElementById('rad_result_display');
-
-//         // Logic check: If findings exists and isn't the default "No findings recorded", show Rad
-//         if (data.findings && data.findings !== "No findings recorded.") {
-//             labDisplay.style.display = 'none';
-//             radDisplay.style.display = 'block';
-//             safeSet("#view_rad_findings", data.findings);
-//             safeSet("#view_rad_impression", data.conclusion);
-//         } else {
-//             // Lab Result Logic: Access data.lab_result if it exists
-//             labDisplay.style.display = 'block';
-//             radDisplay.style.display = 'none';
-            
-//             if (data.results && Object.keys(data.results).length > 0) {
-//                 let tableHtml = `<div class="table-responsive"><table class="table table-bordered">
-//                     <thead><tr><th>Investigation</th><th>Result</th><th>Ref</th><th>Unit</th></tr></thead><tbody>`;
-//                 for (const [parameter, details] of Object.entries(data.results)) {
-//                     tableHtml += `<tr>
-//                         <td>${parameter}</td>
-//                         <td>${details.value}</td>
-//                         <td>${details.reference_range || '-'}</td>
-//                         <td>${details.unit || '-'}</td>
-//                     </tr>`;
-//                 }
-//                 tableHtml += `</tbody></table></div>`;
-//                 labDisplay.innerHTML = tableHtml;
-//             } else {
-//                 labDisplay.innerHTML = `<div class="p-3 text-center">No lab parameters found.</div>`;
-//             }
-//         }
-
-//         // Show Modal
-//         bootstrap.Modal.getOrCreateInstance(document.getElementById('viewReportModal')).show();
-//     } catch (error) {
-//         console.error(error);
-//         showToast("Error loading report", "error");
-//     }
-// };
-
 
 window.viewFinalReport = async function(itemId) {
 
@@ -413,7 +348,7 @@ window.printFromModal = function() {
             if (typeof showToast === "function") {
                 showToast("Could not identify the report ID for printing.", "error");
             } else {
-                alert("Error: Report ID not found.");
+                showToast("Error: Report ID not found.");
             }
         }
     }

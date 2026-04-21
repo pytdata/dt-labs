@@ -1,11 +1,11 @@
 from datetime import date, datetime
-from typing import Optional
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Enum, func, select, update
+from sqlalchemy import Enum, String, cast, func, or_, select, update
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 from app.db.session import get_db
@@ -34,9 +34,19 @@ class PhlebotomyStatus(str, Enum):
     in_progress = "in_progress"
 
 
-@router.get("/phlebotomy-queue/", response_model=list[LabQueueResponse2])
-async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
-    # 1. Fetch Global Prefix Settings
+@router.get("/phlebotomy-queue/", response_model=List[LabQueueResponse2])
+async def get_phlebotomy_results_queue(
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    search: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Fetches the lab queue for items awaiting results.
+    Supports date range filtering and global search across IDs, names, and tests.
+    """
+
+    # 1. Fetch Global Prefix Settings for Display IDs
     prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
     prefix_res = await db.execute(prefix_stmt)
     settings = prefix_res.scalar_one_or_none()
@@ -46,11 +56,13 @@ async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
     pat_prefix = settings.patient if settings else "PAT"
     apt_prefix = settings.appointment if settings else "APT"
 
-    # 2. Build Query
+    # 2. Build Base Query with Joins
+    # We join Test, LabOrder, and Patient to allow the 'search' filter to reach them
     stmt = (
         select(LabOrderItem)
         .join(Test, LabOrderItem.test_id == Test.id)
         .join(LabOrder, LabOrderItem.order_id == LabOrder.id)
+        .join(Patient, LabOrder.patient_id == Patient.id)
         .where(
             LabOrderItem.status == LabStatus.AWAITING_RESULTS,
             Test.requires_phlebotomy == True,
@@ -65,26 +77,54 @@ async def get_phlebotomy_results_queue(db: AsyncSession = Depends(get_db)):
             ),
             selectinload(LabOrderItem.test).selectinload(Test.test_category),
         )
-        # CHANGE: Order by LabOrderItem.created_at instead of LabOrder
-        .order_by(LabOrderItem.created_at.desc())
     )
+
+    # 3. Dynamic Date Filtering
+    if start_date:
+        stmt = stmt.where(func.date(LabOrderItem.created_at) >= start_date)
+
+    if end_date:
+        stmt = stmt.where(func.date(LabOrderItem.created_at) <= end_date)
+
+    # 4. Global Search Logic
+    if search:
+        search_query = f"%{search}%"
+        stmt = stmt.where(
+            or_(
+                # Search by the numeric ID (suffix of Display ID)
+                LabOrderItem.id.cast(String).ilike(search_query),
+                # Search by Patient details
+                Patient.first_name.ilike(search_query),
+                Patient.surname.ilike(search_query),
+                Patient.patient_no.ilike(search_query),
+                # Search by Test details
+                Test.name.ilike(search_query),
+            )
+        )
+
+    # Sort by most recent items first
+    stmt = stmt.order_by(LabOrderItem.created_at.desc())
 
     result = await db.execute(stmt)
     items = result.scalars().all()
 
-    # 3. Transform and Inject
+    # 5. Transform and Inject Prefixes into Pydantic Models
     queue_out = []
     for item in items:
+        # Validate into the response model
         q_dto = LabQueueResponse2.model_validate(item)
 
+        # Inject dynamic prefixes for the @computed_field display_id
         setattr(q_dto, "_org_code", org_code)
         setattr(q_dto, "_mod_prefix", lab_prefix)
 
         if q_dto.order:
+            # Inject into Patient ID generator
             if q_dto.order.patient:
                 setattr(q_dto.order.patient, "_org_code", org_code)
                 setattr(q_dto.order.patient, "_mod_prefix", pat_prefix)
 
+            # Inject into Appointment and its nested Patient
             if q_dto.order.appointment:
                 appt = q_dto.order.appointment
                 setattr(appt, "_org_code", org_code)
@@ -136,6 +176,7 @@ async def submit_lab_results(
 async def get_radiology_queue(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
+    search: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     # 1. Fetch Global Prefix Settings
@@ -148,7 +189,7 @@ async def get_radiology_queue(
     pat_prefix = settings.patient if settings else "PAT"
     apt_prefix = settings.appointment if settings else "APT"
 
-    # 2. Build Query
+    # Build Query
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
@@ -173,6 +214,18 @@ async def get_radiology_queue(
         filters.append(func.date(LabOrderItem.created_at) >= start_date)
     if end_date:
         filters.append(func.date(LabOrderItem.created_at) <= end_date)
+
+    # Add Search Logic
+    if search:
+        s = f"%{search}%"
+        filters.append(
+            or_(
+                LabOrderItem.id.cast(String).ilike(s),
+                Patient.first_name.ilike(s),
+                Patient.surname.ilike(s),
+                Test.name.ilike(s),
+            )
+        )
 
     stmt = (
         stmt.where(*filters)
@@ -221,15 +274,19 @@ async def get_radiology_queue(
 async def get_all_finalized_results(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
+    search: Optional[str] = None,  # 1. Added search parameter
     db: AsyncSession = Depends(get_db),
 ):
+    # Base Query
     stmt = (
         select(LabOrderItem)
         .join(LabOrderItem.test)
+        # We join through order and appointment to get to the Patient
+        .join(LabOrder, LabOrderItem.order_id == LabOrder.id)
+        .join(Appointment, LabOrder.appointment_id == Appointment.id)
+        .join(Patient, Appointment.patient_id == Patient.id)
         .options(
-            # 1. Load test and category
             joinedload(LabOrderItem.test).joinedload(Test.test_category),
-            # 2. Load the chain: Order -> Appointment -> Patient AND Phlebotomy
             joinedload(LabOrderItem.order)
             .joinedload(LabOrder.appointment)
             .options(
@@ -237,25 +294,32 @@ async def get_all_finalized_results(
                 joinedload(Appointment.phlebotomy),
                 joinedload(Appointment.doctor),
             ),
-            # 3. Load results
             selectinload(LabOrderItem.lab_result),
             selectinload(LabOrderItem.radiology_result),
         )
         .where(LabOrderItem.status == LabStatus.COMPLETED)
     )
 
-    # --- DYNAMIC DATE FILTERING ---
+    # Date Filtering
     if start_date:
-        # func.date() casts the TIMESTAMP to a DATE for accurate comparison
         stmt = stmt.where(func.date(LabOrderItem.created_at) >= start_date)
-
     if end_date:
         stmt = stmt.where(func.date(LabOrderItem.created_at) <= end_date)
-    # ------------------------------
 
-    # Sort by most recent first
+    # 2. SEARCH LOGIC
+    if search:
+        search_query = f"%{search}%"
+        stmt = stmt.where(
+            or_(
+                # LabOrderItem.display_id.ilike(search_query),
+                Patient.first_name.ilike(search_query),
+                Patient.surname.ilike(search_query),
+                Patient.patient_no.ilike(search_query),
+                Test.name.ilike(search_query),
+            )
+        )
+
     stmt = stmt.order_by(LabOrderItem.id.desc())
-
     result = await db.execute(stmt)
     results = result.unique().scalars().all()
     return results
@@ -446,6 +510,7 @@ async def get_lab_queue(
     dept: str,
     start_date: date | None = None,
     end_date: date | None = None,
+    search: str | None = None,  # Added search parameter
     db: AsyncSession = Depends(get_db),
 ):
 
@@ -484,6 +549,16 @@ async def get_lab_queue(
         stmt = stmt.where(func.date(LabOrder.created_at) >= start_date)
     if end_date:
         stmt = stmt.where(func.date(LabOrder.created_at) <= end_date)
+
+    if search:
+        search_filter = f"%{search}%"
+        stmt = stmt.where(
+            or_(
+                Patient.first_name.ilike(search_filter),
+                Patient.surname.ilike(search_filter),
+                cast(LabOrderItem.id, String).ilike(search_filter),
+            )
+        )
 
     if dept == "phlebotomy":
         stmt = stmt.where(

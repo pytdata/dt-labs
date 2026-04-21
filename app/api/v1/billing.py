@@ -4,11 +4,11 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import joinedload, selectinload
 from app.db.session import get_db
 from app.models.billing import Billing, Invoice, InvoiceItem, Payment
-from app.models.lab import Appointment
+from app.models.lab import Appointment, Patient
 from app.schemas import billing_service
 from app.schemas.billing import BillingRead, PaymentCreate
 
@@ -24,49 +24,60 @@ async def get_all_billing_records(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     status: Optional[str] = None,
+    search: Optional[str] = None,  # 1. Add search parameter
     db: AsyncSession = Depends(get_db),
     limit: int = 100,
     offset: int = 0,
 ):
     try:
-        # 1. Base query with optimized loading
-        # We explicitly join Appointment and Invoice to allow for filtering by Invoice status
+        # Base query
         stmt = (
             select(Billing)
             .join(Appointment, Billing.appointment_id == Appointment.id)
             .join(Invoice, Appointment.id == Invoice.appointment_id)
+            .join(
+                Patient, Billing.patient_id == Patient.id
+            )  # 2. Explicitly join Patient for search
             .options(
                 joinedload(Billing.patient),
-                # Ensure Invoice is loaded so the display logic/UI can access status
                 joinedload(Billing.appointment).joinedload(Appointment.invoice),
                 selectinload(Billing.items),
             )
             .order_by(Billing.created_at.desc())
         )
 
-        # 2. Date Range Filtering
+        # Date Range Filtering
         if start_date:
             stmt = stmt.where(func.date(Billing.created_at) >= start_date)
-
         if end_date:
             stmt = stmt.where(func.date(Billing.created_at) <= end_date)
 
-        # 3. Status Filtering (Linked from Invoice table)
+        # Status Filtering
         if status:
             stmt = stmt.where(Invoice.status.ilike(status))
 
-        # 4. Pagination & Execution
+        # 3. SEARCH LOGIC
+        if search:
+            search_query = f"%{search}%"
+            stmt = stmt.where(
+                or_(
+                    Billing.bill_no.ilike(
+                        search_query
+                    ),  # Search by Bill ID (e.g., BIL-1001)
+                    Patient.first_name.ilike(search_query),  # Search by First Name
+                    Patient.surname.ilike(search_query),  # Search by Surname
+                    Patient.patient_no.ilike(search_query),  # Search by Patient ID
+                )
+            )
+
+        # Pagination & Execution
         stmt = stmt.limit(limit).offset(offset)
         result = await db.execute(stmt)
-
-        # .unique() is critical here because joinedload on collections
-        # can create duplicate row references in the result set
         billings = result.scalars().unique().all()
 
         return billings
 
     except Exception as e:
-        # Professional logging for the presentation environment
         print(f"Internal Server Error [Billing Records]: {e}")
         return []
 
@@ -292,12 +303,15 @@ async def get_billing_summary(db: AsyncSession = Depends(get_db)):
     start_of_last_month = start_of_current_month - relativedelta(months=1)
     end_of_last_month = start_of_current_month - relativedelta(seconds=1)
 
-    # 1. Query Current Month Total
-    curr_stmt = select(func.coalesce(func.sum(Invoice.total_amount), 0)).where(
-        Invoice.created_at >= start_of_current_month
-    )
+    # 1. Query Current Month Metrics (Total Billed, Paid, and Outstanding)
+    # We fetch all three in one query for better performance
+    curr_stmt = select(
+        func.coalesce(func.sum(Invoice.total_amount), 0),
+        func.coalesce(func.sum(Invoice.amount_paid), 0),
+        func.coalesce(func.sum(Invoice.balance), 0),
+    ).where(Invoice.created_at >= start_of_current_month)
 
-    # 2. Query Last Month Total
+    # 2. Query Last Month Total (For growth percentage comparison)
     prev_stmt = select(func.coalesce(func.sum(Invoice.total_amount), 0)).where(
         and_(
             Invoice.created_at >= start_of_last_month,
@@ -308,18 +322,22 @@ async def get_billing_summary(db: AsyncSession = Depends(get_db)):
     curr_res = await db.execute(curr_stmt)
     prev_res = await db.execute(prev_stmt)
 
-    current_total = float(curr_res.scalar())
+    # Unpack current month metrics
+    current_total, total_collected, total_outstanding = curr_res.fetchone()
     previous_total = float(prev_res.scalar())
 
     # 3. Calculate Percentage Change
+    current_total = float(current_total)
     percentage_change = 0
     if previous_total > 0:
         percentage_change = ((current_total - previous_total) / previous_total) * 100
     elif current_total > 0:
-        percentage_change = 100  # From 0 to something is 100% growth
+        percentage_change = 100
 
     return {
-        "current_month_total": current_total,
+        "current_month_total": current_total,  # Total Billed (Revenue)
+        "total_collected": float(total_collected),  # Actual Cash Received
+        "total_outstanding": float(total_outstanding),  # Money still owed
         "percentage_change": round(percentage_change, 2),
         "is_improvement": percentage_change >= 0,
     }

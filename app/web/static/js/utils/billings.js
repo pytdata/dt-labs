@@ -1,7 +1,3 @@
-/**
- * BILLING MANAGEMENT MODULE
- */
-
 let billingContainerEL = document.querySelector(".billing__container");
 let totalBillingEl = document.querySelector(".total__billings");
 let billingURL = "/api/v1/billing/records";
@@ -9,9 +5,11 @@ let billingDataTable = null;
 
 // 1. GLOBAL FILTER STATE
 let currentFilters = {
-    start: moment().subtract(29, 'days').format('YYYY-MM-DD'),
+    // Subtracting 30 instead of 29 makes it a "Custom Range" 
+    start: moment().subtract(30, 'days').format('YYYY-MM-DD'), 
     end: moment().format('YYYY-MM-DD'),
-    status: ''
+    status: '',
+    search: ''
 };
 
 /**
@@ -19,22 +17,40 @@ let currentFilters = {
  */
 (function init() {
     const checkDeps = setInterval(() => {
-        // Ensure all plugins are loaded (especially important with rocket-loader)
         const hasDeps = window.jQuery && window.moment && jQuery.fn.DataTable && jQuery.fn.daterangepicker;
         if (hasDeps) {
             clearInterval(checkDeps);
-            console.log("💳 Billing Module Initialized");
+            console.log("💳 Revenue Module Initialized");
             
             setupDateFilter();
             setupStatusFilter();
-            fetchAndRender(currentFilters.start, currentFilters.end);
+            setupSearchFilter(); // Call search setup
+            
+            fetchAndRender(); // Fetch with initial filters
+            updateBillingStats();
         }
     }, 100);
 })();
 
+
 /**
  * 2. FILTER SETUP FUNCTIONS
  */
+function setupSearchFilter() {
+    // Listen for input on the search field (make sure the class matches your HTML)
+    $('body').on('input', '.search__billing', function() {
+        const query = $(this).val();
+        
+        clearTimeout(this.delay);
+        this.delay = setTimeout(() => {
+            currentFilters.search = query;
+            console.log("🔍 Searching Revenue for:", query);
+            fetchAndRender();
+        }, 500); 
+    });
+}
+
+
 function setupDateFilter() {
     const $picker = $('#reportrange');
     if (!$picker.length) return;
@@ -42,6 +58,8 @@ function setupDateFilter() {
     $picker.daterangepicker({
         startDate: moment(currentFilters.start),
         endDate: moment(currentFilters.end),
+        // This ensures the custom range calendars are always the focus
+        alwaysShowCalendars: true, 
         ranges: {
             'Today': [moment(), moment()],
             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -50,46 +68,50 @@ function setupDateFilter() {
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
         }
-    }, function(start, end) {
+    }, function(start, end, label) {
         currentFilters.start = start.format('YYYY-MM-DD');
         currentFilters.end = end.format('YYYY-MM-DD');
         
-        $('.reportrange-picker-field').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-        fetchAndRender(currentFilters.start, currentFilters.end);
+        // Logic to show either the Range Name or the Date String
+        const text = (label === 'Custom Range') 
+            ? start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY') 
+            : label;
+
+        $('.reportrange-picker-field').html(text);
+        fetchAndRender();
     });
 
-    // Set initial text
-    $('.reportrange-picker-field').html(moment(currentFilters.start).format('MMMM D, YYYY') + ' - ' + moment(currentFilters.end).format('MMMM D, YYYY'));
+    // Set initial field text to the actual date range
+    $('.reportrange-picker-field').html(
+        moment(currentFilters.start).format('MMMM D, YYYY') + ' - ' + moment(currentFilters.end).format('MMMM D, YYYY')
+    );
 }
+
 
 function setupStatusFilter() {
     $('.dropdown-menu .dropdown-item').on('click', function(e) {
         e.preventDefault();
         const selected = $(this).text().trim();
-        
-        // Update Button Text UI
         $(this).closest('.dropdown').find('.dropdown-toggle').text(selected);
-        
-        // Set Filter Logic
         currentFilters.status = (selected === "Select Status" || selected === "All") ? "" : selected;
-        fetchAndRender(currentFilters.start, currentFilters.end);
+        fetchAndRender();
     });
 }
 
 /**
  * 3. DATA FETCHING
  */
-async function fetchAndRender(startDate = '', endDate = '') {
+async function fetchAndRender() {
     try {
         let url = new URL(billingURL, window.location.origin);
         
-        if (startDate && endDate) {
-            url.searchParams.set('start_date', startDate);
-            url.searchParams.set('end_date', endDate);
-        }
-        if (currentFilters.status) {
-            url.searchParams.set('status', currentFilters.status);
-        }
+        url.searchParams.set('start_date', currentFilters.start);
+        url.searchParams.set('end_date', currentFilters.end);
+        
+        if (currentFilters.status) url.searchParams.set('status', currentFilters.status);
+        if (currentFilters.search) url.searchParams.set('search', currentFilters.search);
+
+        console.log("🌐 Revenue Request URL:", url.toString());
 
         const res = await fetch(url.toString());
         if (!res.ok) throw new Error("Failed to fetch billing records");
@@ -98,64 +120,57 @@ async function fetchAndRender(startDate = '', endDate = '') {
         renderTable(data);
     } catch (error) {
         console.error("Billing fetch error:", error);
-        if (billingContainerEL) {
-            billingContainerEL.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Error loading records.</td></tr>`;
-        }
     }
 }
 
 /**
- * 4. TABLE RENDERING & DATATABLE CONFIG
+ * 4. TABLE RENDERING & SELECTIVE EXPORT
  */
 function renderTable(records) {
     if (!billingContainerEL) return;
-
-    console.log("RECORDS: ==>", records)
     
-    totalBillingEl.textContent = `${records.length} Billing`;
+    totalBillingEl.textContent = `${records.length} Revenue`;
 
-    // Reset Existing DataTable
     if ($.fn.DataTable.isDataTable('.table.border')) {
         $('.table.border').DataTable().clear().destroy();
     }
 
-    if (!records || records.length === 0) {
-        billingContainerEL.innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center py-5">
-                    <div class="no-data-found">
-                        <i class="ti ti-receipt-off fs-1 text-muted mb-2"></i>
-                        <h5 class="text-muted">No Billing Records Found</h5>
-                    </div>
-                </td>
-            </tr>`;
-        return;
-    }
-
-    // Map rows
     billingContainerEL.innerHTML = records.map(bill => renderRow(bill)).join("");
 
-    // Initialize DataTable with Export Buttons
+    // Initialize DataTable
     billingDataTable = $('.table.border').DataTable({
         columnDefs: [{ targets: [0, 7], orderable: false }],
-        dom: 'tpr',
+        dom: 'tprB', // Keep 'B' in dom for button functionality
         pageLength: 15,
         buttons: [
             { 
                 extend: 'excelHtml5', 
-                title: 'Billing_Export_' + moment().format('YYYY-MM-DD'),
-                exportOptions: { columns: [1, 2, 3, 4, 5, 6] } 
+                title: 'Revenue_Report',
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6],
+                    rows: function (idx, data, node) {
+                        const checked = $('.billing__container .form-check-input:checked');
+                        // If nothing is checked, export all. Otherwise, export only checked.
+                        return checked.length === 0 ? true : $(node).find('.form-check-input').prop('checked');
+                    }
+                } 
             },
             { 
                 extend: 'pdfHtml5', 
-                title: 'Billing_Report_' + moment().format('YYYY-MM-DD'),
+                title: 'Revenue_Report',
                 orientation: 'landscape',
-                exportOptions: { columns: [1, 2, 3, 4, 5, 6] }
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6],
+                    rows: function (idx, data, node) {
+                        const checked = $('.billing__container .form-check-input:checked');
+                        return checked.length === 0 ? true : $(node).find('.form-check-input').prop('checked');
+                    }
+                }
             }
         ]
     });
 
-    // Handle External Export Button Clicks
+    // Re-bind Export Buttons
     $('.export-excel').off('click').on('click', () => billingDataTable.button(0).trigger());
     $('.export-pdf').off('click').on('click', () => billingDataTable.button(1).trigger());
 }
@@ -290,44 +305,52 @@ window.viewBillDetails = async function(billId) {
     }
 }
 
-
 async function updateBillingStats() {
     try {
+        console.log("Fetching billing stats...");
         const response = await fetch('/api/v1/billing/stats/billing-summary');
         const data = await response.json();
+        
+        console.log("Stats Data Received:", data); // Check F12 console for this!
 
-        // 1. Update Total Amount
-        const totalFormatted = data.current_month_total.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        document.getElementById('billing_total_display').innerText = `GH₵ ${totalFormatted}`;
+        // 1. Total Billed
+        const totalBilled = parseFloat(data.current_month_total) || 0;
+        const billedEl = document.getElementById('billing_total_display');
+        if (billedEl) billedEl.innerText = `GH₵ ${totalBilled.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
-        // 2. Update Progress Bar 
-        // Example: Monthly target is 20,000. Adjust as needed.
-        const monthlyTarget = 20000;
-        const progress = Math.min((data.current_month_total / monthlyTarget) * 100, 100);
-        document.getElementById('billing_progress_bar').style.width = `${progress}%`;
+        // 2. Total Collected
+        const totalCollected = parseFloat(data.total_collected) || 0;
+        const collectedEl = document.getElementById('stat_total_collected');
+        if (collectedEl) collectedEl.innerText = `GH₵ ${totalCollected.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        
+        // 3. Total Pending
+        const totalPending = parseFloat(data.total_outstanding) || 0;
+        const pendingEl = document.getElementById('stat_total_pending');
+        if (pendingEl) pendingEl.innerText = `GH₵ ${totalPending.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
-        // 3. Update Percentage Trend
-        const pctContainer = document.getElementById('billing_pct_color');
-        const pctIcon = document.getElementById('billing_pct_icon');
+        // 4. Progress Bars
+        if (totalBilled > 0) {
+            const collectRate = (totalCollected / totalBilled) * 100;
+            const pendingRate = (totalPending / totalBilled) * 100;
+            
+            if (document.getElementById('collection_progress_bar')) {
+                document.getElementById('collection_progress_bar').style.width = collectRate + '%';
+            }
+            if (document.getElementById('pending_progress_bar')) {
+                document.getElementById('pending_progress_bar').style.width = pendingRate + '%';
+            }
+        }
+
+        // 5. Percentage Trend
         const pctText = document.getElementById('billing_pct_text');
-
-        if (data.is_improvement) {
-            pctContainer.classList.add('text-success');
-            pctContainer.classList.remove('text-danger');
-            pctIcon.className = 'ti ti-arrow-wave-right-up me-1';
-            pctText.innerText = `+${data.percentage_change}%`;
-        } else {
-            pctContainer.classList.add('text-danger');
-            pctContainer.classList.remove('text-success');
-            pctIcon.className = 'ti ti-arrow-wave-right-down me-1';
+        if (pctText) {
             pctText.innerText = `${data.percentage_change}%`;
+            const pctContainer = document.getElementById('billing_pct_color');
+            pctContainer.className = data.is_improvement ? 'text-success fs-12 d-flex align-items-center me-1' : 'text-danger fs-12 d-flex align-items-center me-1';
         }
 
     } catch (error) {
-        console.error("Error fetching billing stats:", error);
+        console.error("Error updating billing stats:", error);
     }
 }
 

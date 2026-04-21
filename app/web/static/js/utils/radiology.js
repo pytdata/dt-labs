@@ -2,35 +2,23 @@
  * RADIOLOGY QUEUE MANAGEMENT - INTEGRATED WITH DATATABLES & INLINE CONFIRMATION
  */
 
-// 1. SAFE GLOBAL DECLARATIONS
-if (typeof window.radiologyDataTable === 'undefined') {
-    var radiologyDataTable = null;
-}
-if (typeof window.radiologyQueueURL === 'undefined') {
-    var radiologyQueueURL = "/api/v1/lab/queue/radiology";
-}
+/**
+ * RADIOLOGY QUEUE MANAGEMENT - FIXED & INTEGRATED
+ */
 
-// 2. TOAST NOTIFICATION UTILITY
+// SAFE GLOBAL DECLARATIONS
+if (typeof window.radiologyDataTable === 'undefined') { var radiologyDataTable = null; }
+if (typeof window.radiologyQueueURL === 'undefined') { var radiologyQueueURL = "/api/v1/lab/queue/radiology"; }
+
+// 2. TOAST UTILITY
 window.showToast = window.showToast || function(message, type = 'success') {
     const toastEl = document.getElementById('appCustomToast');
     const toastText = document.getElementById('appCustomToastText');
-    const toastIcon = document.getElementById('toastIcon');
     if (!toastEl) return;
-
     toastEl.classList.remove('bg-success', 'bg-danger');
-    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+    toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
     toastText.innerText = message;
-
-    if (type === 'success') {
-        toastEl.classList.add('bg-success');
-        if (toastIcon) toastIcon.classList.add('ti-circle-check');
-    } else {
-        toastEl.classList.add('bg-danger');
-        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
-    }
-
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-    toast.show();
+    bootstrap.Toast.getOrCreateInstance(toastEl).show();
 };
 
 // 3. INITIALIZATION
@@ -39,53 +27,61 @@ window.showToast = window.showToast || function(message, type = 'success') {
         if (window.jQuery && window.moment && jQuery.fn.DataTable && jQuery.fn.daterangepicker) {
             clearInterval(checkDeps);
             setupFilters();
-            fetchAndRender(); 
+            setupSearch(); // Added call
+            window.fetchAndRender(); 
         }
     }, 200);
 })();
 
-// 4. DATE RANGE FILTER
+function setupSearch() {
+    $('body').on('input', '.search__radiology', function() {
+        const query = $(this).val().trim();
+        const drp = $('#reportrange').data('daterangepicker');
+        const start = drp ? drp.startDate.format('YYYY-MM-DD') : null;
+        const end = drp ? drp.endDate.format('YYYY-MM-DD') : null;
+
+        clearTimeout(this.delay);
+        this.delay = setTimeout(() => {
+            window.fetchAndRender(start, end, query);
+        }, 500);
+    });
+}
+
 function setupFilters() {
     const $picker = $('#reportrange');
     if (!$picker.length) return;
-
     const start = moment().subtract(29, 'days');
     const end = moment();
 
     $picker.daterangepicker({
-        startDate: start,
-        endDate: end,
-        opens: 'left',
-        drops: 'auto',
-        parentEl: "body",
+        startDate: start, endDate: end, opens: 'left',
         ranges: {
             'Today': [moment(), moment()],
-            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-            'This Month': [moment().startOf('month'), moment().endOf('month')],
-            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            'This Month': [moment().startOf('month'), moment().endOf('month')]
         }
     }, function(start, end) {
         $('.reportrange-picker-field').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-        fetchAndRender(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+        window.fetchAndRender(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), $('.search__radiology').val());
     });
-
     $('.reportrange-picker-field').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
 }
 
-// 5. DATA FETCHING
-window.fetchAndRender = async function(startDate, endDate) {
+// DATA FETCHING
+
+window.fetchAndRender = async function(startDate, endDate, search) {
     const containerEl = document.querySelector(".lab__container");
     if (!containerEl) return;
 
     containerEl.innerHTML = `<tr><td colspan="9" class="text-center py-5"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>`;
 
     try {
-        let url = window.radiologyQueueURL;
-        if (startDate && endDate) url += `?start_date=${startDate}&end_date=${endDate}`;
+        const url = new URL(window.radiologyQueueURL, window.location.origin);
+        if (startDate) url.searchParams.set('start_date', startDate);
+        if (endDate) url.searchParams.set('end_date', endDate);
+        if (search) url.searchParams.set('search', search);
 
-        const response = await fetch(url);
+        const response = await fetch(url.toString());
         const data = await response.json();
         renderRadiologyTable(data);
     } catch (error) {
@@ -94,121 +90,138 @@ window.fetchAndRender = async function(startDate, endDate) {
     }
 };
 
+
 // 6. TABLE RENDERING
+window.fetchAndRender = async function(startDate, endDate, search) {
+    const containerEl = document.querySelector(".lab__container");
+    if (!containerEl) return;
+    containerEl.innerHTML = `<tr><td colspan="9" class="text-center py-5"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr>`;
+
+    try {
+        const url = new URL(window.radiologyQueueURL, window.location.origin);
+        if (startDate) url.searchParams.set('start_date', startDate);
+        if (endDate) url.searchParams.set('end_date', endDate);
+        if (search) url.searchParams.set('search', search);
+
+        const response = await fetch(url.toString());
+        const data = await response.json();
+        renderRadiologyTable(data);
+    } catch (error) {
+        containerEl.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Failed to load queue.</td></tr>`;
+    }
+};
+
 function renderRadiologyTable(items) {
     const containerEl = document.querySelector('.lab__container');
     const tableSelector = '#radiologyMainTable';
-    console.log(items.length)
     document.querySelector(".lab__results__total").textContent = items.length;
-    const $table = $(tableSelector);
-
+    
     if ($.fn.DataTable.isDataTable(tableSelector)) {
-        $table.DataTable().clear().destroy();
+        $(tableSelector).DataTable().clear().destroy();
     }
 
     containerEl.innerHTML = items.map(item => {
-        const patient = item.order?.appointment?.patient || {};
-        const doctor = item.order?.appointment?.doctor || {};
-        const testName = item.test.name.replace(/'/g, "\\'");
-        const gender = item.order?.patient.sex;
-        const displayDate = moment(item.order?.appointment?.appointment_at || item.entered_at).format('DD MMM YYYY');
+    // 1. Correctly point to item.order.patient for the robust data
+    const patient = item.order?.patient || {}; 
+    const doctor = item.order?.appointment?.doctor || {};
+    
+    const testName = item.test.name.replace(/'/g, "\\'");
+    
+    // 2. Use patient.sex directly from the order object
+    const gender = patient.sex || 'N/A'; 
+    
+    const displayDate = moment(item.order?.appointment?.appointment_at || item.entered_at).format('DD MMM YYYY');
 
         const stage = item.stage.toLowerCase();
-        let badge = 'badge-soft-warning';
-        let statusText = 'PENDING SCAN';
+        
+        let badge = 'badge-soft-warning', statusText = 'PENDING SCAN';
         let action = `<button class="btn btn-sm btn-primary me-2" onclick="openReportModal(${item.id}, '${testName}')">Findings</button>`;
 
-        if (stage === 'review') {
-            badge = 'badge-soft-info';
-            statusText = 'AWAITING APPROVAL';
+        if (stage === 'review' || item.status === 'AWAITING_APPROVAL') {
+            badge = 'badge-soft-info'; statusText = 'AWAITING APPROVAL';
             action = `<button class="btn btn-sm btn-info text-white me-2" onclick="reviewReport(${item.id}, '${testName}')">Review</button>`;
-        } else if (stage === 'complete') {
-            badge = 'badge-soft-success';
-            statusText = 'FINALIZED';
+        } else if (stage === 'complete' || item.status === 'COMPLETED') {
+            badge = 'badge-soft-success'; statusText = 'FINALIZED';
             action = `<button class="btn btn-sm btn-outline-success me-2" onclick="viewFinalReport(${item.id})">View</button>`;
         }
 
         return `
-        <tr>
-            <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
-            <td><span class="text-muted fw-bold">${item.display_id}</span></td>
-            <td><h6 class="fs-14 mb-0 fw-medium">${patient.full_name || 'N/A'}</h6></td>
-            <td>${gender || 'N/A'}</td>
-            <td>${displayDate}</td>
-            <td>Dr. ${doctor.full_name || 'Referral'}</td>
-            <td><span class="text-dark fw-medium">${item.test.name}</span></td>
-            <td><span class="badge ${badge} border">${statusText}</span></td>
-            <td class="text-end">
-                <div class="d-flex align-items-center justify-content-end">
-                    ${action}
-                    <!--<div class="dropdown">
-                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></a>
-                        <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
-                             <li><a href="javascript:void(0);" class="dropdown-item" onclick="viewFinalReport(${item.id})">View History</a></li>
-                        </ul>
-                    </div> -->
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
+    <tr>
+        <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
+        <td><span class="text-muted fw-bold">${item.display_id}</span></td>
+        <td><h6 class="fs-14 mb-0 fw-medium">${patient.full_name || 'N/A'}</h6></td>
+        <td>${gender}</td> <td>${displayDate}</td>
+        <td>Dr. ${doctor.full_name || 'Referral'}</td>
+        <td><span class="text-dark fw-medium">${item.test.name}</span></td>
+        <td><span class="badge ${badge} border">${statusText}</span></td>
+        <td class="text-end">
+            <div class="d-flex align-items-center justify-content-end">
+                ${action}
+            </div>
+        </td>
+    </tr>`;
+}).join('');
 
-    window.radiologyDataTable = $table.DataTable({
-    // 't' is the table
-    // The stuff in brackets after 't' is the footer row containing info (i) and pagination (p)
-    dom: 't<"row mt-3 align-items-center"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
-    pageLength: 20,
-    responsive: true,
-    language: {
-        paginate: {
-            next: 'Next',
-            previous: 'Previous'
-        },
-        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+    window.radiologyDataTable = $(tableSelector).DataTable({
+        dom: 't<"row mt-3 align-items-center"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7 d-flex justify-content-end"p>>',
+        pageLength: 20,
+        columnDefs: [{ "targets": [0, 8], "orderable": false }],
+        buttons: [
+    { 
+        extend: 'excelHtml5', 
+        title: 'Radiology_Report_' + moment().format('YYYYMMDD'), 
+        exportOptions: { 
+            columns: [1,2,3,4,5,6,7],
+            rows: function (idx, data, node) {
+                // Find all checked checkboxes in the table
+                const anyChecked = $('.lab__container .form-check-input:checked').length > 0;
+                // If something is checked, only return true for rows where the checkbox is checked
+                return anyChecked ? $(node).find('.form-check-input').prop('checked') : true;
+            }
+        } 
+    },
+    { 
+        extend: 'pdfHtml5', 
+        title: 'Radiology_Report_' + moment().format('YYYYMMDD'), 
+        orientation: 'landscape', 
+        exportOptions: { 
+            columns: [1,2,3,4,5,6,7],
+            rows: function (idx, data, node) {
+                const anyChecked = $('.lab__container .form-check-input:checked').length > 0;
+                return anyChecked ? $(node).find('.form-check-input').prop('checked') : true;
+            }
+        } 
     }
-});
+]
+    });
+
+    $('.export-excel').off('click').on('click', () => window.radiologyDataTable.button(0).trigger());
+    $('.export-pdf').off('click').on('click', () => window.radiologyDataTable.button(1).trigger());
 }
 
-// 7. MODAL & API HANDLERS
-
-/**
- * Open Modal for Fresh Findings
- */
+// MODAL HANDLERS (Now outside the render function)
 window.openReportModal = function(itemId, testName) {
-    document.getElementById('rad_order_item_id').value = itemId;
-    document.getElementById('rad_test_name_display').innerText = testName;
-    document.getElementById('rad_findings').value = '';
-    document.getElementById('rad_conclusion').value = '';
-    
-    // UI Visibility
-    document.getElementById('btn_save_result').style.display = 'block';
-    document.getElementById('btn_finalize_init').style.display = 'none';
-    document.getElementById('inline_confirm_wrapper').style.display = 'none';
-    
+    $('#rad_order_item_id').val(itemId);
+    $('#rad_test_name_display').text(testName);
+    $('#rad_findings, #rad_conclusion').val('');
+    $('#btn_save_result').show();
+    $('#btn_finalize_init, #inline_confirm_wrapper').hide();
     bootstrap.Modal.getOrCreateInstance(document.getElementById('radiologyResultModal')).show();
 };
 
-/**
- * Open Modal for Reviewing Existing Findings
- */
 window.reviewReport = async function(itemId, testName) {
     try {
         const response = await fetch(`/api/v1/radiology/result-by-item/${itemId}`);
         const resultData = await response.json();
-        
-        document.getElementById('rad_order_item_id').value = itemId;
-        document.getElementById('rad_test_name_display').innerText = testName;
-        document.getElementById('rad_findings').value = resultData.result_value || '';
-        document.getElementById('rad_conclusion').value = resultData.comments || '';
-        
-        // UI Visibility: Hide save, show "Approve" button, hide the final "Yes" wrapper
-        document.getElementById('btn_save_result').style.display = 'none';
-        document.getElementById('btn_finalize_init').style.display = 'block';
-        document.getElementById('inline_confirm_wrapper').style.display = 'none';
-        
+        $('#rad_order_item_id').val(itemId);
+        $('#rad_test_name_display').text(testName);
+        $('#rad_findings').val(resultData.result_value || '');
+        $('#rad_conclusion').val(resultData.comments || '');
+        $('#btn_save_result').hide();
+        $('#btn_finalize_init').show();
+        $('#inline_confirm_wrapper').hide();
         bootstrap.Modal.getOrCreateInstance(document.getElementById('radiologyResultModal')).show();
-    } catch (err) {
-        showToast("Could not load report findings.", "error");
-    }
+    } catch (err) { showToast("Could not load findings.", "error"); }
 };
 
 /**

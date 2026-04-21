@@ -202,15 +202,7 @@
                         <i class="ti ti-arrow-bar-to-right"></i>
                     </button>
 
-                    <!-- Search -->
-                    <div class="me-auto d-flex align-items-center header-search d-lg-flex d-none">
-                        <!-- Search -->
-                        <div class="input-icon position-relative me-2">
-                           <input type="text" class="form-control" placeholder="Search Keyword">
-                           <span class="input-icon-addon d-inline-flex p-0 header-search-icon"><i class="ti ti-command"></i></span>
-                        </div>
-                        <!-- /Search -->
-                    </div>
+                   
 
                 </div>
 
@@ -391,11 +383,11 @@
                         </div>
                     </div>
                     <div class="gap-2 d-flex align-items-center flex-wrap">
-                        <a href="all-appointments.html" class="btn btn-icon btn-outline-light active" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="List" data-bs-original-title="List View"><i class="ti ti-layout-list"></i></a>
+                        <!-- <a href="all-appointments.html" class="btn btn-icon btn-outline-light active" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="List" data-bs-original-title="List View"><i class="ti ti-layout-list"></i></a>
                         <a href="all-appointments-calendar.html" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Calendar" data-bs-original-title="Calendar View"><i class="ti ti-calendar"></i></a>
                         <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh" data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Print" data-bs-original-title="Print"><i class="ti ti-printer"></i></a>
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Download" data-bs-original-title="Download"><i class="ti ti-cloud-download"></i></a>
+                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Print" data-bs-original-title="Print"><i class="ti ti-printer"></i></a> -->
+                        <!-- <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Download" data-bs-original-title="Download"><i class="ti ti-cloud-download"></i></a> -->
                         {% if current_user.has_permission('appointments', 'write') %}
                         <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_modal"><i class="ti ti-square-rounded-plus me-1"></i>New Appointment</a>
                         {% endif %}
@@ -410,14 +402,9 @@
 
                     <div class="card-header d-flex align-items-center flex-wrap gap-2 justify-content-between">
                         <h6 class="d-inline-flex align-items-center mb-0">Total Appointments <span class="badge bg-primary ms-2">{{total_appointments}}</span></h6>
-                        <div class="search-set">
-                            <div class="d-flex align-items-center flex-wrap gap-2">
-                                <div class="table-search d-flex align-items-center mb-0">
-                                    <div class="search-input">
-                                        <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search"></i></a>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="search-input">
+                            <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search" style="display: none;"></i></a>
+                            <input type="text" id="global_appointment_search" class="form-control" placeholder="Search Patient, or Doctor...">
                         </div>
                     </div>
 
@@ -433,7 +420,7 @@
                             <!-- doctor dropdown -->
                             <div class="dropdown">
                                 
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                <!-- <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-stethoscope me-1"></i>Staff
                                 </a>
 
@@ -450,12 +437,12 @@
                                     </li>
                                  
                                  
-                                </ul>
+                                </ul> -->
                             </div>
 
                          
                             <!-- patient dropdown -->
-                            <div class="dropdown">
+                            <!-- <div class="dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-users me-1"></i>Patient
                                 </a>
@@ -469,7 +456,7 @@
                                                 <input type="text" class="form-control form-control-md search__patient" placeholder="Search">
                                             </div>
                                         </div>
-                                    </li>
+                                    </li> -->
                                 
                                     <!-- <li>
                                         <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
@@ -478,11 +465,11 @@
                                         </label>
                                     </li> -->
                                     
-                                </ul>
-                            </div>
+                                <!-- </ul>
+                            </div> -->
 
                             <!-- status dropdown -->
-                            <div class="dropdown">
+                            <!-- <div class="dropdown">
                                 <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                   <i class="ti ti-shield-half me-1"></i>Status
                                 </a>
@@ -506,7 +493,7 @@
                                         </label>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> -->
 
                         </div>
 
@@ -1294,6 +1281,13 @@
         } else {
             setTimeout(startAppWhenReady, 50);
         }
+
+
+        $(document).on('change', '#select-all', function() {
+    const isChecked = $(this).prop('checked');
+    // Targets the checkboxes rendered in the tbody
+    $('.appointments__table .form-check-input').prop('checked', isChecked);
+});
     }
 
     // Use DOMContentLoaded instead of load for faster initialization

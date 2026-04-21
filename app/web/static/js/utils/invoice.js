@@ -24,7 +24,9 @@ let currentFilters = {
             
             setupDateFilter();
             setupStatusFilter();
+            setupSearchFilter();
             fetchAndRender(currentFilters.start, currentFilters.end);
+            
         }
     }, 100);
 })();
@@ -71,62 +73,85 @@ function setupStatusFilter() {
 }
 
 // 4. CORE DATA LOGIC
-async function fetchAndRender(startDate = '', endDate = '') {
+async function fetchAndRender() {
     try {
         let url = new URL(invoiceURL, window.location.origin);
         
-        if (startDate && endDate) {
-            url.searchParams.set('start_date', startDate);
-            url.searchParams.set('end_date', endDate);
-        }
+        // Basic parameters
+        url.searchParams.set('start_date', currentFilters.start);
+        url.searchParams.set('end_date', currentFilters.end);
+        
+        // Add optional filters
         if (currentFilters.status) {
             url.searchParams.set('status', currentFilters.status);
         }
+        
+        // Add search query
+        if (currentFilters.search) {
+            url.searchParams.set('search', currentFilters.search);
+        }
+
+        console.log("🌐 Final Request URL:", url.toString());
 
         const res = await fetch(url.toString());
-        if (!res.ok) throw new Error("Failed to fetch invoices");
-        const data = await res.json();
+        if (!res.ok) throw new Error("Server responded with error");
         
+        const data = await res.json();
         renderTable(data);
+        
     } catch (error) {
-        console.error("Invoice fetch error:", error);
+        console.error("Fetch failed:", error);
     }
 }
+
 
 function renderTable(invoiceList) {
     if (!invoiceList || !invoiceContainerEL) return;
     
-    totalInvoiceEl.textContent = `${invoiceList.length} Invoices`;
+    // Update badge count
+    $('.total__invoices').text(`${invoiceList.length} Invoices`);
 
-    // Reset Table
-    if ($.fn.DataTable.isDataTable('.table.border')) {
-        $('.table.border').DataTable().clear().destroy();
+    // Clean up old table
+    if ($.fn.DataTable.isDataTable('.datatable')) {
+        $('.datatable').DataTable().clear().destroy();
     }
 
-    // Map HTML
+    // Inject HTML
     invoiceContainerEL.innerHTML = invoiceList.map(item => renderRow(item)).join("");
 
-    // Initialize DataTable with Export configuration
-    invoiceDataTable = $('.table.border').DataTable({
-        columnDefs: [{ targets: [0, 8], orderable: false }],
-        dom: 'tpr',
+    // Initialize DataTable
+    invoiceDataTable = $('.datatable').DataTable({
+        columnDefs: [{ targets: 'no-sort', orderable: false }],
+        dom: 'tprB',
         pageLength: 15,
         buttons: [
             { 
                 extend: 'excelHtml5', 
-                title: 'Invoice_Export_' + moment().format('YYYY-MM-DD'),
-                exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7] } 
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6, 7],
+                    rows: function (idx, data, node) {
+                        const hasChecked = $('.invoice__container .form-check-input:checked').length > 0;
+                        if (!hasChecked) return true; // Export all if nothing is checked
+                        return $(node).find('.form-check-input').prop('checked');
+                    }
+                } 
             },
             { 
                 extend: 'pdfHtml5', 
-                title: 'Invoice_Report_' + moment().format('YYYY-MM-DD'),
                 orientation: 'landscape',
-                exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7] }
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6, 7],
+                    rows: function (idx, data, node) {
+                        const hasChecked = $('.invoice__container .form-check-input:checked').length > 0;
+                        if (!hasChecked) return true;
+                        return $(node).find('.form-check-input').prop('checked');
+                    }
+                }
             }
         ]
     });
 
-    // Proxy Click Events for Custom Export Buttons
+    // Manually trigger invisible DataTable buttons from your custom UI buttons
     $('.export-excel').off('click').on('click', () => invoiceDataTable.button(0).trigger());
     $('.export-pdf').off('click').on('click', () => invoiceDataTable.button(1).trigger());
 }
@@ -365,3 +390,20 @@ function showToast (message, type = 'success') {
     });
     toast.show();
 };
+
+function setupSearchFilter() {
+    // We attach to 'body' so even if the element is replaced, the listener stays
+    $('body').on('input', '.search__invoice', function() {
+        const query = $(this).val();
+        
+        // Debug: This should show up in your F12 Console immediately
+        console.log("User is typing:", query);
+
+        clearTimeout(this.delay);
+        this.delay = setTimeout(() => {
+            currentFilters.search = query;
+            console.log("Triggering fetch for:", currentFilters.search);
+            fetchAndRender();
+        }, 500); 
+    });
+}

@@ -1,69 +1,143 @@
-const fillQueueURL = "/api/v1/lab/phlebotomy-queue/"; // Updated to your dedicated route
+/**
+ * 0. GLOBAL STATE & CONFIG
+ */
+const fillQueueURL = "/api/v1/lab/phlebotomy-queue/"; 
+let labDataTable = null;
 
-
-
-function showToast (message, type = 'success') {
-    const toastEl = document.getElementById('appCustomToast');
-    const toastText = document.getElementById('appCustomToastText');
-    const toastIcon = document.getElementById('toastIcon');
-
-    if (!toastEl) return;
-
-    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
-    const container = toastEl.closest('.toast-container');
-    if (container && container.parentElement !== document.body) {
-        document.body.appendChild(container);
-    }
-
-    // Reset classes
-    toastEl.classList.remove('bg-success', 'bg-danger');
-    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
-
-    // Set content
-    toastText.innerText = message;
-    if (type === 'success') {
-        toastEl.classList.add('bg-success');
-        if (toastIcon) toastIcon.classList.add('ti-circle-check');
-    } else {
-        toastEl.classList.add('bg-danger');
-        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
-    }
-
-    // Show the toast
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
-        delay: 4000,
-        autohide: true 
-    });
-    toast.show();
+// Default filter: Last 30 days
+let currentFilters = {
+    start: moment().subtract(30, 'days').format('YYYY-MM-DD'),
+    end: moment().format('YYYY-MM-DD'),
+    search: ''
 };
 
+/**
+ * 1. INITIALIZATION
+ */
+$(document).ready(function() {
+    setupDatePicker();
+    setupSearchFilter();
+    init(); // Initial fetch
+
+    // Master Checkbox Logic
+    $(document).on('change', '#selectAllTests', function() {
+        const isChecked = $(this).is(':checked');
+        $('.labtest__container .row-checkbox').prop('checked', isChecked);
+    });
+});
+
+/**
+ * 2. FILTERS (Date & Search)
+ */
+function setupDatePicker() {
+    const $picker = $('#reportrange');
+    if (!$picker.length) return;
+
+    $picker.daterangepicker({
+        startDate: moment(currentFilters.start),
+        endDate: moment(currentFilters.end),
+        alwaysShowCalendars: true,
+        ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, function(start, end, label) {
+        currentFilters.start = start.format('YYYY-MM-DD');
+        currentFilters.end = end.format('YYYY-MM-DD');
+        
+        const displayText = (label === 'Custom Range') 
+            ? start.format('DD MMM YY') + ' - ' + end.format('DD MMM YY')
+            : label;
+
+        $('.reportrange-picker-field').html(displayText);
+        init();
+    });
+
+    $('.reportrange-picker-field').html(
+        moment(currentFilters.start).format('DD MMM YY') + ' - ' + moment(currentFilters.end).format('DD MMM YY')
+    );
+}
 
 
+function setupSearchFilter() {
+    // Listen for both 'input' (typing) and 'search' (the 'x' button in some browsers)
+    $('body').on('input search', '.search__laboratory', function() {
+        const query = $(this).val().trim();
+        
+        clearTimeout(this.delay);
+        this.delay = setTimeout(() => {
+            // Update the global filter state
+            currentFilters.search = query;
+            
+            // If the query is empty, we are essentially "resetting" the view
+            if (query === "") {
+                console.log("Search cleared, reloading full list...");
+            }
+            
+            init(); 
+        }, 400); // Slightly faster response time for clearing
+    });
+}
+
+/**
+ * 3. CORE FETCH & RENDER
+ */
 async function init() {
-    const data = await getRemoteData(fillQueueURL);
-    if (data) renderQueue(data);
+    try {
+        const url = new URL(fillQueueURL, window.location.origin);
+        url.searchParams.set('start_date', currentFilters.start);
+        url.searchParams.set('end_date', currentFilters.end);
+        
+        // Only attach search if it has a value
+        if (currentFilters.search) {
+            url.searchParams.set('search', currentFilters.search);
+        }
+
+        const data = await getRemoteData(url.toString());
+        const container = document.querySelector(".labtest__container");
+
+        // IMPORTANT: Clear the container first
+        container.innerHTML = "";
+
+        if (data && data.length > 0) {
+            renderQueue(data);
+            initDataTable(); // This re-binds the "Smart" table features to the new data
+        } else {
+            // No results found
+            container.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No results matching "${currentFilters.search}"</td></tr>`;
+            
+            // If the table was initialized, kill it so it doesn't show old data
+            if ($.fn.DataTable.isDataTable('.datatable')) {
+                $('.datatable').DataTable().clear().destroy();
+            }
+        }
+        
+        // Update the count badge
+        const countEl = document.querySelector("#total__test__count");
+        if (countEl) countEl.textContent = data ? data.length : 0;
+
+    } catch (err) {
+        console.error("Fetch error:", err);
+    }
 }
 
 
 function renderQueue(list) {
     const container = document.querySelector(".labtest__container");
-    document.querySelector("#total__test__count").textContent = list.length;
-    
     container.innerHTML = list.map(item => {
-        // Construct Full Name from JSON fields
         const patient = item.order.patient;
-        const fullName = `${patient.full_name}`;
+        const fullName = patient.full_name;
         const testName = item.test.name;
-
-        // --- CHANGE START: Accessing Appointment Date instead of Order Creation Date ---
         const appointmentDate = item.order.appointment ? item.order.appointment.appointment_at : null;
-        const displayDate = formatDate(appointmentDate);
-        // --- CHANGE END ---
 
         return `
         <tr class="align-middle">
-            <td><input class="form-check-input" type="checkbox"></td>
-            <td class="fw-bold">${item.display_id}</td>
+            <td><div class="form-check"><input class="form-check-input row-checkbox" type="checkbox"></div></td>
+            <td class="fw-bold text-primary">${item.display_id}</td>
             <td>
                 <div class="d-flex flex-column">
                     <span class="fw-bold text-dark">${fullName}</span>
@@ -72,7 +146,7 @@ function renderQueue(list) {
             </td>
             <td>${testName}</td>
             <td><span class="badge bg-outline-info text-info border-info">${item.test.test_category.category_name}</span></td>
-            <td>${displayDate}</td>
+            <td>${formatDate(appointmentDate)}</td>
             <td><span class="badge bg-soft-warning text-warning border-warning">Awaiting Results</span></td>
             <td class="text-end">
                 <button class="btn btn-sm btn-primary shadow-sm" 
@@ -80,95 +154,107 @@ function renderQueue(list) {
                     <i class="ti ti-edit me-1"></i> Enter Results
                 </button>
             </td>
-        </tr>
-    `}).join('');
+        </tr>`;
+    }).join('');
 }
 
-// 1. OPEN MODAL & FETCH TEMPLATE
+/**
+ * 4. DATATABLE & EXPORT
+ */
+function initDataTable() {
+    if ($.fn.DataTable.isDataTable('.datatable')) {
+        $('.datatable').DataTable().clear().destroy();
+    }
+
+    labDataTable = $('.datatable').DataTable({
+        "bFilter": true,
+        "sDom": 'tpr', 
+        "ordering": true,
+        "columnDefs": [{ "targets": [0, 7], "orderable": false }],
+        "buttons": [
+            {
+                extend: 'excelHtml5',
+                title: 'Lab_Phlebotomy_Queue_' + moment().format('YYYYMMDD'),
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6],
+                    rows: function (idx, data, node) {
+                        const anyChecked = $('.row-checkbox:checked').length > 0;
+                        return anyChecked ? $(node).find('.row-checkbox').prop('checked') : true;
+                    }
+                }
+            },
+            {
+                extend: 'pdfHtml5',
+                title: 'Lab_Phlebotomy_Queue_' + moment().format('YYYYMMDD'),
+                orientation: 'landscape',
+                exportOptions: { 
+                    columns: [1, 2, 3, 4, 5, 6],
+                    rows: function (idx, data, node) {
+                        const anyChecked = $('.row-checkbox:checked').length > 0;
+                        return anyChecked ? $(node).find('.row-checkbox').prop('checked') : true;
+                    }
+                }
+            }
+        ]
+    });
+
+    // Re-bind custom dropdown triggers
+    $('.export-excel').off('click').on('click', function() {
+        showToast("Preparing Excel download...");
+        labDataTable.button(0).trigger();
+    });
+    $('.export-pdf').off('click').on('click', function() {
+        showToast("Preparing PDF download...");
+        labDataTable.button(1).trigger();
+    });
+}
+
+/**
+ * 5. MODAL LOGIC
+ */
 window.openFillModal = async function(itemId, testName, patientName, displayId) {
-    // 1. UI Setup
     document.getElementById('display_test_name').innerText = testName;
     document.getElementById('display_patient_name').innerText = patientName;
     document.getElementById('display_order_id').innerText = `${displayId}`;
     document.getElementById('fill_order_item_id').value = itemId;
     
     const container = document.getElementById('dynamic_template_container');
-    container.innerHTML = `
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Loading ${testName} template...</p>
-        </div>`;
+    container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>`;
     
-    const modal = new bootstrap.Modal(document.getElementById('fillResultModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('fillResultModal')).show();
 
     try {
-        // 2. Fetch using the specific "by-item" route we created above
         const response = await fetch(`/api/v1/tests-templates/by-item/${itemId}`);
-        
-        if (!response.ok) throw new Error("Template not found");
-        
         const templates = await response.json();
         
-        if (templates.length === 0) {
-            container.innerHTML = `
-                <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center">
-                    <i class="ti ti-alert-triangle fs-4 me-2"></i>
-                    <div>
-                        <strong>No Template Found:</strong> Please go to Settings and add parameters for "${testName}".
-                    </div>
-                </div>`;
+        if (!templates.length) {
+            container.innerHTML = `<div class="alert alert-warning">No Template Found.</div>`;
             return;
         }
 
-        // 3. Render the dynamic inputs
         container.innerHTML = templates.map(t => `
-    <div class="row mx-0 align-items-center test-row py-3 border-bottom bg-white hover-bg-light">
-        <div class="col-md-3 ps-3">
-            <span class="fw-bold text-dark d-block">${t.test_name}</span>
-            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">${t.short_code || ''}</small>
-        </div>
-
-        <div class="col-md-4">
-            <div class="input-group">
-                <input type="number" step="any" class="form-control form-control-lg result-input border-primary-subtle text-center fw-bold" 
-                       data-name="${t.test_name}" 
-                       data-min="${t.min_reference_range ?? ''}" 
-                       data-max="${t.max_reference_range ?? ''}"
-                       data-unit="${t.unit ?? ''}"
-                       oninput="validateFlag(this)"
-                       placeholder="0.00">
-                <span class="input-group-text bg-light small fw-medium" style="width: 80px; justify-content: center;">
-                    ${t.unit ?? '-'}
-                </span>
-            </div>
-        </div>
-
-        <div class="col-md-1 text-center">
-            <span class="badge flag-badge bg-light text-dark fs-6 p-2 w-100">-</span>
-        </div>
-
-        <div class="col-md-4 text-center">
-            <div class="bg-light rounded py-2 border">
-                <span class="small text-muted d-block" style="font-size: 0.65rem;">NORMAL RANGE</span>
-                <span class="fw-bold px-2">${t.min_reference_range ?? '0'} — ${t.max_reference_range ?? 'N/A'}</span>
-                <small class="text-muted ms-1">${t.unit ?? ''}</small>
-            </div>
-        </div>
-    </div>
-`).join('');
-
-
+            <div class="row mx-0 align-items-center test-row py-3 border-bottom bg-white">
+                <div class="col-md-3"><strong>${t.test_name}</strong></div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="number" step="any" class="form-control result-input" 
+                               data-name="${t.test_name}" data-min="${t.min_reference_range ?? ''}" 
+                               data-max="${t.max_reference_range ?? ''}" data-unit="${t.unit ?? ''}"
+                               oninput="validateFlag(this)">
+                        <span class="input-group-text">${t.unit ?? '-'}</span>
+                    </div>
+                </div>
+                <div class="col-md-1 text-center"><span class="badge flag-badge bg-light text-dark">-</span></div>
+                <div class="col-md-4 text-center bg-light rounded py-2 border">
+                    <small class="d-block text-muted" style="font-size:0.7rem">REF RANGE</small>
+                    <span class="fw-bold">${t.min_reference_range ?? '0'} — ${t.max_reference_range ?? 'N/A'}</span>
+                </div>
+            </div>`).join('');
     } catch (err) {
-        console.error("Modal Load Error:", err);
-        container.innerHTML = `
-            <div class="alert alert-danger shadow-sm">
-                <i class="ti ti-circle-x me-2"></i> Error loading template. Please check your connection.
-            </div>`;
+        container.innerHTML = `<div class="alert alert-danger">Error loading template.</div>`;
     }
 };
 
-// 2. LIVE VALIDATION (High/Low)
 window.validateFlag = function(input) {
     const val = parseFloat(input.value);
     const min = parseFloat(input.dataset.min);
@@ -181,10 +267,10 @@ window.validateFlag = function(input) {
         return;
     }
 
-    if (min && val < min) {
+    if (min !== "" && val < min) {
         badge.className = "badge flag-badge bg-danger";
         badge.innerText = "L";
-    } else if (max && val > max) {
+    } else if (max !== "" && val > max) {
         badge.className = "badge flag-badge bg-danger text-white";
         badge.innerText = "H";
     } else {
@@ -193,90 +279,86 @@ window.validateFlag = function(input) {
     }
 };
 
-// 3. SUBMIT TO BACKEND (SAVE AS JSON)
 document.getElementById('fill_results_form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
     const submitBtn = document.getElementById('save_results_btn');
     const itemId = document.getElementById('fill_order_item_id').value;
-    const rows = document.querySelectorAll('.test-row');
-    
-    // We build the object that will be stored in the JSON column
     const resultsPayload = {};
 
-    rows.forEach(row => {
+    document.querySelectorAll('.test-row').forEach(row => {
         const input = row.querySelector('.result-input');
-        const parameterName = input.dataset.name;
-        const value = input.value;
-        
-        // Only save if a value was actually entered
-        if (value !== "") {
-            resultsPayload[parameterName] = {
-                value: value,
+        if (input.value !== "") {
+            resultsPayload[input.dataset.name] = {
+                value: input.value,
                 unit: input.dataset.unit,
-                flag: row.querySelector('.flag-badge').innerText, // 'L', 'H', or 'N'
+                flag: row.querySelector('.flag-badge').innerText,
                 reference_range: `${input.dataset.min} - ${input.dataset.max}`
             };
         }
     });
 
-    if (Object.keys(resultsPayload).length === 0) {
-        // return alert("Please enter at least one result value.");
-        showToast("Please enter at least one result value.", "error");
-        return;
-    }
+    if (Object.keys(resultsPayload).length === 0) return showToast("Enter a value", "error");
 
-    // Disable button to prevent double-submission
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    submitBtn.innerHTML = 'Saving...';
 
     try {
         const response = await fetch('/api/v1/lab/results/submit-phlebotomy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                order_item_id: parseInt(itemId),
-                results: resultsPayload
-            })
+            body: JSON.stringify({ order_item_id: parseInt(itemId), results: resultsPayload })
         });
 
         if (response.ok) {
-            // alert("Results finalized and saved successfully!");
-            showToast("Results finalized and saved successfully!")
-            location.reload(); // Refresh the queue
+            showToast("Saved!");
+            location.reload();
         } else {
-            const error = await response.json();
-            throw new Error(error.detail || "Failed to save");
+            throw new Error("Save failed");
         }
     } catch (err) {
-        // alert("Error: " + err.message);
         showToast(err.message, "error");
         submitBtn.disabled = false;
-        submitBtn.innerText = "Save & Finalize Results";
+        submitBtn.innerText = "Save & Finalize";
     }
 });
 
-
-init();
-
-
+/**
+ * 6. UTILS
+ */
 function formatDate(dateStr) {
-    if (!dateStr) return "No Appointment";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
+function showToast(message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+    if (!toastEl) return;
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.className = 'ti ti-circle-check fs-4 me-2';
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.className = 'ti ti-alert-triangle fs-4 me-2';
+    }
+    toastText.innerText = message;
+    bootstrap.Toast.getOrCreateInstance(toastEl).show();
+}
 
-// --- UTILS ---
 async function getRemoteData(url) {
-    try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Fetch failed");
-        return await res.json();
-    } catch (error) { console.error("Data error:", error); }
+    const res = await fetch(url);
+    return res.ok ? await res.json() : null;
 }
+
+/**
+ * Global bridge for legacy HTML onclick="exportData()"
+ */
+window.exportData = function(format) {
+    if (format === 'excel') {
+        $('.export-excel').trigger('click');
+    } else if (format === 'pdf') {
+        $('.export-pdf').trigger('click');
+    }
+};

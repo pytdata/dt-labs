@@ -48,6 +48,8 @@
      <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/custom-style.css" id="app-style">
 
+
+
 <style>
 /* 1. Position the container at Top Right */
 .toast-container {
@@ -124,38 +126,92 @@
     opacity: 1;
 }
 
-/* Target the range list and make it a flex container */
-.daterangepicker .ranges ul {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Move the 'Custom Range' (usually the last li) to the top */
-/* Note: DateRangePicker adds 'Custom Range' as a dynamic LI if not explicitly defined */
-.daterangepicker .ranges ul li:last-child {
-    order: -1; 
-    border-bottom: 1px solid #eee;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-/* Ensure the table header doesn't clip the dropdowns */
-.table-header {
-    overflow: visible !important;
-    position: relative;
-    z-index: 5;
-}
-
-/* Ensure dropdown menus appear above the table body */
-.table-header .dropdown-menu {
-    z-index: 1050 !important;
-}
-
-/* Fix for the DatePicker Z-index conflict */
 .daterangepicker {
-    z-index: 1100 !important;
+    z-index: 2000 !important; /* Ensure it stays above modals and sticky headers */
 }
 
+/* If the picker is appearing but is "stuck" inside the card */
+.reportrange-picker {
+    position: relative;
+}
+
+/* Force the date picker to the front */
+.daterangepicker {
+    z-index: 9999 !important;
+    display: none; /* Let JS handle showing it */
+}
+
+/* Target the range list in the daterangepicker */
+        .daterangepicker .ranges ul {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Force the "Custom Range" (which is the last <li>) to the top */
+        .daterangepicker .ranges ul li:last-child {
+            order: -1; 
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+
+/* Container alignment fix */
+.dataTables_wrapper .dataTables_paginate {
+    float: right !important;
+    margin-top: 10px;
+}
+
+/* Rectangular Button Styling */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 6px 14px !important;
+    margin: 0 !important; /* Removes gaps for a solid block look */
+    border: 1px solid #dcdfe8 !important;
+    border-radius: 0 !important; /* Makes it rectangular */
+    background: #ffffff !important;
+    color: #333 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* First and Last button rounding (optional but looks better) */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous {
+    border-top-left-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.next {
+    border-top-right-radius: 4px !important;
+    border-bottom-right-radius: 4px !important;
+    margin-left: -1px !important; /* Overlaps borders for a seamless look */
+}
+
+/* Active State */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #003366 !important; /* Your brand blue */
+    color: white !important;
+    border-color: #003366 !important;
+    z-index: 1;
+}
+
+/* Hover State */
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: #f1f5f9 !important;
+    color: #003366 !important;
+    border-color: #dcdfe8 !important;
+}
+
+/* Disabled State */
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    background: #fafafa !important;
+    color: #bbb !important;
+    cursor: default !important;
+}
+
+/* Hide the default DataTables 'Next/Previous' styles if they interfere */
+.dataTables_wrapper .dataTables_paginate .paginate_button:active {
+    box-shadow: none !important;
+}
 </style>
 
 <body>
@@ -381,12 +437,7 @@
                          </ol>
                      </div>
                  </div>
-                    <!-- <div class="gap-2 d-flex align-items-center flex-wrap">
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Refresh" data-bs-original-title="Refresh"><i class="ti ti-refresh"></i></a>
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Print" data-bs-original-title="Print"><i class="ti ti-printer"></i></a>
-                        <a href="javascript:void(0);" class="btn btn-icon btn-outline-light" data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Download" data-bs-original-title="Download"><i class="ti ti-cloud-download"></i></a>
-                        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add_test_modal"><i class="ti ti-square-rounded-plus me-1"></i>New Test</a>
-                 </div> -->
+                    
              </div>
 				<!-- End Page Header -->
 
@@ -398,9 +449,10 @@
                         <div class="search-set">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
-                                    <div class="search-input">
-                                        <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search"></i></a>
-                                 </div>
+                                   <div class="search-input">
+    <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search"></i></a>
+    <input type="text" class="form-control form-control-sm search__phleb" placeholder="Search patient...">
+</div>
                              </div>
                          </div>
                      </div>
@@ -416,85 +468,7 @@
                                 <span class="reportrange-picker-field">Select Date Range</span>
                             </div>
 
-                            <!-- test name dropdown -->
-                             <!-- <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-test-pipe-2 me-1"></i>Test Name
-                             </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                             </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                         </div>
-                                     </div>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Blood Test
-                                     </label>
-                                 </li>
-                                   
-                             </ul>
-                         </div> -->
-
-                            <!-- department dropdown -->
-                             <!-- <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-user-shield me-1"></i>Department
-                             </a>
-                                <ul class="dropdown-menu dropdown-menu-md p-2">
-                                    <li>
-                                        <div class="mb-2">
-                                            <div class="input-icon-start input-icon position-relative">
-                                                <span class="input-icon-addon">
-                                                    <i class="ti ti-search"></i>
-                                             </span>
-                                                <input type="text" class="form-control form-control-md" placeholder="Search">
-                                         </div>
-                                     </div>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            BACTERIOLOGY (CULTURES)
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            ULTRASOUND SCAN
-                                     </label>
-                                 </li>
-                             </ul>
-                         </div> -->
-
-                            <!-- status dropdown -->
-                            <!-- <div class="dropdown">
-                                <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                  <i class="ti ti-shield-half me-1"></i>Status
-                             </a>
-                                <ul class="dropdown-menu dropdown-menu-sm p-2">
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Active
-                                     </label>
-                                 </li>
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Inactive
-                                     </label>
-                                 </li>
-                             </ul>
-                         </div> -->
-
-                     </div>
+                    </div>
 
                         <!--EXPORT  -->
                      <div class="dropdown me-2">
@@ -526,11 +500,11 @@
                 <div class="col">
                     <h5 class="card-title mb-0 fw-bold">Phlebotomy Collection Queue</h5>
                 </div>
-                <div class="col-auto">
+                <!-- <div class="col-auto">
                     <button class="btn btn-primary btn-sm" onclick="location.reload()">
                         <i class="ti ti-refresh me-1"></i> Refresh Queue
                     </button>
-                </div>
+                </div> -->
             </div>
         </div>
         
@@ -585,177 +559,6 @@
 
  </div>
     <!-- End Wrapper -->
-
-
-    <!-- Start add Modal -->
-    <div id="add_test_modal" class="modal fade">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-            <div class="modal-content">
-                <div class="modal-header justify-content-between">
-                    <h4 class="text-dark modal-title fw-bold text-truncate">Add New Test</h4>
-                    <button type="button" class="btn-close btn-close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="ti ti-circle-x-filled"></i></button>
-                </div>
-                <form action="#" method="POST" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label class="form-label"> Test Name</label>
-                                    <select class="select2 form-control select2-multiple" data-toggle="select2" multiple="multiple">
-                                        <option value="">Select</option>
-
-                                        <optgroup label="BACTERIOLOGY - (CULTURES)">
-                                            <option value="FASTING BLOOD SUGAR">FASTING BLOOD SUGAR</option>
-                                            <option value="HAEMOGLOBIN ESTIMATION">HAEMOGLOBIN ESTIMATION</option>
-                                            <option value="LIVER FUNCTION TEST">LIVER FUNCTION TEST</option>
-                                            <option value="LIPID PROFILE">LIPID PROFILE</option>
-                                            <option value="KIDNEY FUNCTION TEST">KIDNEY FUNCTION TEST</option>
-                                            <option value="FULL BLOOD COUNT">FULL BLOOD COUNT</option>
-                                            <option value="CHOLESTEROL TEST">CHOLESTEROL TEST</option>
-                                            <option value="BLOOD GROUPING">BLOOD GROUPING</option>
-                                            <option value="MALARIA BF">MALARIA BF</option>
-                                            <option value="MALARIA RDT">MALARIA RDT</option>
-                                            <option value="WIDAL TEST">WIDAL TEST</option>
-                                            <option value="SICKLING TEST">SICKLING TEST</option>
-                                            <option value="GLUCOSE 6 PHOSPHATE DEHYDROGENASE DEFICIENCY">GLUCOSE 6 PHOSPHATE DEHYDROGENASE DEFICIENCY</option>
-                                            <option value="STOOL R/E">STOOL R/E</option>
-                                            <option value="URINE R/E">URINE R/E</option>
-                                            <option value="SERUM PREGNANCY TEST">SERUM PREGNANCY TEST</option>
-                                            <option value="URINE PREGNANCY TEST">URINE PREGNANCY TEST</option>
-                                            <option value="GONORRHOEA">GONORRHOEA</option>
-                                            <option value="H. PYLORI-BLOOD">H. PYLORI-BLOOD</option>
-                                            <option value="H. PYLORI-STOOL">H. PYLORI-STOOL</option>
-                                            <option value="HEPATITIS B SURFACE ANTIGEN">HEPATITIS B SURFACE ANTIGEN</option>
-                                            <option value="HIV (FIRST RESPONSE)">HIV (FIRST RESPONSE)</option>
-                                            <option value="SYPHILIS">SYPHILIS</option>
-                                            <option value="SYPHILIS RPR">SYPHILIS RPR</option>
-                                            <option value="S TYPHI IgG, IgM">S TYPHI IgG, IgM</option>
-                                            <option value="HEPATITIS B PROFILE">HEPATITIS B PROFILE</option>
-                                            <option value="HAEMOGLOBIN GENOTYPE">HAEMOGLOBIN GENOTYPE</option>
-                                            <option value="COVID-19">COVID-19</option>
-                                            <option value="HAEMOGLOBIN A1C">HAEMOGLOBIN A1C</option>
-                                            <option value="ANTENATAL CARE">ANTENATAL CARE</option>
-                                            <option value="ELECTROLYTES">ELECTROLYTES</option>
-                                            <option value="BILIRUBIN TEST">BILIRUBIN TEST</option>
-                                            <option value="ERYTHROCYTE SEDIMENTATION RATE">ERYTHROCYTE SEDIMENTATION RATE</option>
-                                            <option value="PROLACTIN">PROLACTIN</option>
-                                            <option value="PROGESTERONE TEST">PROGESTERONE TEST</option>
-                                            <option value="LUTEINIZING HORMONE">LUTEINIZING HORMONE</option>
-                                            <option value="FOLLICLE STIMULATING HORMONE">FOLLICLE STIMULATING HORMONE</option>
-                                            <option value="ESTROGEN">ESTROGEN</option>
-                                            <option value="TESTOSTERONE TEST">TESTOSTERONE TEST</option>
-                                            <option value="PROSTATE SPECIFIC ANTIGEN">PROSTATE SPECIFIC ANTIGEN</option>
-                                            <option value="THYROID STIMULATING HORMONE">THYROID STIMULATING HORMONE</option>
-                                            <option value="TRIIODOTHYRONINE">TRIIODOTHYRONINE</option>
-                                            <option value="THYROXINE">THYROXINE</option>
-                                            <option value="BLOOD CULTURE">BLOOD CULTURE</option>
-                                            <option value="URINE CULTURE">URINE CULTURE</option>
-                                            <option value="WOUND CULTURE">WOUND CULTURE</option>
-                                            <option value="STOOL CULTURE">STOOL CULTURE</option>
-                                            <option value="EAR SWAB CULTURE">EAR SWAB CULTURE</option>
-                                            <option value="HVS SWAB">HVS SWAB</option>
-                                        </optgroup>
-
-                                        <optgroup label="ULTRASOUND SCAN">
-                                            <option value="OB SCAN (PREGNANCY)">OB SCAN (PREGNANCY)</option>
-                                            <option value="PELVIC SCAN (GYNAECOLOGICAL)">PELVIC SCAN (GYNAECOLOGICAL)</option>
-                                            <option value="UROLOGY">UROLOGY</option>
-                                            <option value="ABDOMINAL SCAN">ABDOMINAL SCAN</option>
-                                            <option value="USMALL PARTS SCAN (SUPERFICIAL) Breast, Testicles, Neck, Thyroid">USMALL PARTS SCAN (SUPERFICIAL) Breast, Testicles, Neck, Thyroid</option>
-                                            <option value="ANY INDICATED PARTS OF THE BODY Lipoma, Buttocks, Neonatal Skull">ANY INDICATED PARTS OF THE BODY Lipoma, Buttocks, Neonatal Skull</option>
-                                            <option value="ABDOMINOPELVIC SCAN">ABDOMINOPELVIC SCAN</option>
-                                            <option value="DOPPLER (DVT)">DOPPLER (DVT)</option>
-                                        </optgroup>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label class="form-label"> Department</label>
-                                    <select class="select">
-                                        <option>Select</option>
-                                        <option value="BACTERIOLOGY - CULTURES">BACTERIOLOGY (CULTURES)</option>
-                                        <option value="ULTRASOUND SCAN">ULTRASOUND SCAN</option>
-                                        <!--
-                                        <option>Dermatology</option>
-                                        <option>ENT Surgery</option>
-                                        <option>General Medicine</option>
-                                        <option>Ophthalmology</option>
-                                        <option>Orthopaedics</option>
-                                        <option>Paediatrics</option>
-                                        <option>Radiology</option>
-                                        <option>Cardiology</option>-->
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-12 col-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Select Patient</label>
-                                    <select class="select">
-                                        <option>Select</option>
-                                        <option>James Carter</option>
-                                        <option>Emily Davis</option>
-                                        <option>Michael Johnson</option>
-                                        <option>Olivia Miller</option>
-                                        <option>David Smith</option>
-                                        <option>Sophia Wilson</option>
-                                        <option>Daniel Williams</option>
-                                        <option>Isabella Anderson</option>
-                                        <option>William Brown</option>
-                                        <option>Charlotte Taylor</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label"> Chief Incharge</label>
-                                    <select class="select">
-                                        <option>Select</option>
-                                        <option>David</option>
-                                        <option>Sara</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Staffs</label>
-                                    <select class="select">
-                                        <option>Select</option>
-                                        <option>Lance</option>
-                                        <option>Robinson</option>
-                                        <option>Jenifer</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Price</label>
-                                    <input type="text" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Timing for Result</label>
-                                    <input type="text" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-0">
-                                    <label class="form-label">Quick Notes</label>
-                                    <textarea rows="3" class="form-control" placeholder="Extra Info"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer d-flex align-items-center gap-1">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Test</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- End add Modal -->
 
     <!-- Start edit Modal -->
     <div id="edit_modal" class="modal fade">
@@ -1055,22 +858,28 @@
 <script data-cfasync="false" src="/static/js/min/datatables.buttons.min.js"></script>
 <script data-cfasync="false" src="/static/js/min/buttons.min.js"></script> 
 <script data-cfasync="false" src="/static/js/min/print.min.js"></script>
-   
-<script data-cfasync="false">
-    /**
-     * PHLEBOTOMY QUEUE MANAGEMENT - INTEGRATED VERSION
-     * Includes Rocket Loader Fix, Daterangepicker Callback, and Modal Logic
-     */
 
-     /** * PHLEBOTOMY QUEUE MANAGEMENT - UPDATED 
- * Fixed Date Filtering, Rocket Loader Race Conditions, and UI Syncing
+<script data-cfasync="false">
+/**
+ * PHLEBOTOMY QUEUE MANAGEMENT - FULL INTEGRATED VERSION
+ * Includes: Global Refresh Logic, Modal Syncing, and DataTable Selective Export
  */
+
+ window.showToast = window.showToast || function(message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    if (!toastEl) return;
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
+    toastText.innerText = message;
+    bootstrap.Toast.getOrCreateInstance(toastEl).show();
+};
+
 (function() {
     let allQueueItems = [];
-    let currentPhlebId = null;
     const phlebotomyURL = `/api/v1/lab/queue/phlebotomy`;
 
-    // 1. DEPENDENCY CHECK (Using a safer check for Rocket Loader)
+    // 1. DEPENDENCY CHECK
     const checkDeps = setInterval(() => {
         if (window.jQuery && window.moment && jQuery.fn.daterangepicker) {
             clearInterval(checkDeps);
@@ -1082,25 +891,24 @@
         const phlebotomyContainerEl = document.querySelector(".phlebotomy__container");
         const $picker = $('#reportrange');
 
+        $(document).on('change', '#select-all', function() {
+            const isChecked = $(this).prop('checked');
+            $('.phlebotomy__container .form-check-input').prop('checked', isChecked);
+        });
+
         // --- CORE FETCH FUNCTION ---
         window.refreshQueue = async function(start, end) {
-            // Default to last 30 days if no dates provided
-            // const startStr = (start && start.format) ? start.format('YYYY-MM-DD') : moment().subtract(29, 'days').format('YYYY-MM-DD');
-            // const endStr = (end && end.format) ? end.format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
-
-            const startStr = start ? start.format('YYYY-MM-DD') : moment().subtract(29, 'days').format('YYYY-MM-DD');
+            const startStr = start ? start.format('YYYY-MM-DD') : moment().subtract(30, 'days').format('YYYY-MM-DD');
             const endStr = end ? end.format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
-            
-            if (phlebotomyContainerEl) {
-                phlebotomyContainerEl.innerHTML = `
-                    <tr><td colspan="7" class="text-center py-5">
-                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
-                        Syncing Lab Queue...
-                    </td></tr>`;
-            }
+            const searchQuery = $('.search__phleb').val() || "";
 
             try {
-                const params = new URLSearchParams({ start_date: startStr, end_date: endStr });
+                const params = new URLSearchParams({ 
+                    start_date: startStr, 
+                    end_date: endStr,
+                    search: searchQuery 
+                });
+                
                 const res = await fetch(`${phlebotomyURL}?${params.toString()}`);
                 if (!res.ok) throw new Error("Fetch failed");
                 const data = await res.json();
@@ -1108,12 +916,20 @@
                 render(allQueueItems);
             } catch (error) {
                 console.error("Phleb Fetch Error:", error);
-                if (phlebotomyContainerEl) phlebotomyContainerEl.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error loading queue data.</td></tr>`;
             }
         };
 
-        // --- DATERANGEPICKER CONFIG ---
-        const start = moment().subtract(29, 'days');
+        $('.search__phleb').on('input', function() {
+            clearTimeout(this.delay);
+            this.delay = setTimeout(() => {
+                const drp = $picker.data('daterangepicker');
+                window.refreshQueue(drp.startDate, drp.endDate);
+            }, 500);
+        });
+
+        // --- DATERANGEPICKER CONFIG (Custom Range by Default) ---
+        // Offset by 30 days so it doesn't match the 'Last 30 Days' (29 day) preset exactly
+        const start = moment().subtract(30, 'days');
         const end = moment();
 
         function cb(start, end) {
@@ -1125,6 +941,7 @@
             startDate: start,
             endDate: end,
             alwaysShowCalendars: true,
+            showCustomRangeLabel: true,
             ranges: {
                 'Today': [moment(), moment()],
                 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -1135,143 +952,121 @@
             }
         }, cb);
 
-        // CRITICAL FIX: Explicitly listen for the "Apply" event
+        // Force internal label to 'Custom Range'
+        const drpInstance = $picker.data('daterangepicker');
+        if (drpInstance) drpInstance.chosenLabel = 'Custom Range';
+
         $picker.on('apply.daterangepicker', function(ev, picker) {
             cb(picker.startDate, picker.endDate);
             window.refreshQueue(picker.startDate, picker.endDate);
         });
 
-        // --- INITIAL LOAD ---
+        // Initial Load calls
         cb(start, end);
         window.refreshQueue(start, end);
 
         // --- UI RENDERING ---
+        function render(queueList) {
+            const tableSelector = '#phlebMainTable';
+            const $table = $(tableSelector);
+            const totalCountEl = document.querySelector("#total__test__count");
+            
+            if (totalCountEl) totalCountEl.textContent = queueList.length;
+            if (!phlebotomyContainerEl) return;
 
-        
-            function render(queueList) {
-    const tableSelector = '#phlebMainTable';
-    const $table = $(tableSelector);
-    const phlebotomyContainerEl = document.querySelector(".phlebotomy__container");
-    document.querySelector("#total__test__count").textContent = queueList.length;
+            if ($.fn.DataTable.isDataTable(tableSelector)) {
+                $table.DataTable().clear().destroy();
+            }
 
+            if (!queueList || queueList.length === 0) {
+                phlebotomyContainerEl.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No pending tests found.</td></tr>`;
+                return;
+            }
+            
+            phlebotomyContainerEl.innerHTML = queueList.map(item => renderQueueRow(item)).join("");
 
-    if (!phlebotomyContainerEl) return;
+            const phlebTable = $table.DataTable({
+                dom: "<'row'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6'>>" +
+                     "<'row'<'col-sm-12'tr>>" +
+                     "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                pageLength: 20,
+                responsive: true,
+                autoWidth: false,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5],
+                            rows: (idx, data, node) => $('.phlebotomy__container .form-check-input:checked').length === 0 || $(node).find('.form-check-input').prop('checked')
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5],
+                            rows: (idx, data, node) => $('.phlebotomy__container .form-check-input:checked').length === 0 || $(node).find('.form-check-input').prop('checked')
+                        }
+                    }
+                ],
+                language: { search: "_INPUT_", searchPlaceholder: "Search queue..." }
+            });
 
-    // 1. DESTROY & CLEAR
-    if ($.fn.DataTable.isDataTable(tableSelector)) {
-        $table.DataTable().clear().destroy();
-    }
+            $('.export-phleb-excel').off('click').on('click', (e) => { e.preventDefault(); phlebTable.button(0).trigger(); });
+            $('.export-phleb-pdf').off('click').on('click', (e) => { e.preventDefault(); phlebTable.button(1).trigger(); });
 
-    // 2. INJECT HTML
-    if (!queueList || queueList.length === 0) {
-        phlebotomyContainerEl.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No pending tests found.</td></tr>`;
-        return;
-    }
-    phlebotomyContainerEl.innerHTML = queueList.map(item => renderQueueRow(item)).join("");
-
-        
-        if (window.pdfMake && window.pdfMake.vfs) {
-            pdfMake.vfs = window.pdfMake.vfs;
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(el => new bootstrap.Dropdown(el));
         }
 
-    // 3. INITIALIZE DATATABLE
-    const phlebTable = $table.DataTable({
-        // dom: 'lrtip' removes the 'B' (Buttons) from the visual layout entirely
-        dom: "<'row'<'col-sm-12 col-md-6'f><'col-sm-12 col-md-6'>>" +
-             "<'row'<'col-sm-12'tr>>" +
-             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        pageLength: 20,
-        responsive: true,
-        autoWidth: false,
-       buttons: [
-    {
-        extend: 'excelHtml5',
-        title: 'Phlebotomy_Queue_' + moment().format('YYYY-MM-DD'),
-        exportOptions: { columns: ':not(:last-child)' }
-    },
-    {
-        extend: 'pdfHtml5',
-        title: 'Phlebotomy Queue Report',
-        orientation: 'landscape',
-        pageSize: 'A4',
-        // This ensures the PDF engine realizes the fonts are available
-        customize: function (doc) {
-            doc.defaultStyle = {
-                font: 'Roboto'
-            };
-        },
-        exportOptions: { columns: ':not(:last-child)' }
-    }
-],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search queue...",
+        function renderQueueRow(item) {
+            const patient = item.order.appointment.patient;
+            const statusClass = item.status === 'awaiting_sample' ? 'bg-soft-warning text-warning' : 'bg-soft-info text-info';
+            return `
+            <tr class="align-middle">
+                <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
+                <td><span class="fw-bold text-dark">${item.display_id}</span></td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span class="fw-medium text-dark">${patient.full_name}</span>
+                        <small class="text-muted">${patient.sex} | ${patient.age} yrs</small>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span class="text-dark">${item.test.name}</span>
+                        <small class="text-primary fw-bold">${item.test.sample_type || 'Blood'}</small>
+                    </div>
+                </td>
+                <td><span class="badge ${statusClass} border-0">${item.status.toUpperCase().replace('_', ' ')}</span></td>
+                <td><span class="badge bg-outline-light text-dark">${item.priority || 'Normal'}</span></td>
+                <td class="text-end">
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown">
+                            <i class="ti ti-dots-vertical"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
+                            <li><a href="javascript:void(0);" class="dropdown-item" onclick="openSampleModal(${item.id}, ${item.order.appointment.id}, '${item.order.appointment.display_id}')"><i class="ti ti-flask me-2 text-success"></i>Collect Sample</a></li>
+                            <li><a href="javascript:void(0);" class="dropdown-item" onclick="openManageSamplesModal(${item.order.appointment.id})"><i class="ti ti-layers-subtract me-2 text-warning"></i>Manage Samples</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>`;
         }
-    });
 
-    // 4. ATTACH THE TOP EXPORT BUTTONS
-    $('.export-phleb-excel').off('click').on('click', function(e) {
-        e.preventDefault();
-        phlebTable.button(0).trigger();
-    });
-
-    $('.export-phleb-pdf').off('click').on('click', function(e) {
-        e.preventDefault();
-        phlebTable.button(1).trigger();
-    });
-
-    // 5. UI RE-INIT
-    const dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
-    dropdownElementList.map(el => new bootstrap.Dropdown(el));
-}
-
-
-function renderQueueRow(item) {
-    const patient = item.order.appointment.patient;
-    const statusClass = item.status === 'awaiting_sample' ? 'bg-soft-warning text-warning' : 'bg-soft-info text-info';
-    return `
-    <tr class="align-middle">
-        <td><div class="form-check"><input class="form-check-input" type="checkbox" value="${item.id}"></div></td>
-        <td><span class="fw-bold text-dark">${item.display_id}</span></td>
-        <td>
-            <div class="d-flex flex-column">
-                <span class="fw-medium text-dark">${patient.full_name}</span>
-                <small class="text-muted">${patient.sex} | ${patient.age} yrs</small>
-            </div>
-        </td>
-        <td>
-            <div class="d-flex flex-column">
-                <span class="text-dark">${item.test.name}</span>
-                <small class="text-primary fw-bold">${item.test.sample_type || 'Blood'}</small>
-            </div>
-        </td>
-        <td><span class="badge ${statusClass} border-0">${item.status.toUpperCase().replace('_', ' ')}</span></td>
-        <td><span class="badge bg-outline-light text-dark">${item.priority || 'Normal'}</span></td>
-        <td class="text-end">
-            <div class="dropdown">
-                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-outline-light" data-bs-toggle="dropdown">
-                    <i class="ti ti-dots-vertical"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end p-2 shadow-sm">
-                    <li><a href="javascript:void(0);" class="dropdown-item" onclick="openSampleModal(${item.id}, ${item.order.appointment.id})"><i class="ti ti-flask me-2 text-success"></i>Collect Sample</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item" onclick="openManageSamplesModal(${item.order.appointment.id})"><i class="ti ti-layers-subtract me-2 text-warning"></i>Manage Samples</a></li>
-                </ul>
-            </div>
-        </td>
-    </tr>`;
-}
-
-
-        // --- MODAL HANDLING (EXPORTS) ---
-        window.openSampleModal = async function(itemId, appointmentId) {
+        // --- MODAL & ACTION HANDLERS ---
+        window.openSampleModal = async function(itemId, appointmentId, display_id) {
             const item = allQueueItems.find(i => i.id === itemId);
             if (!item) return;
 
-            // Fill static info
-            document.getElementById("modal_patient_name").textContent = item.order.appointment.patient.full_name;
+            // Set Hidden Fields for context
             document.getElementById("target_appointment_id").value = appointmentId;
             document.getElementById("target_patient_id").value = item.order.appointment.patient.id;
             document.getElementById("target_phlebotomy_id").value = item.order.appointment.phlebotomy?.id || "";
+            
+            // UI Display updates
+            document.getElementById("modal_patient_name").textContent = item.order.appointment.patient.full_name;
+            if (document.getElementById("modal_appointment_id")) {
+                document.getElementById("modal_appointment_id").innerText = display_id;
+            }
 
             try {
                 const [catRes, testRes] = await Promise.all([
@@ -1281,7 +1076,6 @@ function renderQueueRow(item) {
                 const categories = await catRes.json();
                 const pendingItems = await testRes.json();
 
-                // Build Dropdowns
                 const typeSelect = document.getElementById("sample_type");
                 typeSelect.innerHTML = '<option value="">Select Category...</option>' + 
                     categories.map(c => `<option value="${c.id}">${c.category_name.toUpperCase()}</option>`).join("");
@@ -1295,106 +1089,22 @@ function renderQueueRow(item) {
             } catch (e) { showToast("Failed to load modal data", "error"); }
         };
 
-
-        // --- MANAGE SAMPLES MODAL ---
-        window.openManageSamplesModal = async function(appointmentId) {
-            const container = document.getElementById("manage_samples_list_container");
-            const modalEl = document.getElementById("manageSamplesModal");
-
-            if (!container || !modalEl) {
-                console.error("Manage Samples UI elements missing");
-                return;
-            }
-
-            // Show loading state
-            container.innerHTML = `
-                <div class="text-center py-4">
-                    <div class="spinner-border spinner-border-sm text-primary mb-2"></div>
-                    <p class="text-muted small">Fetching collected samples...</p>
-                </div>`;
-
-            // Open the modal
-            bootstrap.Modal.getOrCreateInstance(modalEl).show();
-
-            try {
-                // Fetch existing samples for this appointment
-                const res = await fetch(`/api/v1/samples/appointment/${appointmentId}`);
-                if (!res.ok) throw new Error("Failed to load samples");
-                
-                const samples = await res.json();
-
-                if (!samples || samples.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-4">
-                            <i class="ti ti-flask-off fs-30 text-muted mb-2"></i>
-                            <p class="text-muted">No samples collected yet for this visit.</p>
-                        </div>`;
-                    return;
-                }
-
-                // Render Sample Cards
-                container.innerHTML = samples.map(s => `
-                    <div class="card shadow-none border mb-2">
-                        <div class="card-body p-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-md bg-soft-info text-info me-3">
-                                        <i class="ti ti-barcode fs-20"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 text-dark">${s.sample_id}</h6>
-                                        <small class="text-muted">${s.category_name} | ${moment(s.created_at).format('h:mm A')}</small>
-                                    </div>
-                                </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon btn-light" data-bs-toggle="dropdown">
-                                        <i class="ti ti-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end p-2">
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="printLabel('${s.sample_id}')"><i class="ti ti-printer me-2"></i>Print Label</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteSample(${s.id}, ${appointmentId})"><i class="ti ti-trash me-2"></i>Delete</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `).join("");
-
-            } catch (e) {
-                container.innerHTML = `<div class="alert alert-danger p-2 small">Error: ${e.message}</div>`;
-            }
-        };
-
-        // Helper for Label Printing
-        window.printLabel = function(sampleId) {
-            // Adjust this URL to your actual printing route
-            window.open(`/lab/samples/print/${sampleId}`, '_blank', 'width=400,height=600');
-        };
-
-        // Helper for Sample Deletion
         window.deleteSample = async function(id, appointmentId) {
-            // if (!confirm("Are you sure you want to delete this sample? This action cannot be undone.")) return;
-            
             try {
                 const res = await fetch(`/api/v1/samples/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error("Delete failed");
                 showToast("Sample deleted successfully");
-                window.openManageSamplesModal(appointmentId); // Refresh list
-                window.refreshQueue(); // Refresh main table status
-            } catch (e) {
-                showToast(e.message, "error");
-            }
+                window.openManageSamplesModal(appointmentId); 
+                const drp = $picker.data('daterangepicker');
+                window.refreshQueue(drp.startDate, drp.endDate);
+            } catch (e) { showToast(e.message, "error"); }
         };
-      
 
-        
-
-        // --- DATA SUBMISSION ---
         document.getElementById("sampleForm")?.addEventListener("submit", async (e) => {
             e.preventDefault();
+            const form = e.target;
             const btn = document.getElementById("saveSampleBtn");
-            const fd = new FormData(e.target);
+            const fd = new FormData(form);
             
             const payload = {
                 patient_id: parseInt(fd.get("patient_id")),
@@ -1410,139 +1120,97 @@ function renderQueueRow(item) {
 
             try {
                 btn.disabled = true;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Saving...`;
                 const res = await fetch('/api/v1/samples/collect', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
-                if (!res.ok) throw new Error("Sample collection failed");
-                bootstrap.Modal.getInstance(document.getElementById("addSamplesModal")).hide();
-                showToast("Sample Recorded Successfully");
-                window.refreshQueue();
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
                 
-            } catch (e) { showToast(e.message, "error"); } 
-            finally { btn.disabled = false; }
+                if (!res.ok) throw new Error("Sample collection failed");
+                
+                const addModalEl = document.getElementById("addSamplesModal");
+                const modalInstance = bootstrap.Modal.getInstance(addModalEl);
+                if (modalInstance) modalInstance.hide();
+                
+                // Cleanup hanging backdrops
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css('overflow', '');
+
+                showToast("Sample Recorded Successfully", "success");
+                const drp = $('#reportrange').data('daterangepicker');
+                await window.refreshQueue(drp.startDate, drp.endDate);
+
+                if ($('#manageSamplesModal').is(':visible')) {
+                    window.openManageSamplesModal(payload.appointment_id);
+                }
+                form.reset(); 
+            } catch (e) { showToast(e.message, "error"); } finally { 
+                btn.disabled = false; 
+                btn.innerHTML = `Confirm & Save`;
+            }
         });
 
-        // Manage/Delete logic remains as provided...
         window.openManageSamplesModal = async function(appointmentId) {
-    const body = document.getElementById("manageSamplesBody");
-    const loader = document.getElementById("manageSamplesLoading");
-    const statusSummary = document.getElementById("modalStatusSummary");
-    const finalizeBtn = document.getElementById("btnFinalizePhleb");
-    
-    body.innerHTML = "";
-    statusSummary.innerHTML = "";
-    loader.classList.remove("d-none");
-    if (finalizeBtn) finalizeBtn.disabled = true;
-    
-    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("manageSamplesModal"));
-    modal.show();
+            const body = document.getElementById("manageSamplesBody");
+            const loader = document.getElementById("manageSamplesLoading");
+            const statusSummary = document.getElementById("modalStatusSummary");
+            const finalizeBtn = document.getElementById("btnFinalizePhleb");
+            
+            body.innerHTML = "";
+            statusSummary.innerHTML = "";
+            loader.classList.remove("d-none");
+            
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("manageSamplesModal")).show();
 
-    try {
-        const [samplesRes, pendingRes] = await Promise.all([
-            fetch(`/api/v1/samples/appointment/${appointmentId}`),
-            fetch(`/api/v1/lab/appointments/${appointmentId}/pending-items`)
-        ]);
+            try {
+                const [samplesRes, pendingRes] = await Promise.all([
+                    fetch(`/api/v1/samples/appointment/${appointmentId}`),
+                    fetch(`/api/v1/lab/appointments/${appointmentId}/pending-items`)
+                ]);
 
-        const samples = await samplesRes.json();
-        const pendingItems = await pendingRes.json();
-        
-        if (samples && samples.length > 0) {
-            currentPhlebId = samples[0].phlebotomy_id;
-        } else {
-            currentPhlebId = null;
-        }
-        
-        loader.classList.add("d-none");
+                const samples = await samplesRes.json();
+                const pendingItems = await pendingRes.json();
+                loader.classList.add("d-none");
 
-        const collectedCount = samples.reduce((acc, s) => acc + (s.items ? s.items.length : 0), 0);
-        const pendingCount = pendingItems.length;
-        const totalNeeded = collectedCount + pendingCount;
+                const collectedCount = samples.reduce((acc, s) => acc + (s.items ? s.items.length : 0), 0);
+                const pendingCount = pendingItems.length;
+                const totalNeeded = collectedCount + pendingCount;
 
-        if (totalNeeded === 0) {
-            statusSummary.innerHTML = `
-                <div class="alert alert-info py-2 small mb-0">
-                    <i class="ti ti-info-circle me-1"></i> No tests requiring phlebotomy found for this appointment.
-                </div>`;
-        } else if (pendingCount > 0) {
-            statusSummary.innerHTML = `
-                <div class="alert alert-warning py-2 mb-0 d-flex justify-content-between align-items-center">
-                    <span class="small"><i class="ti ti-alert-triangle me-1"></i> <strong>Incomplete:</strong> ${pendingCount} test(s) still require sample collection.</span>
-                    <span class="badge bg-warning text-dark">${collectedCount}/${totalNeeded} Collected</span>
-                </div>`;
-            if (finalizeBtn) finalizeBtn.disabled = true;
-        } else {
-            statusSummary.innerHTML = `
-                <div class="alert alert-success py-2 mb-0 d-flex justify-content-between align-items-center">
-                    <span class="small"><i class="ti ti-check me-1"></i> <strong>Ready:</strong> All samples have been collected.</span>
-                    <span class="badge bg-success text-white">Complete</span>
-                </div>`;
-            if (finalizeBtn) finalizeBtn.disabled = false;
-        }
+                if (pendingCount > 0) {
+                    statusSummary.innerHTML = `<div class="alert alert-warning py-2 mb-0 small"><strong>Incomplete:</strong> ${pendingCount} pending items.</div>`;
+                    if (finalizeBtn) finalizeBtn.disabled = true;
+                } else {
+                    statusSummary.innerHTML = `<div class="alert alert-success py-2 mb-0 small"><strong>Ready:</strong> All items collected.</div>`;
+                    if (finalizeBtn) finalizeBtn.disabled = false;
+                }
 
-        if (!samples || samples.length === 0) {
-            body.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center py-5">
-                        <div class="d-flex flex-column align-items-center text-muted">
-                            <i class="ti ti-flask-off mb-2" style="font-size: 3rem;"></i>
-                            <h6 class="fw-bold">No Samples Added Yet</h6>
-                            <p class="small mb-0">Collect a sample to see it listed here.</p>
-                        </div>
-                    </td>
-                </tr>`;
-            return;
-        }
+                if (!samples.length) {
+                    body.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No samples found.</td></tr>`;
+                    return;
+                }
 
-        samples.forEach(sample => {
-            const tubeInfo = sample.category ? sample.category.category_name : `Tube #${sample.id}`;
-            const collectDate = new Date(sample.collection_date).toLocaleString([], {
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
-
-            sample.items.forEach(item => {
-                const tr = document.createElement("tr");
-                tr.className = "align-middle";
-                tr.innerHTML = `
-                    <td>
-                        <div class="d-flex flex-column">
-                            <span class="fw-bold text-dark">${item.test.name}</span>
-                            <small class="text-muted" style="font-size: 0.7rem;">ID: ${item.id}</small>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge bg-soft-primary text-primary border border-primary-subtle">
-                            <i class="ti ti-test-pipe me-1"></i>${tubeInfo}
-                        </span>
-                    </td>
-                    <td><small class="text-muted">${collectDate}</small></td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-danger border-0" 
-                                onclick="deleteSample(${sample.id}, ${appointmentId})">
-                            <i class="ti ti-trash"></i>
-                        </button>
-                    </td>
-                `;
-                body.appendChild(tr);
-            });
-        });
-
-    } catch (error) {
-        console.error("Error fetching samples:", error);
-        loader.classList.add("d-none");
-        body.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-danger">Error loading data.</td></tr>`;
-    }
-};
-        
+                samples.forEach(sample => {
+                    const tube = sample.category?.category_name || "Unknown Tube";
+                    const time = new Date(sample.collection_date).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    sample.items.forEach(item => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td><span class="fw-bold text-dark">${item.test.name}</span></td>
+                            <td><span class="badge bg-soft-primary text-primary">${tube}</span></td>
+                            <td><small>${time}</small></td>
+                            <td class="text-end"><button class="btn btn-sm text-danger" onclick="deleteSample(${sample.id}, ${appointmentId})"><i class="ti ti-trash"></i></button></td>`;
+                        body.appendChild(tr);
+                    });
+                });
+            } catch (error) {
+                loader.classList.add("d-none");
+                body.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error loading context.</td></tr>`;
+            }
+        };
     }
 })();
-
 </script>
-
 </body>
 
 </html>

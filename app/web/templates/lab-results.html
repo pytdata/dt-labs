@@ -31,7 +31,7 @@
     <!-- Datatable CSS -->
     <link rel="stylesheet" href="/static/plugins/datatables/css/dataTables.bootstrap5.min.css">
 
-        <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css" />
 
     <script data-cfasync="false" src="/static/js/min/moment.min.js"></script>
 
@@ -160,6 +160,10 @@
             font-weight: bold;
         }
 
+/* hide the default datatable search wrapper */
+.dataTables_filter {
+    display: none;
+}
 
     
     </style>
@@ -199,16 +203,6 @@
                     <button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn2">
                         <i class="ti ti-arrow-bar-to-right"></i>
                     </button>
-
-                    <!-- Search -->
-                    <div class="me-auto d-flex align-items-center header-search d-lg-flex d-none">
-                        <!-- Search -->
-                        <div class="input-icon position-relative me-2">
-                           <input type="text" class="form-control" placeholder="Search Keyword">
-                           <span class="input-icon-addon d-inline-flex p-0 header-search-icon"><i class="ti ti-command"></i></span>
-                        </div>
-                        <!-- /Search -->
-                    </div>
 
                 </div>
 
@@ -400,7 +394,9 @@
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <div class="table-search d-flex align-items-center mb-0">
                                     <div class="search-input">
-                                        <a href="javascript:void(0);" class="btn-searchset"><i class="ti ti-search"></i></a>
+                                        <input type="text" class="form-control form-control-sm search__lab__results" placeholder="Search Patient...">
+                                        <a href="javascript:void(0);" class="btn-searchset">
+                                            <i class="ti ti-search" style="display: none;"></i></a>
                                     </div>
                                 </div>
                             </div>

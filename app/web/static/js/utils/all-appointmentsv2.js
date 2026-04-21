@@ -680,64 +680,6 @@ addSampleCategoryForm.addEventListener("submit", async function(e) {
   addSampleCategoryForm.reset();
 });
 
-// Search patients by staff
-searchStaff.addEventListener("input", (e) => {
-  clearTimeout(searchTimeout);
-
-  searchTimeout = setTimeout(async () => {
-    try {
-      let value = e.target.value;
-      buildAppointmentDynamicURLParam("doctor", value);
-      const data = await performSearch(value, true);
-      renderStaffSearchResults(data);
-    } catch (error) {
-      // Optional: showFeedback here if you want to notify of search failures
-      showToast("An error was encountered while searching. Please try again", "error")
-    }
-  }, 300); // Added slight delay for better performance
-});
-
-// Search patients by patient name
-patientSearch.addEventListener("input", (e) => {
-  clearTimeout(searchTimeout);
-
-  searchTimeout = setTimeout(async () => {
-    try {
-      let value = e.target.value;
-      buildAppointmentDynamicURLParam("patient", value);
-      const data = await performSearch(value, true);
-      renderPatientsSearchResults(data);
-    } catch (error) {
-      showToast("Patient search error", "danger")
-    }
-  }, 300);
-});
-
-// FILTERING BY STATUS
-statusFilter.forEach((statusOption) =>
-  statusOption.addEventListener("change", async (e) => {
-    try {
-      buildAppointmentDynamicURLParam(
-        "status",
-        e.currentTarget.dataset.status,
-        e.currentTarget.checked,
-      );
-
-      const data = await getRemoteData(appointmentsURL);
-      render(data);
-    } catch (error) {
-      // showFeedback({
-      //   title: "Filter Error",
-      //   message: "Could not refresh the list with the selected filters.",
-      //   type: 'error'
-      // });
-
-      showToast("Could not refresh the list with the selected filter", "error")
-    }
-  }),
-);
-
-
 
 
 /**
@@ -801,10 +743,10 @@ function renderStaffSearchResults(data) {
 }
 
 // implement the refresh button functionality
-document.querySelector(".ti-refresh").addEventListener("click", async (e) => {
-  const data = await getRemoteData(appointmentsURL);
-  render(data);
-});
+// document.querySelector(".ti-refresh").addEventListener("click", async (e) => {
+//   const data = await getRemoteData(appointmentsURL);
+//   render(data);
+// });
 
 /**
  * Renders a list of test request in the browser
@@ -876,24 +818,43 @@ window.render = function(appointmentsList) {
     // 4. Initialize DataTable with Export Buttons
     // We explicitly name the buttons so our custom triggers work
     const table = $table.DataTable({
-        dom: 'Bfrtip', 
-        pageLength: 10,
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                className: 'buttons-excel d-none', // Added explicit class name here
-                title: 'Appointments_Report_' + new Date().toISOString().slice(0, 10),
-                exportOptions: { columns: ':visible:not(:last-child)' } 
-            },
-            {
-                extend: 'pdfHtml5',
-                className: 'buttons-pdf d-none', // Added explicit class name here
-                title: 'Appointments_Report',
-                orientation: 'landscape',
-                pageSize: 'A4',
-                exportOptions: { columns: ':visible:not(:last-child)' }
+    dom: 'Bfrtip',
+    pageLength: 10,
+    buttons: [
+        {
+            extend: 'excelHtml5',
+            className: 'buttons-excel d-none',
+            title: 'Appointments_Report_' + new Date().toISOString().slice(0, 10),
+            exportOptions: {
+                columns: ':visible:not(:last-child)', // Exclude action column
+                rows: function (idx, data, node) {
+                    // 1. Get all checked checkboxes in the table body
+                    const selectedRows = $table.find('tbody input.form-check-input:checked');
+                    
+                    // 2. If nothing is selected, export all visible rows
+                    if (selectedRows.length === 0) return true;
+                    
+                    // 3. Otherwise, only export if the checkbox in THIS specific row is checked
+                    return $(node).find('input.form-check-input').prop('checked');
+                }
             }
-        ],
+        },
+        {
+            extend: 'pdfHtml5',
+            className: 'buttons-pdf d-none',
+            title: 'Appointments_Report',
+            orientation: 'landscape',
+            pageSize: 'A4',
+            exportOptions: {
+                columns: ':visible:not(:last-child)',
+                rows: function (idx, data, node) {
+                    const selectedRows = $table.find('tbody input.form-check-input:checked');
+                    if (selectedRows.length === 0) return true;
+                    return $(node).find('input.form-check-input').prop('checked');
+                }
+            }
+        }
+    ],
         language: {
             search: " ",
             searchPlaceholder: "Search records...",
@@ -1787,3 +1748,92 @@ document.getElementById("test_search_input").addEventListener("input", (e) => {
 });
 
 
+
+/**
+ * Updates the global appointmentsURL and triggers a re-render.
+ * @param {Object} params - Key-value pairs of filters to update.
+ */
+async function updateFilters(params) {
+    const url = new URL(appointmentsURL, window.location.origin);
+    
+    // Update or delete search params
+    Object.entries(params).forEach(([key, value]) => {
+        if (value) {
+            url.searchParams.set(key, value);
+        } else {
+            url.searchParams.delete(key);
+        }
+    });
+
+    // Sync the global variable
+    appointmentsURL = url.pathname + url.search;
+
+    // Show a small loader in the table while fetching
+    const tbody = document.querySelector(".appointments__table");
+    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </td></tr>`;
+
+    try {
+        const data = await getRemoteData(appointmentsURL);
+        render(data);
+    } catch (error) {
+        showToast("Error filtering appointments", "error");
+    }
+}
+
+const globalSearchInput = document.getElementById("global_appointment_search");
+
+if (globalSearchInput) {
+    globalSearchInput.addEventListener("input", (e) => {
+        const query = e.target.value.trim();
+
+        // Clear previous timeout to reset the debounce timer
+        clearTimeout(searchTimeout);
+
+        //  Wait for the user to stop typing
+        searchTimeout = setTimeout(() => {
+            // We pass the query to both 'patient' and 'doctor' logic or 
+            // a specific 'search' param if your backend supports a combined field.
+            updateFilters({ 
+                patient: query,
+                // Optional: If you want the same query to check doctors simultaneously
+                // doctor: query 
+            });
+        }, 400); 
+    });
+}
+
+
+const filterFn = async (start, end) => {
+    const label = $('#reportrange span');
+    
+    // 1. Check if the dates match a preset or if it's "Custom"
+    // The daterangepicker usually updates the span automatically, 
+    // but we force it here to ensure it's never stuck on "Last 30 Days"
+    if (label.length) {
+        label.html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+    
+    // 2. Build URL with the new range
+    const startStr = start.format('YYYY-MM-DD');
+    const endStr = end.format('YYYY-MM-DD');
+    const url = `/api/v1/appointments/?start_date=${startStr}&end_date=${endStr}`;
+    
+    // 3. Optional: Add a visual "loading" state to the picker
+    $('#reportrange').addClass('opacity-50');
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (window.render) {
+            window.render(data);
+        }
+    } catch (e) { 
+        console.error("Fetch Error:", e); 
+    } finally {
+        $('#reportrange').removeClass('opacity-50');
+    }
+};
+
+filterFn(moment().startOf('month'), moment());

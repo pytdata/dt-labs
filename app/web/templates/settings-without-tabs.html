@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% include "partials/sidebar.html" %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="content container-fluid">
+
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col">
+          <h3 class="page-title">{% block settings_title %}Settings{% endblock %}</h3>
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ request.url_for('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">{% block settings_breadcrumb %}Settings{% endblock %}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    {% block settings_body %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

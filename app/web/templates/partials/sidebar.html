@@ -103,7 +103,7 @@
                     <ul>
                         <li class="{% if active_page == 'billing' %}active{% endif %}">
                             <a href="{{ request.url_for('billing_list') }}">
-                                <i class="ti ti-file-invoice"></i><span>Billing</span>
+                                <i class="ti ti-file-invoice"></i><span>Revenue</span>
                             </a>
                         </li>
                         <li class="{% if active_page == 'invoice' %}active{% endif %}">
@@ -138,6 +138,11 @@
                         <li class="{% if active_page == 'staff' %}active{% endif %}">
                             <a href="{{ request.url_for('staff_list') }}">
                                 <i class="ti ti-users-group"></i><span>Staff</span>
+                            </a>
+                        </li>
+                        <li class="{% if active_page == 'staff' %}active{% endif %}">
+                            <a href="{{ request.url_for('roles_and_perms') }}">
+                                <i class="ti ti-users-group"></i><span>Roles and Permissions</span>
                             </a>
                         </li>
 

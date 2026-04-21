@@ -6,7 +6,7 @@
 	<!-- Meta Tags -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>DT-Labs | Billing | Modern Integrated Laboratory Information System</title>
+    <title>DT-Labs | Revenue | Modern Integrated Laboratory Information System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Modern Integrated Laboratory Information System">
     <meta name="keywords" content="dt-labs, laboratory, laboratory information system, web app, desktop app">
@@ -274,12 +274,12 @@
                 <!-- Page Header -->
                 <div class="d-flex align-items-center justify-content-between gap-2 mb-4 flex-wrap">
                     <div class="breadcrumb-arrow">
-                        <h4 class="mb-1">Billing</h4>
+                        <h4 class="mb-1">Revenue</h4>
                         <div class="text-end">
                             <ol class="breadcrumb m-0 py-0">
                                 <li class="breadcrumb-item"><a href="index.html">Home</a></li>
                                 <li class="breadcrumb-item"><a href="javascript:void(0);">Applications</a></li>
-                                <li class="breadcrumb-item active">Billing</li>
+                                <li class="breadcrumb-item active">Revenue</li>
                             </ol>
                         </div>
                     </div>
@@ -290,33 +290,51 @@
                 <!-- start row -->
                 <div class="row">
 
-                   <div class="col-xl-3 col-sm-6">
-    <div class="card flex-fill">
-        <div class="card-body">
-            <div class="d-flex align-items-center overflow-hidden mb-2">
-                <div>
-                    <p class="mb-1 text-truncate">Total Billing</p>
-                    <h6 id="billing_total_display">GH₵ 0.00</h6>
-                </div>
-            </div>
-            <div class="attendance-report-bar mb-2">
-                <div class="progress" role="progressbar" style="height: 5px;">
-                    <div id="billing_progress_bar" class="progress-bar bg-pink" style="width: 0%"></div>
-                </div>
-            </div>
-            <div>
-                <p class="d-flex align-items-center text-truncate mb-0">
-                    <span id="billing_pct_color" class="fs-12 d-flex align-items-center me-1">
-                        <i id="billing_pct_icon" class="ti"></i>
-                        <span id="billing_pct_text">0%</span>
-                    </span>
-                    from last month
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-                  
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="card flex-fill">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center overflow-hidden mb-2">
+                                    <div>
+                                        <p class="mb-1 text-truncate">Total Collected</p>
+                                        <h6 id="stat_total_collected" class="text-success">GH₵ 0.00</h6>
+                                    </div>
+                                </div>
+                                <div class="attendance-report-bar mb-2">
+                                    <div class="progress" role="progressbar" style="height: 5px;">
+                                        <div id="collection_progress_bar" class="progress-bar bg-success" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="d-flex align-items-center text-truncate mb-0 small text-muted">
+                                        Payments received this month
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-sm-6">
+                        <div class="card flex-fill">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center overflow-hidden mb-2">
+                                    <div>
+                                        <p class="mb-1 text-truncate">Pending Revenue</p>
+                                        <h6 id="stat_total_pending" class="text-danger">GH₵ 0.00</h6>
+                                    </div>
+                                </div>
+                                <div class="attendance-report-bar mb-2">
+                                    <div class="progress" role="progressbar" style="height: 5px;">
+                                        <div id="pending_progress_bar" class="progress-bar bg-danger" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="d-flex align-items-center text-truncate mb-0 small text-muted">
+                                        Unpaid or partial invoices
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
                 <!-- end row -->
@@ -326,13 +344,23 @@
 
                     <div class="col-sm-12">
                         <div>
-                            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3 mb-3">
-                                <h5 class="d-flex align-items-center mb-0">Billing<span class="badge bg-soft-dark ms-2 text-dark fs-12 total__billings">2000 Billing</span></h5>
+                            
+                               <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3 mb-3">
+                                <h5 class="d-flex align-items-center mb-0">Revenue<span class="badge bg-soft-dark ms-2 text-dark fs-12 total__billings">2000 Revenue</span></h5>
+                                <div class="table-search d-flex align-items-center">
+        
                                 <div class="d-flex align-items-center flex-wrap gap-2">
 
                                 <div id="reportrange" class="reportrange-picker d-flex align-items-center bg-white border rounded px-3 py-1 cursor-pointer">
-                            <i class="ti ti-calendar text-primary fs-14 me-2"></i>
-                            <span class="reportrange-picker-field">Select Date Range</span>
+                                <i class="ti ti-calendar text-primary fs-14 me-2"></i>
+                                <span class="reportrange-picker-field">Select Date Range</span>
+                            </div>
+
+                            <div class="table-search d-flex align-items-center mb-0">
+                                <div class="position-relative">
+                                    <input type="text" class="form-control form-control-sm ps-5 search__billing" placeholder="Patient...">
+                                    <i class="ti ti-search position-absolute start-0 top-50 translate-middle-y ms-2 text-muted"></i>
+                                </div>
                             </div>
 
                                     <div class="dropdown">
@@ -457,7 +485,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Billing Details</h5>
+                <h5 class="modal-title">Revenue Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

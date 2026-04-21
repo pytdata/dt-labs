@@ -8,7 +8,7 @@ from fastapi import Query
 from fastapi import status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import delete, select, func
+from sqlalchemy import String, cast, delete, select, func
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy import or_
 
@@ -254,6 +254,26 @@ async def get_all_appointments(
 
     if filter_query.status:
         stmt = stmt.where(Appointment.status == filter_query.status)
+
+    if filter_query.search:
+        search_term = f"%{filter_query.search.strip()}%"
+        stmt = stmt.where(
+            or_(
+                # Search Patient Names
+                Appointment.patient.has(
+                    or_(
+                        Patient.first_name.ilike(search_term),
+                        Patient.surname.ilike(search_term),
+                        Patient.other_names.ilike(search_term),
+                    )
+                ),
+                # Search Doctor Names
+                Appointment.doctor.has(User.full_name.ilike(search_term)),
+                # Search Appointment Display ID (if it's a searchable column in DB)
+                # Or search by specific database ID if they type a number
+                cast(Appointment.id, String).ilike(search_term),
+            )
+        )
 
     # Pagination and Ordering
     stmt = (

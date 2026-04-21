@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated, List, Optional
 from datetime import datetime, timedelta
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from sqlalchemy import extract
 
 
@@ -13,11 +13,11 @@ from uuid import uuid4
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import join, selectinload
 from dateutil.relativedelta import relativedelta
 
 
-from app.models.lab import LabOrder, LabOrderItem
+from app.models.lab import LabOrder, LabOrderItem, Patient
 from app.schemas.payment import (
     GenerateInvoicePayload,
     InvoiceResponse,
@@ -38,21 +38,34 @@ async def get_all_transactions(
     limit: int = 100,
     offset: int = 0,
 ):
+
     try:
-        # 1. Base query with optimized relationship loading
+        # Base query with optimized relationship loading
         # We join Invoice so we can filter by Invoice.status and Invoice.patient_id
         stmt = (
             select(Payment)
-            .join(Payment.invoice)
+            .join(Invoice, Payment.invoice_id == Invoice.id)
+            .join(Patient, Invoice.patient_id == Patient.id)  # MUST JOIN PATIENT
             .options(
-                # Deep loading: Payment -> Invoice -> Patient
                 selectinload(Payment.invoice).selectinload(Invoice.patient),
                 selectinload(Payment.verified_by),
             )
-            .order_by(Payment.received_at.desc())
         )
 
-        # 2. Date Range & ID Filtering
+        if filters.search:
+            search_query = f"%{filters.search}%"
+            stmt = stmt.where(
+                or_(
+                    Patient.first_name.ilike(search_query),
+                    Patient.surname.ilike(search_query),
+                    Invoice.invoice_no.ilike(search_query),
+                    Payment.reference.ilike(
+                        search_query
+                    ),  # Good for Momo transaction IDs
+                )
+            )
+
+        #  Date Range & ID Filtering
         if filters.start_date:
             stmt = stmt.where(func.date(Payment.received_at) >= filters.start_date)
 
@@ -65,16 +78,16 @@ async def get_all_transactions(
         if filters.patient_id:
             stmt = stmt.where(Invoice.patient_id == filters.patient_id)
 
-        # 3. Multi-Method Filtering (from query params: ?method=cash&method=momo)
+        #  Multi-Method Filtering (from query params: ?method=cash&method=momo)
         if method:
             stmt = stmt.where(Payment.method.in_(method))
 
-        # 4. Status Filtering (from query params: ?status=paid&status=unpaid)
+        # Status Filtering (from query params: ?status=paid&status=unpaid)
         # We filter based on the status field in the Invoice table
         if status:
             stmt = stmt.where(Invoice.status.in_(status))
 
-        # 5. Pagination & Execution
+        # Pagination & Execution
         stmt = stmt.limit(limit).offset(offset)
         result = await db.execute(stmt)
         payments = result.scalars().all()
@@ -92,14 +105,16 @@ async def get_all_invoices(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     status: Optional[str] = None,
+    search: Optional[str] = None,  # <-- 1. Add this
     db: AsyncSession = Depends(get_db),
     limit: int = 100,
     offset: int = 0,
 ):
     try:
-        # 1. Base query with deep loading to prevent N+1 issues
+        # 2. Add .join(Patient) to the base query
         stmt = (
             select(Invoice)
+            .join(Invoice.patient)
             .options(
                 selectinload(Invoice.patient),
                 selectinload(Invoice.items).selectinload(InvoiceItem.test),
@@ -108,17 +123,26 @@ async def get_all_invoices(
             .order_by(Invoice.created_at.desc())
         )
 
-        # 2. Date Range Filtering
+        # 3. Handle Search Logic
+        if search:
+            search_term = f"%{search}%"
+            stmt = stmt.where(
+                or_(
+                    Invoice.invoice_no.ilike(search_term),
+                    Patient.first_name.ilike(search_term),
+                    Patient.surname.ilike(search_term),
+                    Patient.phone.ilike(search_term),  # Optional: search by phone too
+                )
+            )
+
+        # Existing Filters
         if start_date:
             stmt = stmt.where(func.date(Invoice.created_at) >= start_date)
         if end_date:
             stmt = stmt.where(func.date(Invoice.created_at) <= end_date)
-
-        # 3. Status Filtering
         if status:
             stmt = stmt.where(Invoice.status.ilike(status))
 
-        # 4. Execution
         stmt = stmt.limit(limit).offset(offset)
         result = await db.execute(stmt)
         invoices = result.scalars().all()
@@ -271,35 +295,30 @@ async def get_invoice_summary(db: AsyncSession = Depends(get_db)):
 @router.get("/stats")
 async def get_transaction_stats(db: AsyncSession = Depends(get_db)):
     now = datetime.utcnow()
-
     today_start = datetime(now.year, now.month, now.day)
     this_month_start = datetime(now.year, now.month, 1)
 
-    # helper for date ranges
-    async def get_sum(start_date, end_date=None):
+    async def get_sum(start_date=None, method=None):
         query = select(func.coalesce(func.sum(Payment.amount), 0))
-        if end_date:
-            query = query.where(
-                and_(Payment.received_at >= start_date, Payment.received_at <= end_date)
-            )
-        else:
+        if start_date:
             query = query.where(Payment.received_at >= start_date)
+        if method:
+            query = query.where(Payment.method.ilike(method))
 
-        # Await the execution
         result = await db.execute(query)
         return result.scalar()
 
-    # Calculate all stats
-    total_res = await db.execute(select(func.coalesce(func.sum(Payment.amount), 0)))
-
-    stats = {
-        "total_all_time": total_res.scalar(),
-        "today": await get_sum(today_start),
-        "this_week": await get_sum(today_start - timedelta(days=now.weekday())),
+    return {
+        "total_all_time": await get_sum(),
         "this_month": await get_sum(this_month_start),
+        "today_total": await get_sum(today_start),
+        # Daily Breakdowns
+        "today_cash": await get_sum(today_start, method="cash"),
+        "today_momo": await get_sum(today_start, method="momo"),
+        # All-time Breakdowns (Optional, but useful)
+        "total_cash": await get_sum(method="cash"),
+        "total_momo": await get_sum(method="momo"),
     }
-
-    return stats
 
 
 @router.get("/stats/monthly")
