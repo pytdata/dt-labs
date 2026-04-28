@@ -8,11 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Enum, String, cast, func, or_, select, update
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
+from app.core.deps import get_current_user
 from app.db.session import get_db
 from app.models.catalog import Phlebotomy, Test
 from app.models.company import CompanyProfile, OrganizationPrefix
 from app.models.enums import LabStage, LabStatus
 from app.models.lab import Appointment, LabOrder, LabOrderItem, LabResult, Patient
+from app.models.users import User
 from app.schemas.appointment import TestResponse
 from app.schemas.lab import LabOrderItemResponse, LabQueueResponse, LabQueueResponse2
 from app.core.config import settings
@@ -42,11 +44,11 @@ async def get_phlebotomy_results_queue(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Fetches the lab queue for items awaiting results.
-    Supports date range filtering and global search across IDs, names, and tests.
+    Fetches the lab queue for items awaiting results or in analysis (provisional).
+    Supports date range filtering and global search.
     """
 
-    # 1. Fetch Global Prefix Settings for Display IDs
+    # 1. Fetch Global Prefix Settings
     prefix_stmt = select(OrganizationPrefix).where(OrganizationPrefix.id == 1)
     prefix_res = await db.execute(prefix_stmt)
     settings = prefix_res.scalar_one_or_none()
@@ -56,18 +58,20 @@ async def get_phlebotomy_results_queue(
     pat_prefix = settings.patient if settings else "PAT"
     apt_prefix = settings.appointment if settings else "APT"
 
-    # 2. Build Base Query with Joins
-    # We join Test, LabOrder, and Patient to allow the 'search' filter to reach them
+    # 2. Build Base Query with Joins and Status logic
     stmt = (
         select(LabOrderItem)
         .join(Test, LabOrderItem.test_id == Test.id)
         .join(LabOrder, LabOrderItem.order_id == LabOrder.id)
         .join(Patient, LabOrder.patient_id == Patient.id)
         .where(
-            LabOrderItem.status == LabStatus.AWAITING_RESULTS,
+            # UPDATED: We now include 'ANALYSING' so items with provisional results stay in the queue
+            LabOrderItem.status.in_([LabStatus.AWAITING_RESULTS, "ANALYSING"]),
             Test.requires_phlebotomy == True,
         )
         .options(
+            # ADDED: Load the lab_result so frontend can check item.lab_result.status
+            selectinload(LabOrderItem.lab_result),
             selectinload(LabOrderItem.order).options(
                 selectinload(LabOrder.patient),
                 selectinload(LabOrder.appointment).options(
@@ -91,13 +95,10 @@ async def get_phlebotomy_results_queue(
         search_query = f"%{search}%"
         stmt = stmt.where(
             or_(
-                # Search by the numeric ID (suffix of Display ID)
                 LabOrderItem.id.cast(String).ilike(search_query),
-                # Search by Patient details
                 Patient.first_name.ilike(search_query),
                 Patient.surname.ilike(search_query),
                 Patient.patient_no.ilike(search_query),
-                # Search by Test details
                 Test.name.ilike(search_query),
             )
         )
@@ -108,23 +109,21 @@ async def get_phlebotomy_results_queue(
     result = await db.execute(stmt)
     items = result.scalars().all()
 
-    # 5. Transform and Inject Prefixes into Pydantic Models
+    # 5. Transform and Inject Prefixes
     queue_out = []
     for item in items:
         # Validate into the response model
         q_dto = LabQueueResponse2.model_validate(item)
 
-        # Inject dynamic prefixes for the @computed_field display_id
+        # Inject dynamic prefixes for display logic
         setattr(q_dto, "_org_code", org_code)
         setattr(q_dto, "_mod_prefix", lab_prefix)
 
         if q_dto.order:
-            # Inject into Patient ID generator
             if q_dto.order.patient:
                 setattr(q_dto.order.patient, "_org_code", org_code)
                 setattr(q_dto.order.patient, "_mod_prefix", pat_prefix)
 
-            # Inject into Appointment and its nested Patient
             if q_dto.order.appointment:
                 appt = q_dto.order.appointment
                 setattr(appt, "_org_code", org_code)
@@ -143,33 +142,58 @@ async def get_phlebotomy_results_queue(
 async def submit_lab_results(
     payload: dict,
     db: AsyncSession = Depends(get_db),
-    # current_user: User = Depends(get_current_active_user),  # To track who entered it
+    current_user: User = Depends(get_current_user),
 ):
     order_item_id = payload.get("order_item_id")
-    results_data = payload.get("results")  # This is our JSON object
+    results_data = payload.get("results")
+    is_finalized = payload.get("is_finalized", False)
 
-    async with db.begin():
-        # 1. Create the LabResult record
-        new_result = LabResult(
-            order_item_id=order_item_id,
-            results=results_data,  # This goes straight into the JSON column
-            source="manual",
-            # entered_by_user_id=current_user.id,
-            status=LabResultStatus.verified,  # Or pending if you want a second person to verify
-            received_at=func.now(),
-        )
-        db.add(new_result)
+    # Use a try block to handle the logic without starting a new transaction block
+    try:
+        result_status = "verified" if is_finalized else "pending"
 
-        # 2. Update the LabOrderItem stage and status
-        # This moves it from 'analysis' to 'completed'
-        stmt = (
+        # Check if a result already exists
+        stmt = select(LabResult).where(LabResult.order_item_id == order_item_id)
+        existing_result = (await db.execute(stmt)).scalar_one_or_none()
+
+        if existing_result:
+            existing_result.results = results_data
+            existing_result.status = result_status
+            if is_finalized:
+                existing_result.verified_by_user_id = current_user.id
+                existing_result.verified_at = func.now()
+        else:
+            new_result = LabResult(
+                order_item_id=order_item_id,
+                results=results_data,
+                source="manual",
+                entered_by_user_id=current_user.id,
+                status=result_status,
+                received_at=func.now(),
+                verified_by_user_id=current_user.id if is_finalized else None,
+                verified_at=func.now() if is_finalized else None,
+            )
+            db.add(new_result)
+
+        # Update LabOrderItem
+        item_status = "COMPLETED" if is_finalized else "ANALYSING"
+        item_stage = "completed" if is_finalized else "analysis"
+
+        update_stmt = (
             update(LabOrderItem)
             .where(LabOrderItem.id == order_item_id)
-            .values(status="COMPLETED", stage="completed")
+            .values(status=item_status, stage=item_stage)
         )
-        await db.execute(stmt)
+        await db.execute(update_stmt)
 
-    return {"message": "Results saved and item completed successfully"}
+        # Commit the changes manually if your get_db doesn't auto-commit
+        await db.commit()
+
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    return {"message": "Results saved successfully", "finalized": is_finalized}
 
 
 @router.get("/queue/radiology", response_model=list[LabQueueResponse2])
@@ -323,65 +347,6 @@ async def get_all_finalized_results(
     result = await db.execute(stmt)
     results = result.unique().scalars().all()
     return results
-
-
-# @router.get("/report/{item_id}")
-# async def get_radiology_report_data(item_id: int, db: AsyncSession = Depends(get_db)):
-#     # 1. Improved Query with comprehensive loading
-#     stmt = (
-#         select(LabOrderItem)
-#         .options(
-#             joinedload(LabOrderItem.test),
-#             joinedload(LabOrderItem.radiology_result),
-#             joinedload(LabOrderItem.order)
-#             .joinedload(LabOrder.appointment)
-#             .joinedload(Appointment.patient),
-#             joinedload(LabOrderItem.order)
-#             .joinedload(LabOrder.appointment)
-#             .joinedload(Appointment.doctor),
-#         )
-#         .where(LabOrderItem.id == item_id)
-#     )
-
-#     result = await db.execute(stmt)
-#     item = result.unique().scalar_one_or_none()
-
-#     # Debugging: See exactly what is missing in the console
-#     if item:
-#         print(f"DEBUG: Item Found. Result Data: {item.radiology_result}")
-#     else:
-#         print(f"DEBUG: Item {item_id} NOT found in Database")
-#         raise HTTPException(status_code=404, detail="Lab item not found")
-
-#     # 2. Relaxed Check: If result is missing, return empty findings instead of 404
-#     findings = (
-#         item.radiology_result.result_value
-#         if item.radiology_result
-#         else "No findings recorded."
-#     )
-#     conclusion = item.radiology_result.comments if item.radiology_result else "N/A"
-#     finalized_at = item.radiology_result.entered_at if item.radiology_result else None
-
-#     # 3. Safe Access to Appointment Data
-#     # Using .get() or direct access with default fallbacks
-#     try:
-#         appt = item.order.appointment
-#         patient_data = appt.patient
-#         doctor_data = appt.doctor
-#     except AttributeError:
-#         patient_data = None
-#         doctor_data = None
-
-#     return {
-#         "id": item.id,
-#         "test_name": item.test.name if item.test else "Unknown Test",
-#         "patient": patient_data,
-#         "doctor": doctor_data,
-#         "findings": findings,
-#         "conclusion": conclusion,
-#         "status": item.status,
-#         "finalized_at": finalized_at,
-#     }
 
 
 @router.get("/report/{item_id}")
@@ -663,3 +628,10 @@ async def get_radiology_items(
 
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+@router.get("/results/by-item/{order_item_id}")
+async def get_result_by_item(order_item_id: int, db: AsyncSession = Depends(get_db)):
+    stmt = select(LabResult).where(LabResult.order_item_id == order_item_id)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()

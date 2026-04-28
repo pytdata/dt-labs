@@ -134,6 +134,12 @@ function renderQueue(list) {
         const testName = item.test.name;
         const appointmentDate = item.order.appointment ? item.order.appointment.appointment_at : null;
 
+        // Logic for Provisional vs Awaiting
+        const isProvisional = item.lab_result && item.lab_result.status === 'pending';
+        const statusBadge = isProvisional 
+            ? `<span class="badge bg-soft-info text-info border-info"><i class="ti ti-clock-edit me-1"></i>Provisional</span>`
+            : `<span class="badge bg-soft-warning text-warning border-warning">Awaiting Results</span>`;
+
         return `
         <tr class="align-middle">
             <td><div class="form-check"><input class="form-check-input row-checkbox" type="checkbox"></div></td>
@@ -147,16 +153,17 @@ function renderQueue(list) {
             <td>${testName}</td>
             <td><span class="badge bg-outline-info text-info border-info">${item.test.test_category.category_name}</span></td>
             <td>${formatDate(appointmentDate)}</td>
-            <td><span class="badge bg-soft-warning text-warning border-warning">Awaiting Results</span></td>
+            <td>${statusBadge}</td>
             <td class="text-end">
-                <button class="btn btn-sm btn-primary shadow-sm" 
+                <button class="btn btn-sm ${isProvisional ? 'btn-outline-primary' : 'btn-primary'} shadow-sm" 
                     onclick="openFillModal(${item.id}, '${testName.replace(/'/g, "\\'")}', '${fullName.replace(/'/g, "\\'")}', '${item.display_id}')">
-                    <i class="ti ti-edit me-1"></i> Enter Results
+                    <i class="ti ti-edit me-1"></i> ${isProvisional ? 'Edit Draft' : 'Enter Results'}
                 </button>
             </td>
         </tr>`;
     }).join('');
 }
+
 
 /**
  * 4. DATATABLE & EXPORT
@@ -218,26 +225,42 @@ window.openFillModal = async function(itemId, testName, patientName, displayId) 
     document.getElementById('display_order_id').innerText = `${displayId}`;
     document.getElementById('fill_order_item_id').value = itemId;
     
+    // Reset the finalize toggle every time the modal opens
+    const finalizeCheck = document.getElementById('finalize_check');
+    if (finalizeCheck) finalizeCheck.checked = false;
+
     const container = document.getElementById('dynamic_template_container');
     container.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>`;
     
     new bootstrap.Modal(document.getElementById('fillResultModal')).show();
 
     try {
-        const response = await fetch(`/api/v1/tests-templates/by-item/${itemId}`);
-        const templates = await response.json();
-        
+        // We fetch the template AND check for existing lab results
+        const [templateRes, resultRes] = await Promise.all([
+            fetch(`/api/v1/tests-templates/by-item/${itemId}`),
+            fetch(`/api/v1/lab/results/by-item/${itemId}`) // Ensure this route exists on backend
+        ]);
+
+        const templates = await templateRes.json();
+        const existingData = resultRes.ok ? await resultRes.json() : null;
+        const savedResults = existingData ? existingData.results : {};
+
         if (!templates.length) {
             container.innerHTML = `<div class="alert alert-warning">No Template Found.</div>`;
             return;
         }
 
-        container.innerHTML = templates.map(t => `
+        container.innerHTML = templates.map(t => {
+            // Check if we have a saved value for this specific parameter
+            const savedValue = savedResults[t.test_name] ? savedResults[t.test_name].value : '';
+
+            return `
             <div class="row mx-0 align-items-center test-row py-3 border-bottom bg-white">
                 <div class="col-md-3"><strong>${t.test_name}</strong></div>
                 <div class="col-md-4">
                     <div class="input-group">
                         <input type="number" step="any" class="form-control result-input" 
+                               value="${savedValue}"
                                data-name="${t.test_name}" data-min="${t.min_reference_range ?? ''}" 
                                data-max="${t.max_reference_range ?? ''}" data-unit="${t.unit ?? ''}"
                                oninput="validateFlag(this)">
@@ -249,9 +272,17 @@ window.openFillModal = async function(itemId, testName, patientName, displayId) 
                     <small class="d-block text-muted" style="font-size:0.7rem">REF RANGE</small>
                     <span class="fw-bold">${t.min_reference_range ?? '0'} — ${t.max_reference_range ?? 'N/A'}</span>
                 </div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
+
+        // Trigger validation for pre-filled data so flags (H/L) show immediately
+        container.querySelectorAll('.result-input').forEach(input => {
+            if (input.value !== "") validateFlag(input);
+        });
+
     } catch (err) {
-        container.innerHTML = `<div class="alert alert-danger">Error loading template.</div>`;
+        console.error("Modal Load Error:", err);
+        container.innerHTML = `<div class="alert alert-danger">Error loading template or existing results.</div>`;
     }
 };
 
@@ -279,12 +310,15 @@ window.validateFlag = function(input) {
     }
 };
 
+
+
 document.getElementById('fill_results_form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const submitBtn = document.getElementById('save_results_btn');
     const itemId = document.getElementById('fill_order_item_id').value;
+    const isFinalized = document.getElementById('finalize_check').checked; // Capture the toggle
+    
     const resultsPayload = {};
-
     document.querySelectorAll('.test-row').forEach(row => {
         const input = row.querySelector('.result-input');
         if (input.value !== "") {
@@ -297,30 +331,39 @@ document.getElementById('fill_results_form').addEventListener('submit', async fu
         }
     });
 
-    if (Object.keys(resultsPayload).length === 0) return showToast("Enter a value", "error");
+    if (Object.keys(resultsPayload).length === 0) return showToast("Enter results before saving", "error");
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = 'Saving...';
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
 
     try {
         const response = await fetch('/api/v1/lab/results/submit-phlebotomy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order_item_id: parseInt(itemId), results: resultsPayload })
+            body: JSON.stringify({ 
+                order_item_id: parseInt(itemId), 
+                results: resultsPayload,
+                is_finalized: isFinalized 
+            })
         });
 
         if (response.ok) {
-            showToast("Saved!");
-            location.reload();
+            showToast(isFinalized ? "Results Finalized!" : "Provisional results saved successfully");
+            bootstrap.Modal.getInstance(document.getElementById('fillResultModal')).hide();
+            
+            // Refresh the table via your init() function to show updated status
+            if (typeof init === 'function') init(); 
         } else {
-            throw new Error("Save failed");
+            throw new Error("Failed to save results");
         }
     } catch (err) {
         showToast(err.message, "error");
+    } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "Save & Finalize";
+        submitBtn.innerText = "Save Results";
     }
 });
+
 
 /**
  * 6. UTILS

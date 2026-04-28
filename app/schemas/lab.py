@@ -257,6 +257,7 @@ class LabQueueResponse2(BaseModel):
     entered_at: Optional[datetime] = Field(None, alias="entered_at")
     test: TestResponse
     order: LabOrderBaseResponse
+    lab_result: Optional[LabResultResponse] = None
 
     _org_code: str = PrivateAttr(default="YKG")
     _mod_prefix: str = PrivateAttr(default="RAD")
