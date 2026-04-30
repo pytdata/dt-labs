@@ -13,7 +13,8 @@ from .manager import AnalyzerRuntimeManager
 
 async def main():
     print("[listener] Starting Analyzer Listener Service")
-    print(f"[listener] DB: {settings.DATABASE_URL}")
+    # print(f"[listener] DB: {settings.DATABASE_URL}")
+    print(f"[listener] DB: {settings.DB_URL}")
     mgr = AnalyzerRuntimeManager()
     await mgr.run()
 
