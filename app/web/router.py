@@ -105,8 +105,11 @@ async def login(request: Request):
 
 
 @router.get("/billing", response_class=HTMLResponse, name="billing_list")
-async def billing(request: Request):
-    return _render(request, "all-billing.html")
+async def billing(
+    request: Request,
+    current_user: User = Depends(deps.get_current_user),
+):
+    return _render(request, "all-billing.html", current_user=current_user)
 
 
 @router.post("/login", name="login_post")
@@ -180,6 +183,7 @@ async def patients_page(
         tests=tests,
         q=q or "",
         user_perms=current_user.role.permissions if current_user.role else [],
+        current_user=current_user,
     )
 
 
@@ -205,7 +209,11 @@ async def patient_add_get(
         .all()
     )
     return _render(
-        request, "add-patient.html", active_page="patients", insurance_companies=ins
+        request,
+        "add-patient.html",
+        active_page="patients",
+        insurance_companies=ins,
+        current_user=current_user,
     )
 
 
