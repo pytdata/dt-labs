@@ -27,7 +27,7 @@ class StaffResponse(BaseModel):
     role: str | None
     email: EmailStr
     phone_number: str | None
-    gender: Gender | None
+    gender: Gender | str | None
     is_active: bool
     avatar: str
 
