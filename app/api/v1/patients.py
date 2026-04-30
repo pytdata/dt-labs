@@ -16,7 +16,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
 
-from typing import Annotated, List, Literal
+from typing import Annotated, List, Literal, Optional
 
 
 from pydantic import BaseModel, Field
@@ -261,44 +261,38 @@ async def get_patients(
 )
 async def get_patient_lab_results(
     patient_id: int,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Fetch all lab results for a specific patient.
-    Requires 'patients:read' permission.
-    """
-
-    # 1. Verify Patient Exists (Optional but recommended for better 404s)
+    # Verify Patient Exists
     patient_exists = await db.scalar(select(Patient.id).where(Patient.id == patient_id))
     if not patient_exists:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found"
-        )
+        raise HTTPException(status_code=404, detail="Patient not found")
 
-    # 2. Build Optimized Query
-    # We navigate: LabResult -> LabOrderItem -> LabOrder -> Patient
+    # Build Query
     stmt = (
         select(LabResult)
         .join(LabResult.order_item)
         .join(LabOrderItem.order)
         .options(
-            # Eagerly load the nested relationships to prevent N+1 queries
             selectinload(LabResult.order_item).selectinload(LabOrderItem.test),
-            # If your LabResultResponse needs who entered/verified the results:
             selectinload(LabResult.entered_by_user),
             selectinload(LabResult.verified_by_user),
         )
         .where(LabOrder.patient_id == patient_id)
-        .order_by(LabResult.updated_at.desc())  # Or received_at depending on your model
     )
 
-    result = await db.execute(stmt)
-    lab_results = result.scalars().all()
+    # Apply Date Filters on LabResult.received_at or updated_at
+    if start_date:
+        stmt = stmt.where(func.date(LabResult.received_at) >= start_date)
+    if end_date:
+        stmt = stmt.where(func.date(LabResult.received_at) <= end_date)
 
-    # 3. Return results
-    # Since LabResultResponse likely doesn't use the org_prefix logic
-    # (usually handled at the Order/Invoice level), a direct return works here.
-    return lab_results
+    stmt = stmt.order_by(LabResult.received_at.desc())
+
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 
 @router.get(

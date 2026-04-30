@@ -1,7 +1,76 @@
 /**
- * PATIENT PROFILE DASHBOARD - CONSOLIDATED & STANDARDIZED
+ * PATIENT PROFILE DASHBOARD 
  */
 const patientProfileImage = document.getElementById("profile_img");
+const startInput = document.getElementById("lab_start_date");
+const endInput = document.getElementById("lab_end_date");
+const filterBtn = document.getElementById("btn_filter_labs");
+
+const aptStartInput = document.getElementById("apt_start_date");
+const aptEndInput = document.getElementById("apt_end_date");
+const aptFilterBtn = document.getElementById("btn_filter_appointments");
+
+
+async function fetchAndRenderAppointments(startDate = "", endDate = "") {
+    const container = document.querySelector(".appointment__container");
+    if (!container) return;
+
+    container.innerHTML = `<div class="col-12 text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>`;
+
+    /**
+     * Use your existing get_all_appointments route.
+     * currentPatient is the ID from your URL context.
+     */
+    let url = `/api/v1/appointments/?patient_id=${currentPatient}`;
+    
+    if (startDate) url += `&start_date=${startDate}`;
+    if (endDate) url += `&end_date=${endDate}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to load appointments");
+        
+        const data = await res.json();
+        renderAppointmentBadge(data); 
+    } catch (error) {
+        console.error("Appointment Fetch Error:", error);
+        container.innerHTML = `<p class="text-danger text-center py-3">Error loading appointments.</p>`;
+    }
+}
+
+// Attach listener to the button
+if (aptFilterBtn) {
+    aptFilterBtn.addEventListener("click", () => {
+        fetchAndRenderAppointments(aptStartInput.value, aptEndInput.value);
+    });
+}
+
+
+async function fetchAndRenderLabs(startDate = "", endDate = "") {
+    const container = document.querySelector(".labresults__container");
+    container.innerHTML = `<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>`;
+
+    let url = `/api/v1/patients/${currentPatient}/lab-results/?`;
+    if (startDate) url += `start_date=${startDate}&`;
+    if (endDate) url += `end_date=${endDate}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to load lab results");
+        const data = await res.json();
+        renderLabResults(data);
+    } catch (error) {
+        console.error("Lab Result Fetch Error:", error);
+        container.innerHTML = `<p class="text-danger text-center">Error loading results.</p>`;
+    }
+}
+
+// Event Listeners
+if (filterBtn) {
+    filterBtn.addEventListener("click", () => {
+        fetchAndRenderLabs(startInput.value, endInput.value);
+    });
+}
 
 document.addEventListener("DOMContentLoaded", async function (e) {
     // currentPatient is assumed to be defined globally (e.g., from URL params)
@@ -63,7 +132,7 @@ function renderLabResults(dataList) {
     <div class="card shadow flex-fill w-100">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="fw-bold mb-0 text-truncate"><i class="ti ti-flask me-1 text-primary"></i>Laboratory Investigations</h5>
-            <a href="patient-lab-history.html" class="btn btn-sm btn-outline-primary flex-shrink-0">View History</a>
+           
         </div>
         <div class="card-body">
             ${dataList.map((item) => {

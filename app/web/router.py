@@ -51,6 +51,24 @@ templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 router = APIRouter()
 
 
+# def _render(
+#     request: Request,
+#     template_name: str,
+#     *,
+#     active_page: str | None = None,
+#     active_group: str | None = None,
+#     **extra,
+# ):
+#     ctx = {
+#         "request": request,
+#         "active_page": active_page,
+#         "active_group": active_group,
+#         "unread_count": 0,
+#     }
+#     ctx.update(extra)
+#     return templates.TemplateResponse(template_name, ctx)
+
+
 def _render(
     request: Request,
     template_name: str,
@@ -66,7 +84,8 @@ def _render(
         "unread_count": 0,
     }
     ctx.update(extra)
-    return templates.TemplateResponse(template_name, ctx)
+
+    return templates.TemplateResponse(request=request, name=template_name, context=ctx)
 
 
 # Dashboard stays on "/"
