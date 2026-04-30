@@ -1,4 +1,5 @@
 import strawberry
+from strawberry.types import Info
 from typing import Optional, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
