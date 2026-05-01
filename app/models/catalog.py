@@ -27,35 +27,61 @@ class Analyzer(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    # Whether this analyzer sends results automatically (True = BC-5150/BS-240)
+    # False = manual entry only
+    is_automated: Mapped[bool] = mapped_column(Boolean, default=False)
+
     test_mappings = relationship(
         "AnalyzerTestMapping", back_populates="analyzer", cascade="all, delete-orphan"
     )
+
+    # ------------------------------------------------------------------
+    # CONNECTION TYPE: tcp | serial | manual
+    # ------------------------------------------------------------------
+    connection_type: Mapped[str] = mapped_column(String(30), default="manual")
+
+    # ------------------------------------------------------------------
+    # TRANSPORT TYPE (used by listener worker)
+    # tcp_server : LIS acts as TCP server, analyzer connects to it
+    # tcp_client : LIS connects to analyzer as TCP client
+    # serial     : Serial/RS-232 connection
+    # ------------------------------------------------------------------
+    transport_type: Mapped[str | None] = mapped_column(String(30), nullable=True)
+
+    # ------------------------------------------------------------------
+    # PROTOCOL / MESSAGE FORMAT
+    # hl7   : HL7 v2.3.1 over TCP with MLLP framing (BC-5150, BS-240 HL7 mode)
+    # astm  : ASTM E1394-97 over TCP (BS-240 ASTM mode)
+    # auto  : auto-detect from first bytes
+    # ------------------------------------------------------------------
+    protocol_type: Mapped[str | None] = mapped_column(String(30), nullable=True, default="hl7")
+
+    # What the analyzer emits: ASTM | HL7 | CSV | XML
+    result_format: Mapped[str] = mapped_column(String(20), default="HL7")
+
+    # Legacy field kept for compatibility
+    protocol: Mapped[str] = mapped_column(String(30), default="HL7")
+
+    # ------------------------------------------------------------------
+    # PATIENT / SAMPLE MATCHING STRATEGY
+    # ------------------------------------------------------------------
+    patient_id_source: Mapped[str] = mapped_column(String(30), default="patient_no")
+    patient_id_fallbacks: Mapped[str | None] = mapped_column(String(120), nullable=True)
+
+    # ------------------------------------------------------------------
+    # TCP CONNECTION FIELDS
+    # ------------------------------------------------------------------
+    tcp_ip: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    tcp_port: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    # ------------------------------------------------------------------
+    # SERIAL CONNECTION FIELDS
+    # ------------------------------------------------------------------
     serial_port: Mapped[str | None] = mapped_column(
         String(50), nullable=True
     )  # e.g., COM3 or /dev/ttyUSB0
     baud_rate: Mapped[int | None] = mapped_column(Integer, nullable=True)
-
-    # Dynamic connectivity
-    # tcp | serial | manual
-    connection_type: Mapped[str] = mapped_column(String(30), default="tcp")
-
-    # What the analyzer emits: ASTM | CSV | XML
-    result_format: Mapped[str] = mapped_column(String(20), default="ASTM")
-    protocol: Mapped[str] = mapped_column(String(30), default="ASTM")
-
-    # How to match an inbound result to a patient / order in LIS.
-    # patient_no: from ASTM P-record (or equivalent)
-    # sample_id: from ASTM O-record (specimen/sample id)
-    # order_id: from ASTM O-record (order id / placer id, device dependent)
-    patient_id_source: Mapped[str] = mapped_column(String(30), default="patient_no")
-    # Comma-separated fallbacks to try if the primary source is missing (e.g. "sample_id,order_id")
-    patient_id_fallbacks: Mapped[str | None] = mapped_column(String(120), nullable=True)
-
-    # TCP
-    tcp_ip: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    tcp_port: Mapped[int | None] = mapped_column(Integer, nullable=True)
-
-    # Serial
     parity: Mapped[str | None] = mapped_column(
         String(10), nullable=True
     )  # none|even|odd
@@ -65,9 +91,18 @@ class Analyzer(Base):
         String(20), nullable=True
     )  # none|rtscts|xonxoff
 
+    # ------------------------------------------------------------------
+    # METADATA
+    # ------------------------------------------------------------------
     manufacturer: Mapped[str | None] = mapped_column(String(120), nullable=True)
     model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # ------------------------------------------------------------------
+    # RELATIONSHIPS
+    # ------------------------------------------------------------------
+    results = relationship("LabResult", back_populates="analyzer")
+    ingestions = relationship("AnalyzerIngestion", back_populates="analyzer")
 
 
 class TestCategory(Base):

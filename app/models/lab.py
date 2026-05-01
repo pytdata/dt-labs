@@ -330,7 +330,7 @@ class AnalyzerIngestion(Base):
     )
 
     analyzer_message = relationship("AnalyzerMessage")
-    analyzer = relationship("Analyzer")
+    analyzer = relationship("Analyzer", back_populates="ingestions")
     patient = relationship("Patient")
     order_item = relationship("LabOrderItem")
 
@@ -388,14 +388,11 @@ class LabResult(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    # Relationship
+    # Relationships
     order_item = relationship("LabOrderItem", back_populates="lab_result")
     analyzer = relationship("Analyzer", back_populates="results")
     analyzer_message = relationship("AnalyzerMessage", back_populates="results")
-
     sample = relationship("Sample")
-    analyzer = relationship("Analyzer")
-    analyzer_message = relationship("AnalyzerMessage")
     entered_by_user = relationship("User", foreign_keys=[entered_by_user_id])
     verified_by_user = relationship("User", foreign_keys=[verified_by_user_id])
 
