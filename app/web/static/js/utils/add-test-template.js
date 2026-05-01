@@ -167,10 +167,18 @@ testTemplatesViewContainerEL.addEventListener("click", async (e) => {
 // Submit Logic
 submitBtn.addEventListener("click", async () => {
     const testTypeId = testsDropDownEl.value;
-    if (!testTypeId) return alert("Please select a test type");
+    if (!testTypeId){
+        showToast("Please select a test type", "error");
+        return;
+        // return alert("Please select a test type")};
+    }
 
     const fieldBlocks = document.querySelectorAll(".field-block");
-    if (fieldBlocks.length === 0) return alert("Add at least one parameter");
+    if (fieldBlocks.length === 0) {
+        showToast("Add at least one paramter", "error")
+        // return alert("Add at least one parameter");
+        return;
+    }
 
     const payload = Array.from(fieldBlocks).map(block => ({
         test_id: parseInt(testTypeId),
@@ -193,23 +201,28 @@ submitBtn.addEventListener("click", async () => {
 
         if (!response.ok) throw new Error("Failed to save data");
 
-        alert(`Templates ${currentMode === "create" ? "created" : "updated"} successfully`);
+        // alert(`Templates ${currentMode === "create" ? "created" : "updated"} successfully`);
+        showToast(`Templates ${currentMode === "create" ?  "created" : "updated"}`)
         location.reload();
     } catch (err) {
         console.error(err);
-        alert("Error saving templates.");
+        // alert("Error saving templates.");
+        showToast("Error saving templates.")
     }
 });
 
 // Delete Logic
 testTemplatesViewContainerEL.addEventListener("click", async (e) => {
     const btn = e.target.closest(".delete-template-btn");
-    if (!btn || !confirm("Delete this parameter?")) return;
+    // if (!btn || !confirm("Delete this parameter?")) return;
+    if (!btn) {
+        return;
+    }
 
     try {
         const res = await fetch(`${testTemplatesURL}${btn.dataset.templateId}/`, { method: "DELETE" });
         if (res.ok) location.reload();
-    } catch (err) { alert("Delete failed"); }
+    } catch (err) { showToast("Delete failed", "error")}
 });
 
 // --- UTILS ---
@@ -226,3 +239,40 @@ function formatDate(dateStr) {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
+
+
+
+function showToast (message, type = 'success') {
+    const toastEl = document.getElementById('appCustomToast');
+    const toastText = document.getElementById('appCustomToastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    if (!toastEl) return;
+
+    // CRITICAL: Move toast to body to escape any parent 'overflow:hidden'
+    const container = toastEl.closest('.toast-container');
+    if (container && container.parentElement !== document.body) {
+        document.body.appendChild(container);
+    }
+
+    // Reset classes
+    toastEl.classList.remove('bg-success', 'bg-danger');
+    if (toastIcon) toastIcon.className = 'ti fs-4 me-2';
+
+    // Set content
+    toastText.innerText = message;
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+        if (toastIcon) toastIcon.classList.add('ti-circle-check');
+    } else {
+        toastEl.classList.add('bg-danger');
+        if (toastIcon) toastIcon.classList.add('ti-alert-triangle');
+    }
+
+    // Show the toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { 
+        delay: 4000,
+        autohide: true 
+    });
+    toast.show();
+};

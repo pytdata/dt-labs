@@ -852,6 +852,8 @@ async def appointments(
     sample_categories_results = sample_categories.scalars().all()
     total_appointments = appointments_count_res.scalar() or 0
 
+    print(staff_results, "============================")
+
     return _render(
         request,
         "all-appointments.html",
@@ -1403,7 +1405,6 @@ async def settings_insurance(
     )
 
 
-# --- DOCUMENT TEMPLATES ---
 @router.get(
     "/settings/templates", response_class=HTMLResponse, name="settings_templates"
 )

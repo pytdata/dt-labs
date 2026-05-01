@@ -33,6 +33,23 @@ const StaffManager = {
         if (window.StaffManagerInitialized) return;
         window.StaffManagerInitialized = true;
 
+        // Add listeners for both add and edit image inputs
+        ["staff_image_input", "edit_staff_image_input"].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener("change", function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        const previewId = id === "staff_image_input" ? "staff_image_preview" : "edit_staff_preview";
+                        reader.onload = (e) => {
+                            document.getElementById(previewId).src = e.target.result;
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        });
+
         this.bindEvents();
         await this.loadStaffData();
         await this.fetchAndPopulateRoles("staff_role");
@@ -207,31 +224,44 @@ const StaffManager = {
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
         }
 
+        // 1. Initialize FormData from the form element
+        // This automatically captures the "profile_picture" file input
         const formData = new FormData(form);
-        const payload = {
-            full_name: formData.get("staff_full_name"),
-            gender: formData.get("gender"),
-            email: formData.get("staff_email"),
-            phone_number: formData.get("phone"),
-            role: formData.get("staff_role"), // This gets the slug from the <select>
-        };
 
-        // Only include password if the user actually typed something
-        const pwd = formData.get("password");
-        if (pwd && pwd.trim().length > 0) {
-            payload.password = pwd;
-        }
+        /**
+         * 2. Remap field names to match FastAPI Form parameters
+         */
+        formData.set("full_name", formData.get("staff_full_name"));
+        formData.set("email", formData.get("staff_email"));
+        formData.set("phone_number", formData.get("phone"));
+        formData.set("role", formData.get("staff_role"));
         
+        // Handle Active Status (Boolean logic for FastAPI Form)
         if (method === "PUT") {
             const statusCheckbox = form.querySelector(".edit_status_checked");
-            payload.is_active = statusCheckbox ? statusCheckbox.checked : true;
+            // We send "true" or "false" strings which FastAPI can parse as booleans
+            formData.set("is_active", statusCheckbox ? statusCheckbox.checked : true);
+        } else {
+            formData.set("is_active", true);
+        }
+
+        // Clean up redundant frontend-specific keys
+        formData.delete("staff_full_name");
+        formData.delete("staff_email");
+        formData.delete("phone");
+        formData.delete("staff_role");
+
+        // 3. Password handling: Only send if it has a value
+        const pwd = formData.get("password");
+        if (!pwd || pwd.trim().length === 0) {
+            formData.delete("password");
         }
 
         try {
             const res = await fetch(url, {
                 method: method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                // Do NOT set Content-Type header; fetch sets it to multipart/form-data automatically
+                body: formData, 
             });
 
             const data = await res.json();
@@ -240,15 +270,24 @@ const StaffManager = {
             window.showToast(method === "POST" ? "Staff created successfully!" : "Staff updated successfully!", "success");
             
             // Hide modal
-            const modalEl = document.getElementById(modalId === "add_staff" ? "staffForm" : "edit_staff");
+            const modalEl = document.getElementById(modalId);
             if (modalEl) {
-                // Find the parent modal div if modalId was actually the form id
                 const actualModal = modalEl.closest('.modal') || modalEl;
                 bootstrap.Modal.getOrCreateInstance(actualModal).hide();
             }
             
+            // 4. Reset Form and Image Previews
             form.reset();
-            await this.loadStaffData(); // Refresh the table
+            
+            // Clear Add Modal Preview
+            const addPreview = document.getElementById("staff_image_preview");
+            if (addPreview) addPreview.src = "/static/img/defaults/default-user-icon.jpeg";
+            
+            // Clear Edit Modal Preview
+            const editPreview = document.getElementById("edit_staff_preview");
+            if (editPreview) editPreview.src = "/static/img/defaults/default-user-icon.jpeg";
+
+            await this.loadStaffData(); 
 
         } catch (error) {
             window.showToast(error.message, "danger");
@@ -478,3 +517,4 @@ window.showToast  = function(message, type = 'success') {
     });
     toast.show();
 };
+

@@ -94,7 +94,7 @@
                         <h4 class="mb-1">Staffs</h4>
                         <div class="text-end">
                             <ol class="breadcrumb m-0 py-0">
-                                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
                                 <li class="breadcrumb-item active">Staffs</li>
                             </ol>
                         </div>
@@ -165,13 +165,7 @@
                                             </div>
                                         </div>
                                     </li>
-<!--                                     
-                                    <li>
-                                        <label class="dropdown-item px-2 d-flex align-items-center rounded-1">
-                                            <input class="form-check-input m-0 me-2" type="checkbox">
-                                            Lab Technician
-                                        </label>
-                                    </li> -->
+
                                 </ul>
                             </div>
 
@@ -198,20 +192,7 @@
 
                         </div>
 
-                        <!-- sort by -->
-                        <!-- <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-md btn-outline-light d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                               <i class="ti ti-sort-descending-2 me-1"></i><span class="me-1">Sort By : </span>  Newest
-                            </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-2">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Newest</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Oldest</a>
-                                </li>
-                            </ul>
-                        </div> -->
+                      
                     </div>
                     <!-- table header -->
 
@@ -289,7 +270,7 @@
                         <div class="add-satff">
                             <div class="nav nav-pills nav-pills-outline gap-2 mb-4" id="staff-tabs">
                                 <a href="javascript:void(0);" class="nav-link fw-semibold border active" id="staff-tab-one">Basic Info</a>
-                                <!-- <a href="javascript:void(0);" class="nav-link fw-semibold border" id="staff-tab-two">Salary Info</a> -->
+                               
                             </div>
 
                             <div class="patient-form-wizard flex-fill" id="staff-tab-Contents">
@@ -305,21 +286,26 @@
                                                     <h6 class="mb-1">Profile</h6>
                                                     <p class="mb-0">change your profile from here</p>
                                                 </div>
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <div class="avatar avatar-xxl border border-dashed me-3 flex-shrink-0">
-                                                        <div class="position-relative d-flex align-items-center">
-                                                            <img src="/static/img/profiles/avatar-16.jpg" class="avatar avatar-xl" alt="img">
-                                                            <a href="javascript:void(0);" class="fs-12 text-danger rounded-circle p-1 trash-top d-flex align-items-center justify-content-center"><i class="ti ti-trash"></i></a>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-inline-flex flex-column align-items-start">
-                                                        <div class="drag-upload-btn btn btn-sm btn-dark position-relative mb-2">
-                                                            <i class="ti ti-photo me-1"></i>Upload
-                                                            <input type="file" class="form-control image-sign" multiple="">
-                                                        </div>
-                                                        <span>JPG or PNG format, not exceeding 5MB.</span>
-                                                    </div>
+                                              
+                                            <!-- Inside the add_staff modal -->
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-xxl border border-dashed me-3 flex-shrink-0">
+                                                <div class="position-relative d-flex align-items-center">
+                                                    <!-- Remove hardcoded src, use a placeholder or leave empty -->
+                                                    <img src="/static/img/defaults/default-user-icon.jpeg" id="staff_image_preview" class="avatar avatar-xl" alt="img">
+                                                    <a href="javascript:void(0);" id="remove_image_btn" class="fs-12 text-danger rounded-circle p-1 trash-top d-flex align-items-center justify-content-center"><i class="ti ti-trash"></i></a>
                                                 </div>
+                                            </div>
+                                            <div class="d-inline-flex flex-column align-items-start">
+                                                <div class="drag-upload-btn btn btn-sm btn-dark position-relative mb-2">
+                                                    <i class="ti ti-photo me-1"></i>Upload
+                                                    <!-- Added name="profile_picture" and an ID -->
+                                                    <input type="file" id="staff_image_input" name="profile_picture" class="form-control image-sign" accept="image/jpeg,image/png">
+                                                </div>
+                                                <span>JPG or PNG format, not exceeding 5MB.</span>
+                                            </div>
+                                        </div>
+
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
@@ -374,110 +360,8 @@
                                                         
                                                     </select>
                                                 </div>
-                                            </div><!-- end col -->
-                                            <!-- <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Joining Date</label>
-                                                    <div class="input-group w-auto input-group-flat">
-                                                        <input type="text" class="form-control" data-provider="flatpickr" data-date-format="d M, Y">
-                                                        <span class="input-group-text">
-                                                            <i class="ti ti-calendar"></i>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Staff Type</label>
-                                                    <select class="select">
-                                                        <option>Select</option>
-                                                        <option>Permanent</option>
-                                                        <option>Temporary</option>
-                                                    </select>
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Job Type</label>
-                                                    <select class="select">
-                                                        <option>Select</option>
-                                                        <option>Full Time</option>
-                                                        <option>Half Time</option>
-                                                    </select>
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Address Line 1</label>
-                                                    <input type="text" class="form-control">
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Address Line 2</label>
-                                                    <input type="text" class="form-control">
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">City</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option>New York City</option>
-                                                        <option>Los Angeles</option>
-                                                        <option>Chicago</option>
-                                                        <option>Houston</option>
-                                                        <option>Phoenix</option>
-                                                        <option>Philadelphia</option>
-                                                        <option>San Antonio</option>
-                                                        <option>San Diego</option>
-                                                        <option>Dallas</option>
-                                                        <option>San Jose</option>
-                                                    </select>
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">State</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option>California</option>
-                                                        <option>Texas</option>
-                                                        <option>Florida</option>
-                                                        <option>New York</option>
-                                                        <option>Illinois</option>
-                                                        <option>Pennsylvania</option>
-                                                        <option>Ohio</option>
-                                                        <option>Georgia</option>
-                                                        <option>North Carolina</option>
-                                                        <option>Michigan</option>
-                                                    </select>
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Country</label>
-                                                    <select class="select2" data-toggle="select2">
-                                                        <option>Select</option>
-                                                        <option>United States</option>
-                                                        <option>Canada</option>
-                                                        <option>United Kingdom</option>
-                                                        <option>Australia</option>
-                                                        <option>Germany</option>
-                                                        <option>France</option>
-                                                        <option>India</option>
-                                                        <option>Japan</option>
-                                                        <option>Brazil</option>
-                                                        <option>South Africa</option>
-                                                    </select>
-                                                </div>
-                                            </div>end col -->
-                                            <!-- <div class="col-md-4">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Pin Code</label>
-                                                    <input type="text" class="form-control">
-                                                </div>
-                                            </div>end col -->
+                                            </div>
+                                          
                                         </div>
                                         <!-- end row -->
 
@@ -609,7 +493,7 @@
     </div>
     <!-- End add Modal -->
 
-    <!-- Start add Modal -->
+    <!-- Start edit Modal -->
     <div id="edit_staff" class="modal fade">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -639,20 +523,22 @@
                                                     <p class="mb-0">change your profile from here</p>
                                                 </div>
                                                 <div class="d-flex align-items-center mb-3">
-                                                    <div class="avatar avatar-xxl border border-dashed me-3 flex-shrink-0">
-                                                        <div class="position-relative d-flex align-items-center">
-                                                            <img src="/static/img/profiles/avatar-16.jpg" class="avatar avatar-xl" alt="img">
-                                                            <a href="javascript:void(0);" class="fs-12 text-danger rounded-circle p-1 trash-top d-flex align-items-center justify-content-center"><i class="ti ti-trash"></i></a>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-inline-flex flex-column align-items-start">
-                                                        <div class="drag-upload-btn btn btn-sm btn-dark position-relative mb-2">
-                                                            <i class="ti ti-photo me-1"></i>Upload
-                                                            <input type="file" class="form-control image-sign" multiple="">
-                                                        </div>
-                                                        <span>JPG or PNG format, not exceeding 5MB.</span>
+                                                <div class="avatar avatar-xxl border border-dashed me-3 flex-shrink-0">
+                                                    <div class="position-relative d-flex align-items-center">
+                                                        <!-- Ensure this ID is used in your populateEditModal function -->
+                                                        <img src="/static/img/profiles/avatar-16.jpg" id="edit_staff_preview" class="avatar avatar-xl" alt="img">
+                                                        <a href="javascript:void(0);" class="fs-12 text-danger rounded-circle p-1 trash-top d-flex align-items-center justify-content-center"><i class="ti ti-trash"></i></a>
                                                     </div>
                                                 </div>
+                                                <div class="d-inline-flex flex-column align-items-start">
+                                                    <div class="drag-upload-btn btn btn-sm btn-dark position-relative mb-2">
+                                                        <i class="ti ti-photo me-1"></i>Upload
+                                                        <!-- Set name to "profile_picture" to match backend -->
+                                                        <input type="file" name="profile_picture" id="edit_staff_image_input" class="form-control image-sign">
+                                                    </div>
+                                                    <span>JPG or PNG format, not exceeding 5MB.</span>
+                                                </div>
+                                            </div>
                                             </div><!-- end col -->
                                             <div class="col-md-6">
                                                 <div class="mb-3">
