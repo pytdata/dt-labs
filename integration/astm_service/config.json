@@ -14,15 +14,11 @@
     },
     {
       "name": "Electrolyte Analyzer",
-      "connection": "tcp",
-      "host": "192.168.10.11",
-      "port": 4002
+      "connection": "manual"
     },
     {
       "name": "Wonfo Fincare Plus",
-      "connection": "tcp",
-      "host": "192.168.10.12",
-      "port": 4003
+      "connection": "manual"
     },
     {
       "name": "Bench/Manual Tests",
