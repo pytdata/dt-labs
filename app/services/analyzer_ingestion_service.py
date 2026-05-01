@@ -1062,10 +1062,522 @@ class AnalyzerSerialListener:
 # WORKER MANAGER — orchestrates all analyzer listeners
 # ===========================================================================
 
+# ===========================================================================
+# AUTO-DISCOVERY: fingerprint an unknown device from its first message
+# ===========================================================================
+
+# Known device fingerprints — matched against the first payload from a device
+# Each entry: (label, name, manufacturer, model, transport_type, protocol_type, result_format)
+_DEVICE_FINGERPRINTS: list[tuple[str, str, str, str, str, str, str]] = [
+    # HL7 MSH-3 (sending application) patterns
+    ("bc5150",  "Mindray BC-5150",  "Mindray", "BC-5150", "tcp_server", "hl7",  "HL7"),
+    ("bc-5150", "Mindray BC-5150",  "Mindray", "BC-5150", "tcp_server", "hl7",  "HL7"),
+    ("bc5000",  "Mindray BC-5000",  "Mindray", "BC-5000", "tcp_server", "hl7",  "HL7"),
+    ("bs240",   "Mindray BS-240",   "Mindray", "BS-240",  "tcp_server", "hl7",  "HL7"),
+    ("bs-240",  "Mindray BS-240",   "Mindray", "BS-240",  "tcp_server", "hl7",  "HL7"),
+    ("bs480",   "Mindray BS-480",   "Mindray", "BS-480",  "tcp_server", "hl7",  "HL7"),
+    ("bs-480",  "Mindray BS-480",   "Mindray", "BS-480",  "tcp_server", "hl7",  "HL7"),
+    ("sysmex",  "Sysmex XN-Series", "Sysmex",  "XN",      "tcp_server", "hl7",  "HL7"),
+    ("cobas",   "Roche Cobas",      "Roche",   "Cobas",   "tcp_server", "hl7",  "HL7"),
+    # ASTM H-record sender patterns
+    ("bs-240",  "Mindray BS-240",   "Mindray", "BS-240",  "tcp_server", "astm", "ASTM"),
+    ("mindray", "Mindray Analyzer", "Mindray", "Unknown", "tcp_server", "hl7",  "HL7"),
+]
+
+
+def _fingerprint_payload(payload: bytes, peer_ip: str, port: int) -> dict | None:
+    """
+    Examine the first payload from an unknown device and return a dict of
+    Analyzer fields if we can identify the device, or None if unknown.
+
+    Strategies (in order):
+      1. MLLP-wrapped HL7 → parse MSH-3 (sending application) and MSH-4 (facility)
+      2. ASTM H record    → parse H|...|sender_name field
+      3. Raw HL7 (no MLLP wrapping)
+      4. Fallback: create a generic "Unknown Analyzer @ {ip}:{port}" entry
+    """
+    text = payload.decode("utf-8", errors="replace").strip()
+
+    # ── 1. HL7/MLLP ────────────────────────────────────────────────────────
+    if VT in payload:
+        messages = unwrap_mllp(payload)
+        for msg in messages:
+            if msg.startswith("MSH"):
+                fields = msg.split("|")
+                sending_app = (fields[2] if len(fields) > 2 else "").lower().strip()
+                sending_fac = (fields[3] if len(fields) > 3 else "").lower().strip()
+                combined = f"{sending_app} {sending_fac}"
+                for key, name, mfr, model, tt, pt, rf in _DEVICE_FINGERPRINTS:
+                    if key in combined:
+                        return dict(
+                            name=name, manufacturer=mfr, model=model,
+                            transport_type=tt, protocol_type=pt,
+                            result_format=rf, connection_type="tcp",
+                            tcp_ip=peer_ip, tcp_port=port,
+                            is_automated=True, is_active=True,
+                            notes=f"Auto-registered on first contact from {peer_ip}:{port}",
+                        )
+                # Unknown HL7 device — register generically with sender app name
+                app_label = (fields[2] if len(fields) > 2 else "Unknown").strip()
+                return dict(
+                    name=f"{app_label} @ {peer_ip}" if app_label else f"HL7-Device @ {peer_ip}",
+                    manufacturer=None, model=None,
+                    transport_type="tcp_server", protocol_type="hl7",
+                    result_format="HL7", connection_type="tcp",
+                    tcp_ip=peer_ip, tcp_port=port,
+                    is_automated=True, is_active=True,
+                    notes=f"Auto-registered HL7 device from {peer_ip}:{port}. MSH-3={fields[2] if len(fields)>2 else '?'}",
+                )
+
+    # ── 2. ASTM H record ────────────────────────────────────────────────────
+    if text.startswith("H|") or text.startswith("\x02H|") or "\rH|" in text:
+        # H|delimiter|message_ctrl|...|sender_name|...
+        lines = text.replace("\x02", "").replace("\x03", "").split("\r")
+        h_line = next((l for l in lines if l.startswith("H|")), None)
+        if h_line:
+            h_fields = h_line.split("|")
+            sender = (h_fields[4] if len(h_fields) > 4 else "").lower().strip()
+            for key, name, mfr, model, tt, pt, rf in _DEVICE_FINGERPRINTS:
+                if key in sender or key in text.lower():
+                    return dict(
+                        name=name, manufacturer=mfr, model=model,
+                        transport_type="tcp_server", protocol_type="astm",
+                        result_format="ASTM", connection_type="tcp",
+                        tcp_ip=peer_ip, tcp_port=port,
+                        is_automated=True, is_active=True,
+                        notes=f"Auto-registered ASTM device from {peer_ip}:{port}",
+                    )
+        return dict(
+            name=f"ASTM-Device @ {peer_ip}",
+            manufacturer=None, model=None,
+            transport_type="tcp_server", protocol_type="astm",
+            result_format="ASTM", connection_type="tcp",
+            tcp_ip=peer_ip, tcp_port=port,
+            is_automated=True, is_active=True,
+            notes=f"Auto-registered ASTM device from {peer_ip}:{port}",
+        )
+
+    # ── 3. Raw HL7 (no MLLP) ───────────────────────────────────────────────
+    if text.startswith("MSH|"):
+        fields = text.split("|")
+        app_label = (fields[2] if len(fields) > 2 else "Unknown").strip()
+        combined = app_label.lower()
+        for key, name, mfr, model, tt, pt, rf in _DEVICE_FINGERPRINTS:
+            if key in combined:
+                return dict(
+                    name=name, manufacturer=mfr, model=model,
+                    transport_type="tcp_server", protocol_type="hl7",
+                    result_format="HL7", connection_type="tcp",
+                    tcp_ip=peer_ip, tcp_port=port,
+                    is_automated=True, is_active=True,
+                    notes=f"Auto-registered on first contact from {peer_ip}:{port}",
+                )
+        return dict(
+            name=f"{app_label} @ {peer_ip}" if app_label else f"HL7-Device @ {peer_ip}",
+            manufacturer=None, model=None,
+            transport_type="tcp_server", protocol_type="hl7",
+            result_format="HL7", connection_type="tcp",
+            tcp_ip=peer_ip, tcp_port=port,
+            is_automated=True, is_active=True,
+            notes=f"Auto-registered from {peer_ip}:{port}",
+        )
+
+    # ── 4. Completely unknown ───────────────────────────────────────────────
+    return None
+
+
+async def _auto_register_analyzer(fingerprint: dict) -> Analyzer | None:
+    """
+    Look up an analyzer by name (or tcp_ip+tcp_port).  If it already exists,
+    return it.  Otherwise INSERT a new Analyzer row and return it.
+    """
+    async with AsyncSessionLocal() as session:
+        # Check by name first
+        existing = (await session.execute(
+            select(Analyzer).where(Analyzer.name == fingerprint["name"])
+        )).scalar_one_or_none()
+
+        if existing:
+            logger.info(
+                "Auto-discovery: analyzer already registered — name=%s id=%s",
+                existing.name, existing.id,
+            )
+            return existing
+
+        # Check by IP+port (in case same device reconnects with different MSH-3)
+        if fingerprint.get("tcp_ip") and fingerprint.get("tcp_port"):
+            existing = (await session.execute(
+                select(Analyzer).where(
+                    Analyzer.tcp_ip == fingerprint["tcp_ip"],
+                    Analyzer.tcp_port == fingerprint["tcp_port"],
+                )
+            )).scalar_one_or_none()
+            if existing:
+                logger.info(
+                    "Auto-discovery: analyzer already registered by IP:port — name=%s id=%s",
+                    existing.name, existing.id,
+                )
+                return existing
+
+        # Create new
+        analyzer = Analyzer(**fingerprint)
+        session.add(analyzer)
+        try:
+            await session.commit()
+            await session.refresh(analyzer)
+            logger.info(
+                "Auto-discovery: NEW analyzer registered — name=%s id=%s ip=%s port=%s protocol=%s",
+                analyzer.name, analyzer.id,
+                fingerprint.get("tcp_ip"), fingerprint.get("tcp_port"),
+                fingerprint.get("protocol_type"),
+            )
+            return analyzer
+        except Exception:
+            await session.rollback()
+            logger.exception("Auto-discovery: failed to register analyzer %s", fingerprint.get("name"))
+            return None
+
+
+class AnalyzerDiscoveryListener:
+    """
+    Catch-all TCP server that listens on one or more well-known discovery ports.
+
+    When ANY device connects (even one not yet in the DB), it:
+      1. Reads the first chunk of data (the first HL7 or ASTM message)
+      2. Fingerprints the device (model/manufacturer/protocol)
+      3. Auto-registers it in the DB as an Analyzer row
+      4. Processes the message through the normal ingestion pipeline
+      5. Future connections from that device are handled by a dedicated
+         AnalyzerTCPServerListener started by AnalyzerWorkerManager on reload
+
+    This solves the bootstrap problem: "no analyzers in DB → nothing listening"
+    """
+
+    # Default well-known ports to listen on when discovery mode is active.
+    # Covers Mindray BC-5150 (3001), BS-240 (3000), and a spare (3002).
+    DEFAULT_DISCOVERY_PORTS: list[int] = [3000, 3001, 3002]
+
+    def __init__(
+        self,
+        service: AnalyzerIngestionService,
+        ports: list[int] | None = None,
+    ) -> None:
+        self.service = service
+        self.ports = ports or self.DEFAULT_DISCOVERY_PORTS
+        self._servers: list[asyncio.AbstractServer] = []
+        self._spawned_listeners: dict[int, asyncio.Task[Any]] = {}  # analyzer_id → task
+
+    async def _handle_connection(
+        self,
+        reader: asyncio.StreamReader,
+        writer: asyncio.StreamWriter,
+        listen_port: int,
+    ) -> None:
+        """Handle one inbound connection in discovery mode."""
+        peer = writer.get_extra_info("peername") or ("unknown", 0)
+        peer_ip = peer[0] if peer else "unknown"
+        logger.info(
+            "Discovery listener: connection from %s on port %d",
+            peer_ip, listen_port,
+        )
+
+        # ── Read the first chunk ────────────────────────────────────────────
+        try:
+            first_chunk = await asyncio.wait_for(reader.read(8192), timeout=15.0)
+        except asyncio.TimeoutError:
+            logger.warning("Discovery: timeout waiting for first data from %s", peer_ip)
+            writer.close()
+            return
+        except Exception:
+            logger.exception("Discovery: error reading from %s", peer_ip)
+            writer.close()
+            return
+
+        if not first_chunk:
+            logger.debug("Discovery: empty first chunk from %s — closing", peer_ip)
+            writer.close()
+            return
+
+        # ── Fingerprint ─────────────────────────────────────────────────────
+        fingerprint = _fingerprint_payload(first_chunk, peer_ip, listen_port)
+        if fingerprint is None:
+            logger.warning(
+                "Discovery: cannot fingerprint payload from %s:%d — "
+                "registering as generic device (payload preview: %r)",
+                peer_ip, listen_port, first_chunk[:80],
+            )
+            fingerprint = dict(
+                name=f"Unknown-Device @ {peer_ip}:{listen_port}",
+                manufacturer=None, model=None,
+                transport_type="tcp_server", protocol_type="hl7",
+                result_format="HL7", connection_type="tcp",
+                tcp_ip=peer_ip, tcp_port=listen_port,
+                is_automated=True, is_active=True,
+                notes=(
+                    f"Auto-registered unknown device from {peer_ip}:{listen_port}. "
+                    f"Payload preview: {first_chunk[:80]!r}"
+                ),
+            )
+
+        # ── Auto-register in DB ─────────────────────────────────────────────
+        analyzer_row = await _auto_register_analyzer(fingerprint)
+        if analyzer_row is None:
+            logger.error("Discovery: could not register device from %s — dropping connection", peer_ip)
+            writer.close()
+            return
+
+        # ── Spawn a dedicated listener for this analyzer if not already running ──
+        analyzer_id = analyzer_row.id
+        existing_task = self._spawned_listeners.get(analyzer_id)
+        if existing_task is None or existing_task.done():
+            dedicated = AnalyzerTCPServerListener(analyzer_row, self.service)
+            task = asyncio.create_task(
+                dedicated.run(),
+                name=f"analyzer-listener-{analyzer_id}-spawned",
+            )
+            self._spawned_listeners[analyzer_id] = task
+            logger.info(
+                "Discovery: spawned dedicated listener for %s on port %d",
+                analyzer_row.name,
+                analyzer_row.tcp_port or listen_port,
+            )
+
+        # ── Process THIS first message through the ingestion pipeline ────────
+        protocol_type = (getattr(analyzer_row, "protocol_type", None) or "hl7").lower()
+        transport_label = "tcp_discovery_hl7" if "hl7" in protocol_type else "tcp_discovery_astm"
+        await self.service.process_payload(
+            analyzer_row=analyzer_row,
+            payload=first_chunk,
+            transport=transport_label,
+        )
+
+        # ── Send ACK if HL7 ─────────────────────────────────────────────────
+        if "hl7" in protocol_type or VT in first_chunk:
+            ack_bytes = self.service.build_ack_for_payload(analyzer_row, first_chunk)
+            if ack_bytes:
+                try:
+                    writer.write(ack_bytes)
+                    await writer.drain()
+                except Exception:
+                    pass
+
+        # ── Continue reading (subsequent messages in same connection) ────────
+        # Re-use the HL7 handler logic from AnalyzerTCPServerListener
+        dedicated_listener = AnalyzerTCPServerListener(analyzer_row, self.service)
+        try:
+            if "astm" in protocol_type and VT not in first_chunk:
+                await dedicated_listener._handle_astm_connection(reader, writer)
+            else:
+                await dedicated_listener._handle_hl7_connection(reader, writer)
+        except Exception:
+            logger.exception("Discovery: error in continued handling for %s", analyzer_row.name)
+        finally:
+            try:
+                writer.close()
+                await writer.wait_closed()
+            except Exception:
+                pass
+
+    async def run(self) -> None:
+        """Start all discovery port servers and serve forever."""
+        for port in self.ports:
+            try:
+                server = await asyncio.start_server(
+                    lambda r, w, p=port: self._handle_connection(r, w, p),
+                    "0.0.0.0",
+                    port,
+                )
+                self._servers.append(server)
+                logger.info(
+                    "Analyzer discovery listener active on port %d "
+                    "(will auto-register any connecting device)",
+                    port,
+                )
+            except OSError as exc:
+                logger.warning(
+                    "Discovery: cannot bind port %d — %s "
+                    "(port may already be in use by a dedicated listener)",
+                    port, exc,
+                )
+
+        if not self._servers:
+            logger.error("Discovery: failed to bind ANY discovery port — giving up")
+            return
+
+        # Serve until cancelled
+        try:
+            await asyncio.gather(*[s.serve_forever() for s in self._servers])
+        except asyncio.CancelledError:
+            pass
+        finally:
+            for s in self._servers:
+                s.close()
+
+    async def stop(self) -> None:
+        """Stop all discovery servers and spawned listener tasks."""
+        for s in self._servers:
+            s.close()
+        for task in self._spawned_listeners.values():
+            task.cancel()
+        if self._spawned_listeners:
+            await asyncio.gather(*self._spawned_listeners.values(), return_exceptions=True)
+        self._spawned_listeners.clear()
+        logger.info("Discovery listener stopped")
+
+
+# ===========================================================================
+# SERIAL PORT SCANNER  (auto-discovery over RS-232 / USB-Serial)
+# ===========================================================================
+
+class SerialPortScanner:
+    """
+    Scans available serial ports and tries to identify any connected analyzer.
+
+    How it works:
+      1. Enumerate all available serial ports (pyserial required)
+      2. Open each port at common baud rates (9600, 19200, 38400, 115200)
+      3. Send a passive probe (empty bytes / ENQ byte) and read any response
+      4. Fingerprint the response
+      5. Auto-register in DB and hand off to AnalyzerSerialListener
+
+    NOTE: pyserial is required but optional — serial scanning is skipped
+    gracefully if it is not installed.
+    """
+
+    COMMON_BAUD_RATES: list[int] = [9600, 19200, 38400, 115200, 57600, 4800, 2400]
+    PROBE_TIMEOUT_S: float = 2.0
+
+    def __init__(self, service: AnalyzerIngestionService) -> None:
+        self.service = service
+        self._spawned_tasks: list[asyncio.Task[Any]] = []
+
+    async def scan_and_register(self) -> list[Analyzer]:
+        """
+        Scan serial ports and return a list of newly discovered (or already
+        registered) Analyzer rows.
+        """
+        try:
+            import serial  # type: ignore
+            import serial.tools.list_ports  # type: ignore
+        except ImportError:
+            logger.info(
+                "SerialPortScanner: pyserial not installed — "
+                "serial port discovery skipped. Install with: pip install pyserial"
+            )
+            return []
+
+        discovered: list[Analyzer] = []
+        ports = list(serial.tools.list_ports.comports())
+        if not ports:
+            logger.info("SerialPortScanner: no serial ports found on this system")
+            return []
+
+        logger.info("SerialPortScanner: found %d serial port(s): %s",
+                    len(ports), [p.device for p in ports])
+
+        for port_info in ports:
+            device = port_info.device
+            analyzer = await self._probe_port(serial, device)
+            if analyzer:
+                discovered.append(analyzer)
+
+        return discovered
+
+    async def _probe_port(self, serial_module: Any, device: str) -> Analyzer | None:
+        """Open a serial port, probe it, and try to identify the device."""
+        for baud in self.COMMON_BAUD_RATES:
+            try:
+                # Run blocking serial I/O in executor to avoid blocking event loop
+                result = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    self._blocking_probe,
+                    serial_module, device, baud,
+                )
+                if result:
+                    payload, used_baud = result
+                    logger.info(
+                        "SerialPortScanner: got response from %s @ %d baud (%d bytes)",
+                        device, used_baud, len(payload),
+                    )
+                    fingerprint = _fingerprint_payload(payload, device, 0)
+                    if fingerprint:
+                        # Override connection fields for serial
+                        fingerprint.update({
+                            "connection_type": "serial",
+                            "transport_type": "serial",
+                            "serial_port": device,
+                            "baud_rate": used_baud,
+                            "tcp_ip": None,
+                            "tcp_port": None,
+                        })
+                        analyzer = await _auto_register_analyzer(fingerprint)
+                        if analyzer:
+                            return analyzer
+            except Exception as exc:
+                logger.debug("SerialPortScanner: %s @ %d baud — %s", device, baud, exc)
+
+        logger.debug("SerialPortScanner: no analyzer found on %s", device)
+        return None
+
+    def _blocking_probe(
+        self, serial_module: Any, device: str, baud: int
+    ) -> tuple[bytes, int] | None:
+        """Blocking probe — must be run in executor."""
+        try:
+            with serial_module.Serial(
+                device, baud,
+                timeout=self.PROBE_TIMEOUT_S,
+                write_timeout=1.0,
+            ) as ser:
+                # Send ENQ — ASTM devices respond with ACK or begin transmitting
+                ser.write(bytes([ENQ]))
+                import time
+                time.sleep(self.PROBE_TIMEOUT_S)
+                waiting = ser.in_waiting
+                if waiting > 0:
+                    return ser.read(waiting), baud
+        except Exception:
+            pass
+        return None
+
+    async def start_serial_listeners(self, analyzers: list[Analyzer]) -> list[asyncio.Task[Any]]:
+        """Start AnalyzerSerialListener tasks for all discovered serial analyzers."""
+        tasks: list[asyncio.Task[Any]] = []
+        for analyzer_row in analyzers:
+            listener = AnalyzerSerialListener(analyzer_row, self.service)
+            task = asyncio.create_task(
+                listener.run(),
+                name=f"analyzer-serial-listener-{analyzer_row.id}",
+            )
+            tasks.append(task)
+            self._spawned_tasks.append(task)
+            logger.info(
+                "SerialPortScanner: started serial listener for %s on %s @ %s baud",
+                analyzer_row.name,
+                getattr(analyzer_row, "serial_port", "?"),
+                getattr(analyzer_row, "baud_rate", "?"),
+            )
+        return tasks
+
+
+# ===========================================================================
+# ANALYZER WORKER MANAGER
+# ===========================================================================
+
 class AnalyzerWorkerManager:
     """
     Loads all automated analyzers from the database and starts the appropriate
     listener task for each one based on its transport_type.
+
+    If NO automated analyzers exist in the DB yet, the manager automatically
+    enters DISCOVERY MODE:
+      - TCP:    AnalyzerDiscoveryListener binds on well-known ports (3000-3002)
+                and auto-registers any device that connects
+      - Serial: SerialPortScanner probes available COM/USB-serial ports and
+                auto-registers any analyzer it finds
+
+    Once a device is discovered and registered, a dedicated listener is spawned
+    immediately for that connection so results are not lost.
 
     Called from FastAPI lifespan (startup/shutdown).
     """
@@ -1073,17 +1585,26 @@ class AnalyzerWorkerManager:
     def __init__(self) -> None:
         self.service = AnalyzerIngestionService()
         self.tasks: list[asyncio.Task[Any]] = []
+        self._discovery_listener: AnalyzerDiscoveryListener | None = None
+        self._serial_scanner: SerialPortScanner | None = None
 
     async def start(self) -> list[asyncio.Task[Any]]:
-        """Load automated analyzers and start listeners."""
+        """Load automated analyzers and start listeners (or discovery mode)."""
         async with AsyncSessionLocal() as session:
             repo = AnalyzerIngestionRepository(session)
             analyzers = await repo.get_automated_analyzers()
 
         if not analyzers:
-            logger.info("No automated analyzers found in DB — listener service idle")
-            return []
+            logger.info(
+                "No automated analyzers found in DB — starting DISCOVERY MODE. "
+                "The LIS will auto-register any analyzer that connects on ports %s "
+                "or is found on a serial port.",
+                AnalyzerDiscoveryListener.DEFAULT_DISCOVERY_PORTS,
+            )
+            await self._start_discovery_mode()
+            return self.tasks
 
+        # Normal mode — start a dedicated listener for each registered analyzer
         for analyzer_row in analyzers:
             transport_type = (getattr(analyzer_row, "transport_type", None) or "").lower()
 
@@ -1119,6 +1640,33 @@ class AnalyzerWorkerManager:
 
         return self.tasks
 
+    async def _start_discovery_mode(self) -> None:
+        """Start TCP discovery listener and serial scanner in background."""
+        # TCP discovery
+        self._discovery_listener = AnalyzerDiscoveryListener(self.service)
+        discovery_task = asyncio.create_task(
+            self._discovery_listener.run(),
+            name="analyzer-discovery-tcp",
+        )
+        discovery_task.add_done_callback(self._on_task_done)
+        self.tasks.append(discovery_task)
+
+        # Serial scanner (runs once at startup, spawns persistent listeners)
+        self._serial_scanner = SerialPortScanner(self.service)
+        serial_task = asyncio.create_task(
+            self._run_serial_scan(),
+            name="analyzer-discovery-serial",
+        )
+        serial_task.add_done_callback(self._on_task_done)
+        self.tasks.append(serial_task)
+
+    async def _run_serial_scan(self) -> None:
+        """Run serial scanner and add any spawned tasks to self.tasks."""
+        assert self._serial_scanner is not None
+        discovered = await self._serial_scanner.scan_and_register()
+        new_tasks = await self._serial_scanner.start_serial_listeners(discovered)
+        self.tasks.extend(new_tasks)
+
     def _on_task_done(self, task: asyncio.Task[Any]) -> None:
         """Callback when a listener task ends unexpectedly."""
         if task.cancelled():
@@ -1137,6 +1685,8 @@ class AnalyzerWorkerManager:
         if self.tasks:
             await asyncio.gather(*self.tasks, return_exceptions=True)
         self.tasks.clear()
+        if self._discovery_listener:
+            await self._discovery_listener.stop()
         logger.info("All analyzer listener tasks stopped")
 
 
