@@ -15,13 +15,13 @@
     },
     {
       "name": "Electrolyte Analyzer",
-      "protocol": "ASTM",
-      "connection_type": "tcp"
+      "protocol": "manual",
+      "connection_type": "manual"
     },
     {
       "name": "Wonfo Fincare Plus",
-      "protocol": "ASTM",
-      "connection_type": "tcp"
+      "protocol": "manual",
+      "connection_type": "manual"
     },
     {
       "name": "Bench/Manual Tests",
