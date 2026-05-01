@@ -1,7 +1,7 @@
 """Add is_automated, transport_type, protocol_type to analyzers
 
 Revision ID: 0010_analyzer_automation_fields
-Revises: 0009_sample_and_result_workflow
+Revises: d443de9b7195 (add_created_by_id_field_to_invoice_)
 Create Date: 2025-01-01
 """
 
@@ -11,7 +11,7 @@ from sqlalchemy import inspect
 
 # revision identifiers, used by Alembic.
 revision = "0010_analyzer_automation_fields"
-down_revision = "0009_sample_and_result_workflow"
+down_revision = "d443de9b7195"
 branch_labels = None
 depends_on = None
 
