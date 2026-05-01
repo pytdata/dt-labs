@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
      <!-- Favicon -->
-    
+
     <!-- Favicon -->
     <link rel="shortcut icon" href="/static/img/favicon.png">
 
@@ -47,35 +47,35 @@
 
     <div class="page-wrapper">
         <div class="content">
+            <!--
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div>
                     <h4 class="text-dark mb-1">{% if analyzer %}Edit Analyzer{% else %}Add Analyzer{% endif %}</h4>
                     <div class="text-muted">Register analyzers dynamically (TCP / Serial) and specify output format (ASTM, CSV, XML).</div>
 
-<div class="col-md-6">
-    <label class="form-label">Patient Identifier Source</label>
-    <select class="form-select" name="patient_id_source">
-        <option value="patient_no" {% if analyzer and analyzer.patient_id_source == 'patient_no' %}selected{% endif %}>Patient ID (ASTM P record)</option>
-        <option value="sample_id" {% if analyzer and analyzer.patient_id_source == 'sample_id' %}selected{% endif %}>Sample ID (ASTM O record)</option>
-        <option value="order_id" {% if analyzer and analyzer.patient_id_source == 'order_id' %}selected{% endif %}>Order ID (ASTM O record)</option>
-    </select>
-    <div class="form-text">Choose the primary identifier used to match analyzer results to LIS orders/patients.</div>
-</div>
+                    <div class="col-md-6">
+                        <label class="form-label">Patient Identifier Source</label>
+                        <select class="form-select" name="patient_id_source">
+                            <option value="patient_no" {% if analyzer and analyzer.patient_id_source == 'patient_no' %}selected{% endif %}>Patient ID (ASTM P record)</option>
+                            <option value="sample_id" {% if analyzer and analyzer.patient_id_source == 'sample_id' %}selected{% endif %}>Sample ID (ASTM O record)</option>
+                            <option value="order_id" {% if analyzer and analyzer.patient_id_source == 'order_id' %}selected{% endif %}>Order ID (ASTM O record)</option>
+                        </select>
+                        <div class="form-text">Choose the primary identifier used to match analyzer results to LIS orders/patients.</div>
+                    </div>
 
-<div class="col-md-6">
-    <label class="form-label">Identifier Fallbacks (comma-separated)</label>
-    <input type="text" class="form-control" name="patient_id_fallbacks"
-           value="{% if analyzer and analyzer.patient_id_fallbacks %}{{ analyzer.patient_id_fallbacks }}{% endif %}"
-           placeholder="sample_id,order_id">
-    <div class="form-text">If primary identifier is missing, the listener will try these in order.</div>
-</div>
-
-
+                    <div class="col-md-6">
+                        <label class="form-label">Identifier Fallbacks (comma-separated)</label>
+                        <input type="text" class="form-control" name="patient_id_fallbacks"
+                            value="{% if analyzer and analyzer.patient_id_fallbacks %}{{ analyzer.patient_id_fallbacks }}{% endif %}"
+                            placeholder="sample_id,order_id">
+                        <div class="form-text">If primary identifier is missing, the listener will try these in order.</div>
+                    </div>
                 </div>
-                <a class="btn btn-light" href="{{ request.url_for('settings_analyzers') }}">
-                    <i class="ti ti-arrow-left"></i> Back
-                </a>
+                    <a class="btn btn-light" href="{{ request.url_for('settings_analyzers') }}">
+                        <i class="ti ti-arrow-left"></i> Back
+                    </a>
             </div>
+            -->
 
             <div class="card">
                 <div class="card-body">
@@ -220,22 +220,22 @@
     <script src="/static/js/bootstrap.bundle.min.js"></script>
         <script src="/static/js/moment.min.js"></script>
     <script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
-    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>    
-    
+    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
+
      <!-- Simplebar JS -->
     <script src="/static/plugins/simplebar/simplebar.min.js"></script>
     <script data-cfasync="false" src="/static/plugins/daterangepicker/daterangepicker.js"></script>
-    
+
     <!-- Flatpickr JS -->
     <script src="/static/plugins/flatpickr/flatpickr.min.js"></script>
       <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
 
     <script src="/static/js/min/jszip.min.js"></script>
     <script src="/static/js/min/pdfmake.min.js"></script>
-    <script src="/static/js/min/vsffonts.min.js"></script> 
+    <script src="/static/js/min/vsffonts.min.js"></script>
 
     <script src="/static/js/min/datatables.buttons.min.js"></script>
-    <script src="/static/js/min/buttons.min.js"></script> 
+    <script src="/static/js/min/buttons.min.js"></script>
     <script src="/static/js/min/print.min.js"></script>
 
 
