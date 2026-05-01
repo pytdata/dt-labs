@@ -10,6 +10,96 @@ from app.services.sample_service import generate_sample_id
 
 router = APIRouter()
 
+
+# ---------------------------------------------------------------------------
+# SIMULATOR ENDPOINTS
+# Used for testing the integration pipeline before connecting real hardware.
+# ---------------------------------------------------------------------------
+
+@router.post("/simulate/bc5150")
+async def simulate_bc5150(
+    analyzer_id: int,
+    patient_id: str = "P001",
+    sample_id: str = "S001",
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Simulate a BC-5150 Haematology result.
+    Sends a full CBC panel HL7 ORU^R01 message to the LIS TCP server listener.
+    The analyzer must be configured with transport_type='tcp_server' and tcp_port set.
+    """
+    from app.services.analyzer_ingestion_service import BC5150Simulator
+
+    analyzer_row = (
+        await db.execute(select(Analyzer).where(Analyzer.id == analyzer_id))
+    ).scalar_one_or_none()
+
+    if not analyzer_row:
+        raise HTTPException(status_code=404, detail=f"Analyzer {analyzer_id} not found")
+
+    port = analyzer_row.tcp_port
+    if not port:
+        raise HTTPException(
+            status_code=400,
+            detail="Analyzer has no tcp_port configured. Set tcp_port in the analyzer settings.",
+        )
+
+    simulator = BC5150Simulator()
+    success = await simulator.send("127.0.0.1", port, patient_id, sample_id)
+
+    return {
+        "status": "sent" if success else "failed",
+        "analyzer": analyzer_row.name,
+        "port": port,
+        "patient_id": patient_id,
+        "sample_id": sample_id,
+    }
+
+
+@router.post("/simulate/bs240")
+async def simulate_bs240(
+    analyzer_id: int,
+    patient_id: str = "P001",
+    sample_id: str = "S001",
+    protocol: str = "hl7",
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Simulate a BS-240 Chemistry result.
+    Use protocol='hl7' for HL7/MLLP mode or protocol='astm' for ASTM E1394-97 mode.
+    """
+    from app.services.analyzer_ingestion_service import BS240HL7Simulator, BS240ASTMSimulator
+
+    analyzer_row = (
+        await db.execute(select(Analyzer).where(Analyzer.id == analyzer_id))
+    ).scalar_one_or_none()
+
+    if not analyzer_row:
+        raise HTTPException(status_code=404, detail=f"Analyzer {analyzer_id} not found")
+
+    port = analyzer_row.tcp_port
+    if not port:
+        raise HTTPException(
+            status_code=400,
+            detail="Analyzer has no tcp_port configured.",
+        )
+
+    if protocol.lower() == "astm":
+        simulator = BS240ASTMSimulator()
+    else:
+        simulator = BS240HL7Simulator()
+
+    success = await simulator.send("127.0.0.1", port, patient_id, sample_id)
+
+    return {
+        "status": "sent" if success else "failed",
+        "analyzer": analyzer_row.name,
+        "port": port,
+        "protocol": protocol,
+        "patient_id": patient_id,
+        "sample_id": sample_id,
+    }
+
 @router.post("/astm/results")
 async def ingest_astm_result(payload: ASTMResultIn, db: AsyncSession = Depends(get_db)):
     """Legacy/simple ASTM ingest (kept for compatibility)."""

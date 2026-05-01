@@ -1474,7 +1474,7 @@ async def analyzer_add_post(
     request: Request,
     name: str = Form(...),
     connection_type: str = Form("tcp"),
-    result_format: str = Form("ASTM"),
+    result_format: str = Form("HL7"),
     tcp_ip: str | None = Form(None),
     tcp_port: int | None = Form(None),
     serial_port: str | None = Form(None),
@@ -1487,8 +1487,11 @@ async def analyzer_add_post(
     model: str | None = Form(None),
     notes: str | None = Form(None),
     is_active: str | None = Form(None),
+    # Automation fields
+    is_automated: str | None = Form(None),
+    transport_type: str | None = Form(None),
+    protocol_type: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
-    # Ensure user is authenticated
     current_user: User = Depends(deps.get_current_user),
 ):
     # Permission Check
@@ -1504,14 +1507,20 @@ async def analyzer_add_post(
     ).scalar_one_or_none()
 
     if exists:
-        # If using HTMX, you might prefer a 200 with an error message,
-        # but for standard forms, a 400 is appropriate.
         raise HTTPException(status_code=400, detail="Analyzer name already exists")
+
+    # Derive connection_type from transport_type when automated
+    automated = is_automated == "on"
+    effective_connection_type = connection_type
+    if automated and transport_type in ("tcp_server", "tcp_client"):
+        effective_connection_type = "tcp"
+    elif automated and transport_type == "serial":
+        effective_connection_type = "serial"
 
     # Create Instance
     analyzer = Analyzer(
         name=name.strip(),
-        connection_type=connection_type,
+        connection_type=effective_connection_type,
         result_format=result_format,
         tcp_ip=(tcp_ip.strip() if tcp_ip else None),
         tcp_port=tcp_port,
@@ -1525,8 +1534,10 @@ async def analyzer_add_post(
         model=(model.strip() if model else None),
         notes=notes,
         is_active=(is_active == "on"),
-        # Recommended: Track who added the hardware
-        # created_by_id=current_user.id
+        # Automation fields
+        is_automated=automated,
+        transport_type=(transport_type.strip() if transport_type else None),
+        protocol_type=(protocol_type.strip() if protocol_type else "hl7"),
     )
 
     try:
@@ -1534,7 +1545,6 @@ async def analyzer_add_post(
         await db.commit()
     except Exception as e:
         await db.rollback()
-        # Log the error for debugging
         print(f"Error adding analyzer: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -1591,7 +1601,7 @@ async def analyzer_edit_post(
     analyzer_id: int,
     name: str = Form(...),
     connection_type: str = Form("tcp"),
-    result_format: str = Form("ASTM"),
+    result_format: str = Form("HL7"),
     tcp_ip: str | None = Form(None),
     tcp_port: int | None = Form(None),
     serial_port: str | None = Form(None),
@@ -1604,11 +1614,14 @@ async def analyzer_edit_post(
     model: str | None = Form(None),
     notes: str | None = Form(None),
     is_active: str | None = Form(None),
+    # Automation fields
+    is_automated: str | None = Form(None),
+    transport_type: str | None = Form(None),
+    protocol_type: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
-    # Ensure user is authenticated
     current_user: User = Depends(deps.get_current_user),
 ):
-    #  Permission Check
+    # Permission Check
     if not current_user.has_permission("settings", "write"):
         return RedirectResponse(
             url=f"{request.url_for('settings_analyzers')}?error=unauthorized",
@@ -1623,9 +1636,17 @@ async def analyzer_edit_post(
     if not analyzer:
         raise HTTPException(status_code=404, detail="Analyzer not found")
 
+    # Derive connection_type from transport_type when automated
+    automated = is_automated == "on"
+    effective_connection_type = connection_type
+    if automated and transport_type in ("tcp_server", "tcp_client"):
+        effective_connection_type = "tcp"
+    elif automated and transport_type == "serial":
+        effective_connection_type = "serial"
+
     # Update Fields
     analyzer.name = name.strip()
-    analyzer.connection_type = connection_type
+    analyzer.connection_type = effective_connection_type
     analyzer.result_format = result_format
     analyzer.tcp_ip = tcp_ip.strip() if tcp_ip else None
     analyzer.tcp_port = tcp_port
@@ -1639,13 +1660,17 @@ async def analyzer_edit_post(
     analyzer.model = model.strip() if model else None
     analyzer.notes = notes
     analyzer.is_active = is_active == "on"
+    # Automation fields
+    analyzer.is_automated = automated
+    analyzer.transport_type = transport_type.strip() if transport_type else None
+    analyzer.protocol_type = protocol_type.strip() if protocol_type else "hl7"
 
     # Commit with Error Handling
     try:
         await db.commit()
     except Exception as e:
         await db.rollback()
-        # Log error for technical review
+        print(f"Error updating analyzer {analyzer_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to save analyzer updates.",

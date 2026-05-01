@@ -6,12 +6,8 @@
     <title>DT-Labs | {% if analyzer %}Edit{% else %}Add{% endif %} Analyzer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-     <!-- Favicon -->
-
     <!-- Favicon -->
     <link rel="shortcut icon" href="/static/img/favicon.png">
-
-    <!-- Apple Icon -->
     <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
 
     <!-- Theme Config Js -->
@@ -25,20 +21,52 @@
 
     <!-- Tabler Icon CSS -->
     <link rel="stylesheet" href="/static/plugins/tabler-icons/tabler-icons.min.css">
-        <!-- Datetimepicker CSS -->
-    <link rel="stylesheet" href="/static/css/bootstrap-datetimepicker.min.css">
 
+    <!-- Datetimepicker CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap-datetimepicker.min.css">
 
     <!-- Simplebar CSS -->
     <link rel="stylesheet" href="/static/plugins/simplebar/simplebar.min.css">
 
-        <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css" />
-
+    <link rel="stylesheet" type="text/css" href="/static/plugins/daterangepicker/daterangepicker.css" />
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="/static/css/style.css" id="app-style">
 
-
+    <style>
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 0.75rem;
+        }
+        .section-badge.automated { background: #e8f5e9; color: #2e7d32; }
+        .section-badge.connection { background: #e3f2fd; color: #1565c0; }
+        .section-badge.protocol  { background: #fce4ec; color: #880e4f; }
+        .section-badge.general   { background: #f3e5f5; color: #4a148c; }
+        .config-panel {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.25rem;
+            background: #fafafa;
+        }
+        .automated-highlight {
+            border-left: 3px solid #28a745 !important;
+            background: #f0fff4 !important;
+        }
+        .help-icon {
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 <body>
 <div class="main-wrapper">
@@ -47,162 +75,301 @@
 
     <div class="page-wrapper">
         <div class="content">
-            <!--
-            <div class="d-flex align-items-center justify-content-between mb-3">
+
+            <!-- Page Header -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
                 <div>
-                    <h4 class="text-dark mb-1">{% if analyzer %}Edit Analyzer{% else %}Add Analyzer{% endif %}</h4>
-                    <div class="text-muted">Register analyzers dynamically (TCP / Serial) and specify output format (ASTM, CSV, XML).</div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Patient Identifier Source</label>
-                        <select class="form-select" name="patient_id_source">
-                            <option value="patient_no" {% if analyzer and analyzer.patient_id_source == 'patient_no' %}selected{% endif %}>Patient ID (ASTM P record)</option>
-                            <option value="sample_id" {% if analyzer and analyzer.patient_id_source == 'sample_id' %}selected{% endif %}>Sample ID (ASTM O record)</option>
-                            <option value="order_id" {% if analyzer and analyzer.patient_id_source == 'order_id' %}selected{% endif %}>Order ID (ASTM O record)</option>
-                        </select>
-                        <div class="form-text">Choose the primary identifier used to match analyzer results to LIS orders/patients.</div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Identifier Fallbacks (comma-separated)</label>
-                        <input type="text" class="form-control" name="patient_id_fallbacks"
-                            value="{% if analyzer and analyzer.patient_id_fallbacks %}{{ analyzer.patient_id_fallbacks }}{% endif %}"
-                            placeholder="sample_id,order_id">
-                        <div class="form-text">If primary identifier is missing, the listener will try these in order.</div>
-                    </div>
+                    <h4 class="text-dark mb-1">
+                        <i class="ti ti-microscope me-2 text-primary"></i>
+                        {% if analyzer %}Edit Analyzer{% else %}Add New Analyzer{% endif %}
+                    </h4>
+                    <p class="text-muted mb-0">
+                        Configure analyzer connection, protocol, and automation settings.
+                    </p>
                 </div>
-                    <a class="btn btn-light" href="{{ request.url_for('settings_analyzers') }}">
-                        <i class="ti ti-arrow-left"></i> Back
-                    </a>
+                <a class="btn btn-outline-secondary" href="{{ request.url_for('settings_analyzers') }}">
+                    <i class="ti ti-arrow-left me-1"></i> Back to Analyzers
+                </a>
             </div>
-            -->
 
-            <div class="card">
-                <div class="card-body">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
                     {% if analyzer %}
                     <form method="post" action="{{ request.url_for('analyzer_edit_post', analyzer_id=analyzer.id) }}">
                     {% else %}
                     <form method="post" action="{{ request.url_for('analyzer_add_post') }}">
                     {% endif %}
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Analyzer Name</label>
-                                <input class="form-control" name="name" required value="{{ analyzer.name if analyzer else '' }}" placeholder="e.g., Mindray BS-240">
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label">Connection Type</label>
-                                <select class="form-select" name="connection_type" id="connection_type">
-                                    {% set ct = (analyzer.connection_type if analyzer else 'tcp') %}
-                                    <option value="tcp" {% if ct=='tcp' %}selected{% endif %}>TCP</option>
-                                    <option value="serial" {% if ct=='serial' %}selected{% endif %}>Serial</option>
-                                    <option value="manual" {% if ct=='manual' %}selected{% endif %}>Manual</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label">Output Format</label>
-                                {% set rf = (analyzer.result_format if analyzer else 'ASTM') %}
-                                <select class="form-select" name="result_format">
-                                    <option value="ASTM" {% if rf=='ASTM' %}selected{% endif %}>ASTM</option>
-                                    <option value="CSV" {% if rf=='CSV' %}selected{% endif %}>CSV</option>
-                                    <option value="XML" {% if rf=='XML' %}selected{% endif %}>XML</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-12">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if analyzer and analyzer.is_active %}checked{% endif %}>
-                                    <label class="form-check-label" for="is_active">Active</label>
+                        <!-- ═══════════════════════════════════════════════════════
+                             SECTION 1 — Basic Information
+                        ═══════════════════════════════════════════════════════ -->
+                        <div class="mb-4">
+                            <span class="section-badge general">
+                                <i class="ti ti-info-circle"></i> Basic Information
+                            </span>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Analyzer Name <span class="text-danger">*</span></label>
+                                    <input class="form-control" name="name" required
+                                           value="{{ analyzer.name if analyzer else '' }}"
+                                           placeholder="e.g., Mindray BS-240">
+                                    <div class="form-text">Unique display name used throughout the LIS.</div>
                                 </div>
-                            </div>
-
-                            <!-- TCP Settings -->
-                            <div class="col-12">
-                                <div class="border rounded p-3" id="tcp_settings">
-                                    <div class="fw-semibold mb-2">TCP Settings</div>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">IP Address / Host</label>
-                                            <input class="form-control" name="tcp_ip" value="{{ analyzer.tcp_ip if analyzer else '' }}" placeholder="e.g., 192.168.1.120">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Port</label>
-                                            <input class="form-control" type="number" name="tcp_port" value="{{ analyzer.tcp_port if analyzer and analyzer.tcp_port else '' }}" placeholder="e.g., 5000">
-                                        </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Manufacturer</label>
+                                    <input class="form-control" name="manufacturer"
+                                           value="{{ analyzer.manufacturer if analyzer else '' }}"
+                                           placeholder="e.g., Mindray">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Model</label>
+                                    <input class="form-control" name="model"
+                                           value="{{ analyzer.model if analyzer else '' }}"
+                                           placeholder="e.g., BS-240">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Notes</label>
+                                    <textarea class="form-control" name="notes" rows="2"
+                                              placeholder="Any special notes about this analyzer...">{{ analyzer.notes if analyzer else '' }}</textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="is_active"
+                                               {% if not analyzer or analyzer.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            <strong>Active</strong> — include in routing & reporting
+                                        </label>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Serial Settings -->
-                            <div class="col-12">
-                                <div class="border rounded p-3" id="serial_settings">
-                                    <div class="fw-semibold mb-2">Serial Settings</div>
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label class="form-label">COM Port</label>
-                                            <input class="form-control" name="serial_port" value="{{ analyzer.serial_port if analyzer else '' }}" placeholder="e.g., COM3">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Baud Rate</label>
-                                            <input class="form-control" type="number" name="baud_rate" value="{{ analyzer.baud_rate if analyzer and analyzer.baud_rate else '' }}" placeholder="e.g., 9600">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Parity</label>
-                                            {% set par = (analyzer.parity if analyzer else '') %}
-                                            <select class="form-select" name="parity">
-                                                <option value="">Select</option>
-                                                <option value="none" {% if par=='none' %}selected{% endif %}>None</option>
-                                                <option value="even" {% if par=='even' %}selected{% endif %}>Even</option>
-                                                <option value="odd" {% if par=='odd' %}selected{% endif %}>Odd</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Stop Bits</label>
-                                            <input class="form-control" type="number" name="stop_bits" value="{{ analyzer.stop_bits if analyzer and analyzer.stop_bits else '' }}" placeholder="1">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Data Bits</label>
-                                            <input class="form-control" type="number" name="data_bits" value="{{ analyzer.data_bits if analyzer and analyzer.data_bits else '' }}" placeholder="8">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Flow Control</label>
-                                            {% set fc = (analyzer.flow_control if analyzer else '') %}
-                                            <select class="form-select" name="flow_control">
-                                                <option value="">Select</option>
-                                                <option value="none" {% if fc=='none' %}selected{% endif %}>None</option>
-                                                <option value="rtscts" {% if fc=='rtscts' %}selected{% endif %}>RTS/CTS</option>
-                                                <option value="xonxoff" {% if fc=='xonxoff' %}selected{% endif %}>XON/XOFF</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Manufacturer</label>
-                                <input class="form-control" name="manufacturer" value="{{ analyzer.manufacturer if analyzer else '' }}" placeholder="e.g., Mindray">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Model</label>
-                                <input class="form-control" name="model" value="{{ analyzer.model if analyzer else '' }}" placeholder="e.g., BS-240">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Protocol</label>
-                                <input class="form-control" value="ASTM" disabled>
-                                <div class="form-text">ASTM can be used over TCP or Serial. CSV/XML supports folder watch or direct export.</div>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label">Notes</label>
-                                <textarea class="form-control" name="notes" rows="3" placeholder="Any special connection notes...">{{ analyzer.notes if analyzer else '' }}</textarea>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <a class="btn btn-light" href="{{ request.url_for('settings_analyzers') }}">Cancel</a>
-                            <button class="btn btn-primary" type="submit">Save</button>
+                        <hr class="my-3">
+
+                        <!-- ═══════════════════════════════════════════════════════
+                             SECTION 2 — Automation Settings
+                        ═══════════════════════════════════════════════════════ -->
+                        <div class="mb-4">
+                            <span class="section-badge automated">
+                                <i class="ti ti-robot"></i> Automation
+                            </span>
+                            <div class="config-panel" id="automation_panel">
+                                <div class="row g-3 align-items-start">
+                                    <div class="col-md-12">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="is_automated" id="is_automated"
+                                                   {% if analyzer and analyzer.is_automated %}checked{% endif %}>
+                                            <label class="form-check-label" for="is_automated">
+                                                <strong>Automated Analyzer</strong>
+                                                <span class="text-muted ms-1">— results are fetched automatically via network/serial connection</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-text mt-1">
+                                            <i class="ti ti-bulb text-warning me-1"></i>
+                                            When enabled, the LIS listener service will connect to this analyzer and import results automatically.
+                                            Manual analyzers require staff to enter results by hand.
+                                        </div>
+                                    </div>
+
+                                    <!-- Automated-only sub-fields (shown/hidden by JS) -->
+                                    <div class="col-12" id="automation_fields" style="display:none;">
+                                        <div class="row g-3 mt-1">
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Transport Type</label>
+                                                {% set tt = (analyzer.transport_type if analyzer else 'tcp_server') %}
+                                                <select class="form-select" name="transport_type" id="transport_type">
+                                                    <option value="tcp_server"  {% if tt=='tcp_server'  %}selected{% endif %}>
+                                                        TCP Server (LIS listens, analyzer connects)
+                                                    </option>
+                                                    <option value="tcp_client"  {% if tt=='tcp_client'  %}selected{% endif %}>
+                                                        TCP Client (LIS connects to analyzer)
+                                                    </option>
+                                                    <option value="serial"      {% if tt=='serial'      %}selected{% endif %}>
+                                                        Serial / RS-232
+                                                    </option>
+                                                </select>
+                                                <div class="form-text">
+                                                    Mindray BS-240 & BC-5150 use <strong>TCP Server</strong> mode —
+                                                    LIS binds on a port and waits for the analyzer to connect.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Protocol Type</label>
+                                                {% set pt = (analyzer.protocol_type if analyzer else 'hl7') %}
+                                                <select class="form-select" name="protocol_type" id="protocol_type">
+                                                    <option value="hl7"  {% if pt=='hl7'  %}selected{% endif %}>
+                                                        HL7 v2.x / MLLP
+                                                    </option>
+                                                    <option value="astm" {% if pt=='astm' %}selected{% endif %}>
+                                                        ASTM E1394-97
+                                                    </option>
+                                                    <option value="hl7_or_astm" {% if pt=='hl7_or_astm' %}selected{% endif %}>
+                                                        HL7 or ASTM (auto-detect)
+                                                    </option>
+                                                </select>
+                                                <div class="form-text">
+                                                    BC-5150 → <strong>HL7 / MLLP</strong>.
+                                                    BS-240 → <strong>HL7 or ASTM</strong>.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Output / Result Format</label>
+                                                {% set rf = (analyzer.result_format if analyzer else 'HL7') %}
+                                                <select class="form-select" name="result_format">
+                                                    <option value="HL7"  {% if rf=='HL7'  %}selected{% endif %}>HL7</option>
+                                                    <option value="ASTM" {% if rf=='ASTM' %}selected{% endif %}>ASTM</option>
+                                                    <option value="CSV"  {% if rf=='CSV'  %}selected{% endif %}>CSV</option>
+                                                    <option value="XML"  {% if rf=='XML'  %}selected{% endif %}>XML</option>
+                                                </select>
+                                                <div class="form-text">Primary data format sent by the analyzer.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <!-- ═══════════════════════════════════════════════════════
+                             SECTION 3 — Connection Settings
+                        ═══════════════════════════════════════════════════════ -->
+                        <div class="mb-4">
+                            <span class="section-badge connection">
+                                <i class="ti ti-network"></i> Connection
+                            </span>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Connection Type</label>
+                                    <select class="form-select" name="connection_type" id="connection_type">
+                                        {% set ct = (analyzer.connection_type if analyzer else 'tcp') %}
+                                        <option value="tcp"    {% if ct=='tcp'    %}selected{% endif %}>TCP / Network</option>
+                                        <option value="serial" {% if ct=='serial' %}selected{% endif %}>Serial / RS-232</option>
+                                        <option value="manual" {% if ct=='manual' %}selected{% endif %}>Manual (no interface)</option>
+                                    </select>
+                                </div>
+
+                                <!-- TCP Settings Block -->
+                                <div class="col-12" id="tcp_settings">
+                                    <div class="config-panel">
+                                        <div class="fw-semibold mb-2 text-primary">
+                                            <i class="ti ti-plug me-1"></i>TCP / Network Settings
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-md-5">
+                                                <label class="form-label">
+                                                    IP Address
+                                                    <i class="ti ti-info-circle help-icon ms-1"
+                                                       title="For TCP Server mode (LIS listens): leave blank or use 0.0.0.0 to bind on all interfaces. For TCP Client mode (LIS connects): enter the analyzer's static IP (e.g., 192.168.0.120)."></i>
+                                                </label>
+                                                <input class="form-control" name="tcp_ip"
+                                                       value="{{ analyzer.tcp_ip if analyzer else '' }}"
+                                                       placeholder="e.g., 192.168.0.120 or 0.0.0.0">
+                                                <div class="form-text">
+                                                    <strong>Server mode:</strong> bind address (0.0.0.0 = all interfaces).
+                                                    <strong>Client mode:</strong> analyzer's static IP.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">
+                                                    Port
+                                                    <i class="ti ti-info-circle help-icon ms-1"
+                                                       title="Default: BC-5150 uses 3001, BS-240 uses 3000. Choose an unused port in 3000-3099 range."></i>
+                                                </label>
+                                                <input class="form-control" type="number" name="tcp_port"
+                                                       value="{{ analyzer.tcp_port if analyzer and analyzer.tcp_port else '' }}"
+                                                       min="1" max="65535"
+                                                       placeholder="e.g., 3001">
+                                                <div class="form-text">BC-5150: 3001 · BS-240: 3000</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Serial Settings Block -->
+                                <div class="col-12" id="serial_settings">
+                                    <div class="config-panel">
+                                        <div class="fw-semibold mb-2 text-primary">
+                                            <i class="ti ti-usb me-1"></i>Serial / RS-232 Settings
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label class="form-label">COM Port</label>
+                                                <input class="form-control" name="serial_port"
+                                                       value="{{ analyzer.serial_port if analyzer else '' }}"
+                                                       placeholder="e.g., /dev/ttyUSB0 or COM3">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Baud Rate</label>
+                                                <select class="form-select" name="baud_rate">
+                                                    {% set br = (analyzer.baud_rate|string if analyzer and analyzer.baud_rate else '9600') %}
+                                                    <option value="">Select</option>
+                                                    <option value="1200"   {% if br=='1200'   %}selected{% endif %}>1200</option>
+                                                    <option value="2400"   {% if br=='2400'   %}selected{% endif %}>2400</option>
+                                                    <option value="4800"   {% if br=='4800'   %}selected{% endif %}>4800</option>
+                                                    <option value="9600"   {% if br=='9600'   %}selected{% endif %}>9600</option>
+                                                    <option value="19200"  {% if br=='19200'  %}selected{% endif %}>19200</option>
+                                                    <option value="38400"  {% if br=='38400'  %}selected{% endif %}>38400</option>
+                                                    <option value="57600"  {% if br=='57600'  %}selected{% endif %}>57600</option>
+                                                    <option value="115200" {% if br=='115200' %}selected{% endif %}>115200</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="form-label">Parity</label>
+                                                {% set par = (analyzer.parity if analyzer else '') %}
+                                                <select class="form-select" name="parity">
+                                                    <option value="">Select</option>
+                                                    <option value="none" {% if par=='none' %}selected{% endif %}>None</option>
+                                                    <option value="even" {% if par=='even' %}selected{% endif %}>Even</option>
+                                                    <option value="odd"  {% if par=='odd'  %}selected{% endif %}>Odd</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="form-label">Stop Bits</label>
+                                                <select class="form-select" name="stop_bits">
+                                                    {% set sb = (analyzer.stop_bits|string if analyzer and analyzer.stop_bits else '1') %}
+                                                    <option value="">Select</option>
+                                                    <option value="1" {% if sb=='1' %}selected{% endif %}>1</option>
+                                                    <option value="2" {% if sb=='2' %}selected{% endif %}>2</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="form-label">Data Bits</label>
+                                                <select class="form-select" name="data_bits">
+                                                    {% set db_val = (analyzer.data_bits|string if analyzer and analyzer.data_bits else '8') %}
+                                                    <option value="">Select</option>
+                                                    <option value="7" {% if db_val=='7' %}selected{% endif %}>7</option>
+                                                    <option value="8" {% if db_val=='8' %}selected{% endif %}>8</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Flow Control</label>
+                                                {% set fc = (analyzer.flow_control if analyzer else '') %}
+                                                <select class="form-select" name="flow_control">
+                                                    <option value="">Select</option>
+                                                    <option value="none"    {% if fc=='none'    %}selected{% endif %}>None</option>
+                                                    <option value="rtscts"  {% if fc=='rtscts'  %}selected{% endif %}>RTS/CTS</option>
+                                                    <option value="xonxoff" {% if fc=='xonxoff' %}selected{% endif %}>XON/XOFF</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ═══════════════════════════════════════════════════════
+                             ACTION BUTTONS
+                        ═══════════════════════════════════════════════════════ -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                            <a class="btn btn-outline-secondary" href="{{ request.url_for('settings_analyzers') }}">
+                                <i class="ti ti-x me-1"></i> Cancel
+                            </a>
+                            <button class="btn btn-primary px-4" type="submit">
+                                <i class="ti ti-device-floppy me-1"></i>
+                                {% if analyzer %}Save Changes{% else %}Add Analyzer{% endif %}
+                            </button>
                         </div>
 
                     </form>
@@ -213,61 +380,81 @@
     </div>
 </div>
 
-    <!-- jQuery -->
-    <script src="/static/js/jquery-3.7.1.min.js"></script>
-
-    <!-- Bootstrap Core JS -->
-    <script src="/static/js/bootstrap.bundle.min.js"></script>
-        <script src="/static/js/moment.min.js"></script>
-    <script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
-    <script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
-
-     <!-- Simplebar JS -->
-    <script src="/static/plugins/simplebar/simplebar.min.js"></script>
-    <script data-cfasync="false" src="/static/plugins/daterangepicker/daterangepicker.js"></script>
-
-    <!-- Flatpickr JS -->
-    <script src="/static/plugins/flatpickr/flatpickr.min.js"></script>
-      <script src="/static/js/bootstrap-datetimepicker.min.js"></script>
-
-    <script src="/static/js/min/jszip.min.js"></script>
-    <script src="/static/js/min/pdfmake.min.js"></script>
-    <script src="/static/js/min/vsffonts.min.js"></script>
-
-    <script src="/static/js/min/datatables.buttons.min.js"></script>
-    <script src="/static/js/min/buttons.min.js"></script>
-    <script src="/static/js/min/print.min.js"></script>
-
-
-
-    <!-- Main JS -->
-    <script src="/static/js/script.js"></script>
-
-    <!-- Lab results -->
-    <script src="{{ url_for('static', path='js/utils/billings.js') }}" defer></script>
-
-    <script src="/static/cdn-cgi/scripts/rocket-loader.min.js" data-cf-settings="09e0d2b48ab211936e55812e-|49" defer=""></script>
-    <script defer="" src="/static/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"3ca157e612a14eccbb30cf6db6691c29","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<!-- jQuery -->
+<script src="/static/js/jquery-3.7.1.min.js"></script>
+<!-- Bootstrap Core JS -->
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/moment.min.js"></script>
+<script src="/static/plugins/datatables/js/jquery.dataTables.min.js"></script>
+<script src="/static/plugins/datatables/js/dataTables.bootstrap5.min.js"></script>
+<!-- Simplebar JS -->
+<script src="/static/plugins/simplebar/simplebar.min.js"></script>
+<script data-cfasync="false" src="/static/plugins/daterangepicker/daterangepicker.js"></script>
+<!-- Flatpickr JS -->
+<script src="/static/plugins/flatpickr/flatpickr.min.js"></script>
+<script src="/static/js/bootstrap-datetimepicker.min.js"></script>
+<script src="/static/js/min/jszip.min.js"></script>
+<script src="/static/js/min/pdfmake.min.js"></script>
+<script src="/static/js/min/vsffonts.min.js"></script>
+<script src="/static/js/min/datatables.buttons.min.js"></script>
+<script src="/static/js/min/buttons.min.js"></script>
+<script src="/static/js/min/print.min.js"></script>
+<!-- Main JS -->
+<script src="/static/js/script.js"></script>
 
 <script>
-(function() {
-  function toggleBlocks() {
-    var ct = document.getElementById('connection_type').value;
-    var tcp = document.getElementById('tcp_settings');
-    var ser = document.getElementById('serial_settings');
-    if (ct === 'tcp') {
-      tcp.style.display = '';
-      ser.style.display = 'none';
-    } else if (ct === 'serial') {
-      tcp.style.display = 'none';
-      ser.style.display = '';
-    } else {
-      tcp.style.display = 'none';
-      ser.style.display = 'none';
+(function () {
+    // ─── Connection type → show/hide TCP or Serial blocks ───────────────────
+    function applyConnectionType() {
+        var ct  = document.getElementById('connection_type').value;
+        var tcp = document.getElementById('tcp_settings');
+        var ser = document.getElementById('serial_settings');
+        tcp.style.display = (ct === 'tcp')    ? '' : 'none';
+        ser.style.display = (ct === 'serial') ? '' : 'none';
     }
-  }
-  document.getElementById('connection_type').addEventListener('change', toggleBlocks);
-  toggleBlocks();
+
+    // ─── is_automated → show/hide automation sub-fields ─────────────────────
+    function applyAutomated() {
+        var checked = document.getElementById('is_automated').checked;
+        var panel   = document.getElementById('automation_fields');
+        var card    = document.getElementById('automation_panel');
+        panel.style.display = checked ? '' : 'none';
+        if (checked) {
+            card.classList.add('automated-highlight');
+        } else {
+            card.classList.remove('automated-highlight');
+        }
+    }
+
+    // ─── transport_type → sync connection_type dropdown automatically ────────
+    function syncTransportToConnection() {
+        var tt = document.getElementById('transport_type');
+        var ct = document.getElementById('connection_type');
+        if (!tt) return;
+        tt.addEventListener('change', function () {
+            if (tt.value === 'tcp_server' || tt.value === 'tcp_client') {
+                ct.value = 'tcp';
+            } else if (tt.value === 'serial') {
+                ct.value = 'serial';
+            }
+            applyConnectionType();
+        });
+    }
+
+    // ─── Wire events ────────────────────────────────────────────────────────
+    document.getElementById('connection_type').addEventListener('change', applyConnectionType);
+    document.getElementById('is_automated').addEventListener('change', applyAutomated);
+
+    // ─── Initial state ───────────────────────────────────────────────────────
+    applyConnectionType();
+    applyAutomated();
+    syncTransportToConnection();
+
+    // ─── Bootstrap tooltips on help icons ───────────────────────────────────
+    var tooltipEls = document.querySelectorAll('[title]');
+    tooltipEls.forEach(function(el) {
+        new bootstrap.Tooltip(el, { trigger: 'hover' });
+    });
 })();
 </script>
 
